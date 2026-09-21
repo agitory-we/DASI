@@ -16,8 +16,11 @@ import {
   X,
   Send,
   Globe,
-  Plus
+  Plus,
+  QrCode,
+  Check
 } from 'lucide-react';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function GigsPage() {
   const [selectedCategory, setSelectedCategory] = useState<GigCategory | 'all'>('all');
@@ -25,6 +28,7 @@ export default function GigsPage() {
   const [activePortfolioImg, setActivePortfolioImg] = useState<string | null>(null);
   const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
   const [isBooked, setIsBooked] = useState<boolean>(false);
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
 
   const filteredGigs = selectedCategory === 'all'
     ? mockPhotoGigs
@@ -262,22 +266,61 @@ export default function GigsPage() {
             </div>
 
             {isBooked ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
+              <div className="text-center py-6 space-y-5 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                  <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h4 className="font-serif text-xl font-bold text-vintage-900">
-                  스냅 촬영 요청이 전달되었습니다!
-                </h4>
-                <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
-                  에스크로 안전 결제가 대기 상태로 등록되었습니다. 
-                  {selectedGig.creatorName} 작가님이 촬영 일정을 확인 후 카카오 알림톡으로 연락드립니다.
-                </p>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    에스크로 안전 대금 보관 완료
+                  </span>
+                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                    촬영 예약 신청 완료
+                  </h4>
+                  <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
+                    <strong>{selectedGig.creatorName}</strong> 작가님께 예약 알림이 전달되었습니다.<br />
+                    24시간 내 작가 승인 시 확정 카카오톡이 발송됩니다.
+                  </p>
+                </div>
+
+                {/* Digital Escrow Voucher Card */}
+                <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200 text-left max-w-sm mx-auto space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-vintage-200/60 pb-2.5">
+                    <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      DASI 안심 에스크로 보증서
+                    </span>
+                    <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
+                      GIG-{Math.floor(100000 + Math.random() * 900000)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-vintage-700">
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">배정 작가</span>
+                      <span className="font-bold text-vintage-900">{selectedGig.creatorName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">촬영 위치</span>
+                      <span className="font-semibold text-vintage-800">{selectedGig.location}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">에스크로 예치금</span>
+                      <span className="font-bold text-terracotta">{selectedGig.pricePerHour.toLocaleString()}원</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-900">
+                    💡 <strong>대금 지급 원칙:</strong> 촬영 완료 후 원본 30장 이상 및 보정본 5장을 수령하고 고객님이 [수령 확정]을 누를 때까지 결제 대금은 안전하게 에스크로에 묶여 있습니다.
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setSelectedGig(null)}
-                  className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs font-semibold"
+                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
                 >
-                  확인
+                  확인 및 닫기
                 </button>
               </div>
             ) : (
@@ -325,8 +368,11 @@ export default function GigsPage() {
                       취소
                     </button>
                     <button
-                      onClick={() => setIsBooked(true)}
-                      className="px-5 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors"
+                      onClick={() => {
+                        playShutterSound('compact');
+                        setIsBooked(true);
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                     >
                       안심 에스크로 예약하기
                     </button>
@@ -357,76 +403,117 @@ export default function GigsPage() {
               </button>
             </div>
 
-            <div className="space-y-4 text-xs text-vintage-700">
-              <p className="leading-relaxed">
-                내가 가진 카메라(라이카, 후지필름, 필카 등)로 주말에 용돈도 벌고,
-                국내외 여행자들에게 멋진 시선을 선물해 보세요!
-              </p>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-vintage-800">작가 닉네임</label>
-                <input
-                  type="text"
-                  placeholder="예: 필름무드 / 준서"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-vintage-800">주 보유 카메라 &amp; 렌즈 기종</label>
-                <input
-                  type="text"
-                  placeholder="예: Fujifilm X100VI / Nikon FM2 (50mm F1.4)"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">활동 희망 지역</label>
-                  <input
-                    type="text"
-                    placeholder="예: 성수동 / 을지로 / 북촌"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
-                  />
+            {isRegistered ? (
+              <div className="text-center py-6 space-y-4 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                  <Check className="w-7 h-7" />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">1시간당 희망 단가</label>
-                  <input
-                    type="text"
-                    placeholder="예: 45,000원"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
-                  />
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    작가 파트너 심사 접수 완료
+                  </span>
+                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                    스냅 알바 등록 완료
+                  </h4>
+                  <p className="text-xs text-vintage-600 max-w-sm mx-auto leading-relaxed">
+                    등록해 주신 보유 카메라 정보와 포트폴리오를 담당 큐레이터가 확인 중입니다. <strong>24시간 내 승인 완료 알림톡</strong>과 함께 마켓에 정식 노출됩니다!
+                  </p>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-vintage-800">인스타그램 또는 포트폴리오 링크</label>
-                <input
-                  type="text"
-                  placeholder="https://instagram.com/your_id"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
-                />
-              </div>
-            </div>
+                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs text-left max-w-sm mx-auto space-y-1.5">
+                  <div className="font-bold text-vintage-900 flex items-center gap-1.5">
+                    <QrCode className="w-4 h-4 text-terracotta" />
+                    <span>파트너 심사 번호: GIG-REG-2026-P88</span>
+                  </div>
+                  <div className="text-[11px] text-vintage-500">
+                    수수료 혜택: 신규 등록 작가 첫 3회 매칭 수수료 0% 지원
+                  </div>
+                </div>
 
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setIsRegisterOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-50"
-              >
-                닫기
-              </button>
-              <button
-                onClick={() => {
-                  alert('스냅 작가 등록 신청이 완료되었습니다! 검토 후 24시간 내 프로필이 게시됩니다.');
-                  setIsRegisterOpen(false);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors"
-              >
-                작가 등록 완료하기
-              </button>
-            </div>
+                <button
+                  onClick={() => {
+                    setIsRegisterOpen(false);
+                    setIsRegistered(false);
+                  }}
+                  className="px-8 py-3 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors shadow-xs"
+                >
+                  확인 및 닫기
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 text-xs text-vintage-700">
+                  <p className="leading-relaxed">
+                    내가 가진 카메라(라이카, 후지필름, 필카 등)로 주말에 용돈도 벌고,
+                    국내외 여행자들에게 멋진 시선을 선물해 보세요!
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-vintage-800">작가 닉네임</label>
+                    <input
+                      type="text"
+                      placeholder="예: 필름무드 / 준서"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-vintage-800">주 보유 카메라 &amp; 렌즈 기종</label>
+                    <input
+                      type="text"
+                      placeholder="예: Fujifilm X100VI / Nikon FM2 (50mm F1.4)"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-vintage-800">활동 희망 지역</label>
+                      <input
+                        type="text"
+                        placeholder="예: 성수동 / 을지로 / 북촌"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-vintage-800">1시간당 희망 단가</label>
+                      <input
+                        type="text"
+                        placeholder="예: 45,000원"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-vintage-800">인스타그램 또는 포트폴리오 링크</label>
+                    <input
+                      type="text"
+                      placeholder="https://instagram.com/your_id"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => setIsRegisterOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-50"
+                  >
+                    닫기
+                  </button>
+                  <button
+                    onClick={() => {
+                      playShutterSound('leaf');
+                      setIsRegistered(true);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors shadow-xs"
+                  >
+                    작가 등록 완료하기
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
