@@ -24,11 +24,12 @@ import { mockExperiences } from '@/data/mockData';
 import { Experience } from '@/types';
 
 export default function ExperiencesPage() {
-  const { bookExperience } = useDasi();
+  const { bookExperience, showToast } = useDasi();
   const [selectedType, setSelectedType] = useState<'all' | 'photo_walk' | 'master_class'>('all');
   const [selectedExp, setSelectedExp] = useState<Experience | null>(null);
   const [isBooked, setIsBooked] = useState(false);
   const [withRentalPackage, setWithRentalPackage] = useState(false);
+  const [bundledCamera, setBundledCamera] = useState<string>('Olympus PEN EE-3 (하프 필름)');
   const [issuedTicketCode, setIssuedTicketCode] = useState('');
 
   const experiences = mockExperiences;
@@ -273,28 +274,49 @@ export default function ExperiencesPage() {
                   </ul>
                 </div>
 
-                {/* Rental Bundle Discount Toggle */}
-                <div
-                  onClick={() => setWithRentalPackage(!withRentalPackage)}
-                  className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    withRentalPackage
-                      ? 'border-terracotta bg-terracotta/5'
-                      : 'border-vintage-200 hover:bg-vintage-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={withRentalPackage}
-                      onChange={() => {}}
-                      className="text-terracotta rounded"
-                    />
-                    <div>
-                      <div className="font-bold text-vintage-900">DASI 카메라 주말 렌탈 결합 할인</div>
-                      <div className="text-[10px] text-vintage-500">카메라 대여 고객 티켓 10,000원 즉시 할인</div>
+                {/* Rental Bundle Discount Toggle & Camera Select */}
+                <div className="space-y-2">
+                  <div
+                    onClick={() => setWithRentalPackage(!withRentalPackage)}
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                      withRentalPackage
+                        ? 'border-terracotta bg-terracotta/5'
+                        : 'border-vintage-200 hover:bg-vintage-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={withRentalPackage}
+                        onChange={() => {}}
+                        className="text-terracotta rounded"
+                      />
+                      <div>
+                        <div className="font-bold text-vintage-900">DASI 카메라 주말 렌탈 결합 할인</div>
+                        <div className="text-[10px] text-vintage-500">카메라 대여 고객 티켓 10,000원 즉시 할인 + 현장 수령</div>
+                      </div>
                     </div>
+                    <span className="font-bold text-terracotta">-10,000원</span>
                   </div>
-                  <span className="font-bold text-terracotta">-10,000원</span>
+
+                  {withRentalPackage && (
+                    <div className="p-3 bg-vintage-50 border border-vintage-200 rounded-2xl space-y-1.5 animate-fadeIn">
+                      <label className="text-[11px] font-bold text-vintage-700">현장 대여 희망 카메라 기종 선택</label>
+                      <select
+                        value={bundledCamera}
+                        onChange={(e) => setBundledCamera(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-vintage-300 text-xs bg-white text-vintage-900 font-medium focus:outline-none focus:border-terracotta"
+                      >
+                        <option value="Olympus PEN EE-3 (하프 필름)">Olympus PEN EE-3 (하프 아날로그 필름)</option>
+                        <option value="Nikon FM2 (완전 기계식 SLR)">Nikon FM2 (완전 기계식 SLR)</option>
+                        <option value="Fujifilm X100VI (하이엔드 디카)">Fujifilm X100VI (하이엔드 디카)</option>
+                        <option value="Ricoh GR IIIx (스트리트 스냅 디카)">Ricoh GR IIIx (스트리트 스냅 디카)</option>
+                      </select>
+                      <div className="text-[10px] text-vintage-500">
+                        * 선택하신 기종과 필름 1롤이 집결 장소에서 호스트를 통해 즉시 전달됩니다.
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 flex items-center justify-between border-t border-vintage-100">
@@ -325,6 +347,7 @@ export default function ExperiencesPage() {
                           hasRentalPackage: withRentalPackage,
                         });
                         setIssuedTicketCode(code);
+                        showToast(`「${selectedExp.title}」 티켓 예매가 완료되었습니다! (발급번호: ${code})`, 'success');
                         setIsBooked(true);
                       }}
                       className="px-6 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"

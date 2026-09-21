@@ -1,8 +1,36 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserCoupon, ProConsultationItem } from '@/types';
-import { mockUserCoupons } from '@/data/mockData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  Camera,
+  PickupShop,
+  AnalogSpot,
+  RepairMaster,
+  PhotoGig,
+  Experience,
+  UserCoupon,
+  ProConsultationItem
+} from '@/types';
+import {
+  mockUserCoupons,
+  mockCameras,
+  mockPickupShops,
+  mockAnalogSpots,
+  mockMasters,
+  mockPhotoGigs,
+  mockExperiences
+} from '@/data/mockData';
+import {
+  getCameras,
+  getPickupShops,
+  getAnalogSpots,
+  getRepairMasters,
+  getPhotoGigs,
+  getExperiences,
+  saveRentalBooking,
+  updateRentToOwnStatus,
+  saveRepairEstimateInquiry
+} from '@/services/dasiService';
 import { CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 export interface RentingCameraItem {
@@ -66,6 +94,17 @@ export interface RepairEstimateItem {
 }
 
 interface DasiContextType {
+  // Master Data from Supabase
+  cameras: Camera[];
+  pickupShops: PickupShop[];
+  analogSpots: AnalogSpot[];
+  repairMasters: RepairMaster[];
+  photoGigs: PhotoGig[];
+  experiences: Experience[];
+  isLoadingData: boolean;
+  refreshData: () => Promise<void>;
+
+  // User Interactive State
   rentingItems: RentingCameraItem[];
   ownedItems: OwnedCameraItem[];
   coupons: UserCoupon[];
@@ -92,6 +131,16 @@ interface DasiContextType {
 const DasiContext = createContext<DasiContextType | undefined>(undefined);
 
 export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Master entities
+  const [cameras, setCameras] = useState<Camera[]>(mockCameras);
+  const [pickupShops, setPickupShops] = useState<PickupShop[]>(mockPickupShops);
+  const [analogSpots, setAnalogSpots] = useState<AnalogSpot[]>(mockAnalogSpots);
+  const [repairMasters, setRepairMasters] = useState<RepairMaster[]>(mockMasters);
+  const [photoGigs, setPhotoGigs] = useState<PhotoGig[]>(mockPhotoGigs);
+  const [experiences, setExperiences] = useState<Experience[]>(mockExperiences);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+
+  // User state
   const [rentingItems, setRentingItems] = useState<RentingCameraItem[]>([]);
   const [ownedItems, setOwnedItems] = useState<OwnedCameraItem[]>([]);
   const [coupons, setCoupons] = useState<UserCoupon[]>(mockUserCoupons);
@@ -110,6 +159,35 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToast(null);
     }, 3500);
   };
+
+  // Fetch all master data from Supabase
+  const refreshData = useCallback(async () => {
+    setIsLoadingData(true);
+    try {
+      const [cams, shops, spots, masters, gigs, exps] = await Promise.all([
+        getCameras(),
+        getPickupShops(),
+        getAnalogSpots(),
+        getRepairMasters(),
+        getPhotoGigs(),
+        getExperiences()
+      ]);
+      setCameras(cams);
+      setPickupShops(shops);
+      setAnalogSpots(spots);
+      setRepairMasters(masters);
+      setPhotoGigs(gigs);
+      setExperiences(exps);
+    } catch (err) {
+      console.error('Failed to refresh data from Supabase:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   // Initialize from LocalStorage
   useEffect(() => {
@@ -263,6 +341,19 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isConvertedToOwn: false,
     };
     setRentingItems((prev) => [newItem, ...prev]);
+
+    // Async sync to Supabase
+    saveRentalBooking({
+      id: newItem.id,
+      cameraName: newItem.name,
+      brand: newItem.brand,
+      shopName: newItem.shopName,
+      imageUrl: newItem.imageUrl,
+      rentalDays: newItem.rentalDays,
+      rentalPaid: newItem.rentalPaid,
+      purchaseTotal: newItem.purchaseTotal,
+      isConvertedToOwn: false
+    });
   };
 
   const convertToOwn = (rentingId: string) => {
@@ -284,6 +375,9 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setOwnedItems((prev) => [newOwned, ...prev]);
+
+    // Async sync to Supabase
+    updateRentToOwnStatus(rentingId);
   };
 
   const addOwnedCamera = (item: Omit<OwnedCameraItem, 'id'>) => {
@@ -339,6 +433,17 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       status: 'diagnosing',
     };
     setRepairEstimates((prev) => [newEstimate, ...prev]);
+
+    // Async sync to Supabase
+    saveRepairEstimateInquiry({
+      id: newEstimate.id,
+      cameraModel: newEstimate.cameraModel,
+      symptoms: newEstimate.symptoms,
+      details: newEstimate.details,
+      masterName: newEstimate.masterName,
+      estimateCode: newEstimate.estimateCode
+    });
+
     return estimateCode;
   };
 
@@ -371,6 +476,14 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DasiContext.Provider
       value={{
+        cameras,
+        pickupShops,
+        analogSpots,
+        repairMasters,
+        photoGigs,
+        experiences,
+        isLoadingData,
+        refreshData,
         rentingItems,
         ownedItems,
         coupons,

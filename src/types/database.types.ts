@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -39,7 +39,442 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analog_spots: {
+        Row: {
+          address: string
+          area: string
+          category: string
+          contact: string
+          created_at: string | null
+          film_stock_status: string | null
+          id: string
+          is_micro_ad_partner: boolean
+          lat: number
+          lng: number
+          name: string
+          open_hours: string
+          partner_badge_text: string | null
+          promo_notice: string | null
+          rating: number
+          reviews_count: number
+          sample_color_tone_images: Json
+          scanner_types: Json
+          today_scan_cutoff: string | null
+        }
+        Insert: {
+          address: string
+          area: string
+          category: string
+          contact?: string
+          created_at?: string | null
+          film_stock_status?: string | null
+          id: string
+          is_micro_ad_partner?: boolean
+          lat: number
+          lng: number
+          name: string
+          open_hours?: string
+          partner_badge_text?: string | null
+          promo_notice?: string | null
+          rating?: number
+          reviews_count?: number
+          sample_color_tone_images?: Json
+          scanner_types?: Json
+          today_scan_cutoff?: string | null
+        }
+        Update: {
+          address?: string
+          area?: string
+          category?: string
+          contact?: string
+          created_at?: string | null
+          film_stock_status?: string | null
+          id?: string
+          is_micro_ad_partner?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          open_hours?: string
+          partner_badge_text?: string | null
+          promo_notice?: string | null
+          rating?: number
+          reviews_count?: number
+          sample_color_tone_images?: Json
+          scanner_types?: Json
+          today_scan_cutoff?: string | null
+        }
+        Relationships: []
+      }
+      cameras: {
+        Row: {
+          brand: string
+          category: string
+          condition_grade: string
+          created_at: string | null
+          description: string
+          era: string
+          id: string
+          image_url: string
+          is_available: boolean
+          name: string
+          pickup_location: string
+          purchase_price: number
+          rating: number
+          rental_price_per_day: number
+          reviews_count: number
+          sample_images: Json
+          shop_id: string | null
+          shop_name: string
+          specs: Json
+          story: string
+        }
+        Insert: {
+          brand: string
+          category: string
+          condition_grade: string
+          created_at?: string | null
+          description?: string
+          era?: string
+          id: string
+          image_url?: string
+          is_available?: boolean
+          name: string
+          pickup_location?: string
+          purchase_price?: number
+          rating?: number
+          rental_price_per_day?: number
+          reviews_count?: number
+          sample_images?: Json
+          shop_id?: string | null
+          shop_name?: string
+          specs?: Json
+          story?: string
+        }
+        Update: {
+          brand?: string
+          category?: string
+          condition_grade?: string
+          created_at?: string | null
+          description?: string
+          era?: string
+          id?: string
+          image_url?: string
+          is_available?: boolean
+          name?: string
+          pickup_location?: string
+          purchase_price?: number
+          rating?: number
+          rental_price_per_day?: number
+          reviews_count?: number
+          sample_images?: Json
+          shop_id?: string | null
+          shop_name?: string
+          specs?: Json
+          story?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cameras_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiences: {
+        Row: {
+          capacity: string
+          created_at: string | null
+          date_time: string
+          description: string
+          duration: string
+          host_avatar: string
+          host_name: string
+          host_role: string
+          id: string
+          image_url: string
+          included: Json
+          location: string
+          price: number
+          rental_package_discount: string
+          title: string
+          type: string
+        }
+        Insert: {
+          capacity?: string
+          created_at?: string | null
+          date_time: string
+          description?: string
+          duration: string
+          host_avatar?: string
+          host_name: string
+          host_role: string
+          id: string
+          image_url?: string
+          included?: Json
+          location: string
+          price?: number
+          rental_package_discount?: string
+          title: string
+          type: string
+        }
+        Update: {
+          capacity?: string
+          created_at?: string | null
+          date_time?: string
+          description?: string
+          duration?: string
+          host_avatar?: string
+          host_name?: string
+          host_role?: string
+          id?: string
+          image_url?: string
+          included?: Json
+          location?: string
+          price?: number
+          rental_package_discount?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      photo_gigs: {
+        Row: {
+          category: string
+          created_at: string | null
+          creator_avatar: string
+          creator_name: string
+          description: string
+          duration_minutes: number
+          gear_used: Json
+          id: string
+          is_verified: boolean
+          languages: Json
+          location: string
+          portfolio_images: Json
+          price_per_hour: number
+          rating: number
+          reviews_count: number
+          tags: Json
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          creator_avatar?: string
+          creator_name: string
+          description?: string
+          duration_minutes?: number
+          gear_used?: Json
+          id: string
+          is_verified?: boolean
+          languages?: Json
+          location: string
+          portfolio_images?: Json
+          price_per_hour?: number
+          rating?: number
+          reviews_count?: number
+          tags?: Json
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          creator_avatar?: string
+          creator_name?: string
+          description?: string
+          duration_minutes?: number
+          gear_used?: Json
+          id?: string
+          is_verified?: boolean
+          languages?: Json
+          location?: string
+          portfolio_images?: Json
+          price_per_hour?: number
+          rating?: number
+          reviews_count?: number
+          tags?: Json
+          title?: string
+        }
+        Relationships: []
+      }
+      pickup_shops: {
+        Row: {
+          address: string
+          area: string
+          contact: string
+          created_at: string | null
+          id: string
+          image_url: string
+          lat: number
+          lng: number
+          master_experience_years: number
+          master_name: string
+          master_quote: string
+          name: string
+          open_hours: string
+        }
+        Insert: {
+          address: string
+          area: string
+          contact?: string
+          created_at?: string | null
+          id: string
+          image_url?: string
+          lat: number
+          lng: number
+          master_experience_years?: number
+          master_name: string
+          master_quote?: string
+          name: string
+          open_hours?: string
+        }
+        Update: {
+          address?: string
+          area?: string
+          contact?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          lat?: number
+          lng?: number
+          master_experience_years?: number
+          master_name?: string
+          master_quote?: string
+          name?: string
+          open_hours?: string
+        }
+        Relationships: []
+      }
+      rentals: {
+        Row: {
+          booked_at: string | null
+          brand: string
+          camera_id: string | null
+          camera_name: string
+          created_at: string | null
+          id: string
+          image_url: string
+          is_converted_to_own: boolean
+          purchase_total: number
+          rental_days: number
+          rental_paid: number
+          shop_name: string
+        }
+        Insert: {
+          booked_at?: string | null
+          brand: string
+          camera_id?: string | null
+          camera_name: string
+          created_at?: string | null
+          id: string
+          image_url?: string
+          is_converted_to_own?: boolean
+          purchase_total?: number
+          rental_days?: number
+          rental_paid?: number
+          shop_name: string
+        }
+        Update: {
+          booked_at?: string | null
+          brand?: string
+          camera_id?: string | null
+          camera_name?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_converted_to_own?: boolean
+          purchase_total?: number
+          rental_days?: number
+          rental_paid?: number
+          shop_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rentals_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "cameras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repair_estimates: {
+        Row: {
+          camera_model: string
+          created_at: string | null
+          details: string
+          estimate_code: string
+          id: string
+          master_name: string
+          status: string
+          symptoms: Json
+        }
+        Insert: {
+          camera_model: string
+          created_at?: string | null
+          details?: string
+          estimate_code?: string
+          id: string
+          master_name?: string
+          status?: string
+          symptoms?: Json
+        }
+        Update: {
+          camera_model?: string
+          created_at?: string | null
+          details?: string
+          estimate_code?: string
+          id?: string
+          master_name?: string
+          status?: string
+          symptoms?: Json
+        }
+        Relationships: []
+      }
+      repair_masters: {
+        Row: {
+          address: string
+          available_services: Json
+          created_at: string | null
+          experience_years: number
+          id: string
+          location: string
+          name: string
+          profile_image: string
+          quote: string
+          shop_name: string
+          specialty: string
+        }
+        Insert: {
+          address: string
+          available_services?: Json
+          created_at?: string | null
+          experience_years?: number
+          id: string
+          location: string
+          name: string
+          profile_image?: string
+          quote?: string
+          shop_name: string
+          specialty: string
+        }
+        Update: {
+          address?: string
+          available_services?: Json
+          created_at?: string | null
+          experience_years?: number
+          id?: string
+          location?: string
+          name?: string
+          profile_image?: string
+          quote?: string
+          shop_name?: string
+          specialty?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

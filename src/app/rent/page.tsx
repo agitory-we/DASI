@@ -23,11 +23,13 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 
 export default function RentPage() {
-  const { bookCameraRental } = useDasi();
+  const { bookCameraRental, showToast } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [rentalDays, setRentalDays] = useState<number>(2);
   const [selectedShopId, setSelectedShopId] = useState<string>('shop-1');
+  const [includeFilm, setIncludeFilm] = useState<boolean>(false);
+  const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
   const [isBooked, setIsBooked] = useState<boolean>(false);
 
   const filteredCameras = selectedCategory === 'all'
@@ -37,6 +39,8 @@ export default function RentPage() {
   const handleOpenBooking = (camera: Camera) => {
     setSelectedCamera(camera);
     setSelectedShopId(camera.shopId);
+    setIncludeFilm(false);
+    setIncludeCleaningKit(false);
     setIsBooked(false);
   };
 
@@ -389,7 +393,55 @@ export default function RentPage() {
                     </div>
                   </div>
 
-                  {/* Step 3: Rent-to-Own 실시간 시뮬레이션 계산기 */}
+                  {/* Step 3: 부가 케어 옵션 선택 */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
+                      3. 패키지 &amp; 케어 부가 옵션 선택
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <label
+                        onClick={() => setIncludeFilm(!includeFilm)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                          includeFilm
+                            ? 'border-terracotta bg-terracotta/5 font-semibold text-vintage-900'
+                            : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={includeFilm}
+                            onChange={() => {}}
+                            className="rounded text-terracotta focus:ring-terracotta"
+                          />
+                          <span>코닥 컬러플러스 200 (1롤)</span>
+                        </div>
+                        <span className="text-terracotta font-bold">+14,000원</span>
+                      </label>
+
+                      <label
+                        onClick={() => setIncludeCleaningKit(!includeCleaningKit)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                          includeCleaningKit
+                            ? 'border-terracotta bg-terracotta/5 font-semibold text-vintage-900'
+                            : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={includeCleaningKit}
+                            onChange={() => {}}
+                            className="rounded text-terracotta focus:ring-terracotta"
+                          />
+                          <span>독일제 렌즈 클리닝 키트</span>
+                        </div>
+                        <span className="text-terracotta font-bold">+3,000원</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Rent-to-Own 실시간 시뮬레이션 계산기 */}
                   <div className="p-4 rounded-2xl bg-gradient-to-r from-vintage-100 to-vintage-50 border border-vintage-200 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
@@ -397,7 +449,7 @@ export default function RentPage() {
                         Rent-to-Own 소장 전환 혜택
                       </span>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white font-bold">
-                        대여료 100% 환급 공제
+                        순수 대여료 100% 환급 공제
                       </span>
                     </div>
 
@@ -417,7 +469,8 @@ export default function RentPage() {
                       <div className="p-2.5 rounded-xl bg-white border border-vintage-200">
                         <div className="text-[10px] text-vintage-400">최종 인수 잔금</div>
                         <div className="font-bold text-emerald-800">
-                          {(
+                          {Math.max(
+                            0,
                             selectedCamera.purchasePrice -
                             selectedCamera.rentalPricePerDay * rentalDays
                           ).toLocaleString()}원
@@ -426,7 +479,7 @@ export default function RentPage() {
                     </div>
                   </div>
 
-                  {/* Step 4: 안심 결제 보증금 안내 */}
+                  {/* Step 5: 안심 결제 보증금 안내 */}
                   <div className="p-3 rounded-xl bg-vintage-50 border border-vintage-200 text-[11px] text-vintage-600 flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     <span>
@@ -442,9 +495,13 @@ export default function RentPage() {
             {!isBooked && (
               <div className="p-6 border-t border-vintage-200 bg-vintage-50 flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-vintage-500">결제 예정 대여료</span>
+                  <span className="text-xs text-vintage-500">결제 예정 총액 (대여료 + 옵션)</span>
                   <div className="text-lg font-bold text-terracotta">
-                    {(selectedCamera.rentalPricePerDay * rentalDays).toLocaleString()}원
+                    {(
+                      selectedCamera.rentalPricePerDay * rentalDays +
+                      (includeFilm ? 14000 : 0) +
+                      (includeCleaningKit ? 3000 : 0)
+                    ).toLocaleString()}원
                   </div>
                 </div>
 
@@ -457,16 +514,19 @@ export default function RentPage() {
                   </button>
                   <button
                     onClick={() => {
+                      playShutterSound('slr');
+                      const totalPaid = selectedCamera.rentalPricePerDay * rentalDays;
                       bookCameraRental({
                         id: `rent-${Date.now()}`,
                         name: selectedCamera.name,
                         brand: selectedCamera.brand,
-                        rentalPaid: selectedCamera.rentalPricePerDay * rentalDays,
+                        rentalPaid: totalPaid,
                         purchaseTotal: selectedCamera.purchasePrice,
                         rentalDays: rentalDays,
                         shopName: currentShop.name,
                         imageUrl: selectedCamera.imageUrl,
                       });
+                      showToast(`${selectedCamera.name} 대여 예약이 완료되었습니다! (픽업: ${currentShop.name})`, 'success');
                       setIsBooked(true);
                     }}
                     className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs"
