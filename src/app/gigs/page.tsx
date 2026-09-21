@@ -21,14 +21,17 @@ import {
   Check
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { useDasi } from '@/context/DasiContext';
 
 export default function GigsPage() {
+  const { bookGig } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<GigCategory | 'all'>('all');
   const [selectedGig, setSelectedGig] = useState<PhotoGig | null>(null);
   const [activePortfolioImg, setActivePortfolioImg] = useState<string | null>(null);
   const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const [scheduledAtInput, setScheduledAtInput] = useState<string>('2026-09-27 14:00');
 
   const filteredGigs = selectedCategory === 'all'
     ? mockPhotoGigs
@@ -328,8 +331,11 @@ export default function GigsPage() {
                 <div className="space-y-1.5">
                   <label className="font-bold text-vintage-800">희망 촬영 일시</label>
                   <input
-                    type="datetime-local"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    type="text"
+                    value={scheduledAtInput}
+                    onChange={(e) => setScheduledAtInput(e.target.value)}
+                    placeholder="예: 2026-09-27 15:00"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -337,8 +343,9 @@ export default function GigsPage() {
                   <label className="font-bold text-vintage-800">원하는 촬영 분위기 / 장소 세부사항</label>
                   <textarea
                     rows={3}
+                    defaultValue="성수동 골목길 & 카페 위주로 자연스러운 필름 스냅 촬영을 희망합니다."
                     placeholder="예: 성수동 카페골목 위주로 자연스러운 웃음 샷 원합니다. 외국인 친구와 동행 예정입니다."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta resize-none text-vintage-900"
                   />
                 </div>
 
@@ -370,6 +377,14 @@ export default function GigsPage() {
                     <button
                       onClick={() => {
                         playShutterSound('compact');
+                        bookGig({
+                          gigId: selectedGig.id,
+                          title: selectedGig.title,
+                          creatorName: selectedGig.creatorName,
+                          location: selectedGig.location,
+                          price: selectedGig.pricePerHour,
+                          scheduledAt: scheduledAtInput,
+                        });
                         setIsBooked(true);
                       }}
                       className="px-5 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"

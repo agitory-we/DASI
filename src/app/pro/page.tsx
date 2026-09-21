@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -10,10 +10,19 @@ import {
   Camera,
   Calendar,
   Award,
-  ChevronRight
+  ChevronRight,
+  X,
+  CheckCircle2,
+  QrCode,
+  Phone
 } from 'lucide-react';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ProStudioPage() {
+  const [selectedProArtist, setSelectedProArtist] = useState<any | null>(null);
+  const [activeLightboxImg, setActiveLightboxImg] = useState<string | null>(null);
+  const [isConsultSubmitted, setIsConsultSubmitted] = useState<boolean>(false);
+
   const proArtists = [
     {
       id: 'pro-1',
@@ -105,13 +114,19 @@ export default function ProStudioPage() {
                 {artist.portfolio.map((img, idx) => (
                   <div
                     key={idx}
-                    className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-vintage-950 border border-vintage-800"
+                    onClick={() => setActiveLightboxImg(img)}
+                    className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-vintage-950 border border-vintage-800 cursor-pointer group/img"
                   >
                     <img
                       src={img}
                       alt={artist.studioName}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
                     />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold">
+                        원본 확대 보기 🔍
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -136,7 +151,10 @@ export default function ProStudioPage() {
                 </div>
 
                 <button
-                  onClick={() => alert(`${artist.studioName} 1:1 상담 예약이 접수되었습니다. 작가 담당 매니저가 연락드립니다.`)}
+                  onClick={() => {
+                    setSelectedProArtist(artist);
+                    setIsConsultSubmitted(false);
+                  }}
                   className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-vintage-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors shadow-md"
                 >
                   <span>1:1 상담 및 본식 일정 예약 문의</span>
@@ -147,6 +165,141 @@ export default function ProStudioPage() {
           ))}
         </div>
       </div>
+
+      {/* FULLSCREEN LIGHTBOX MODAL */}
+      {activeLightboxImg && (
+        <div
+          onClick={() => setActiveLightboxImg(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer animate-fadeIn"
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl">
+            <img
+              src={activeLightboxImg}
+              alt="Pro Portfolio"
+              className="w-full h-full object-contain"
+            />
+            <button
+              onClick={() => setActiveLightboxImg(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* VIP CONSULTATION MODAL */}
+      {selectedProArtist && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fadeIn text-vintage-900">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+              <div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">
+                  DASI Pro 프라이빗 상담실
+                </span>
+                <h3 className="font-serif text-xl font-bold text-vintage-900 mt-1">
+                  {selectedProArtist.studioName}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedProArtist(null)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isConsultSubmitted ? (
+              <div className="text-center py-6 space-y-5 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                  <CheckCircle2 className="w-7 h-7" />
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    VIP 일정 조율 접수 완료
+                  </span>
+                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                    상담 예약 접수 완료
+                  </h4>
+                  <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
+                    <strong>{selectedProArtist.artistName}</strong> 수석 실장 매니저가 24시간 내 유선 상담 및 본식 캘린더 일정을 확인해 드립니다.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs text-left max-w-sm mx-auto space-y-1.5">
+                  <div className="flex justify-between font-bold text-vintage-900">
+                    <span>VIP 상담 번호</span>
+                    <span className="text-terracotta font-mono">PRO-VIP-{Math.floor(100000 + Math.random() * 900000)}</span>
+                  </div>
+                  <div className="text-[11px] text-vintage-500">
+                    스튜디오 위치: 서울 강남구 도산대로 본원 라운지
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSelectedProArtist(null)}
+                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
+                >
+                  확인 및 닫기
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                <div className="p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100 space-y-1">
+                  <div>👤 <strong>수석 작가:</strong> {selectedProArtist.artistName}</div>
+                  <div>📷 <strong>촬영 분야:</strong> {selectedProArtist.category}</div>
+                  <div>💰 <strong>기준 견적:</strong> {selectedProArtist.pricing}</div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-vintage-800">예식 또는 촬영 희망 일자</label>
+                  <input
+                    type="date"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-vintage-800">촬영 장소 / 베뉴 (예: 신라호텔 영빈관, 성수 브랜드 팝업 등)</label>
+                  <input
+                    type="text"
+                    placeholder="예식장 또는 촬영 로케이션"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-vintage-800">연락처 (매니저 1:1 유선 상담용)</label>
+                  <input
+                    type="tel"
+                    placeholder="010-0000-0000"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                  />
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    onClick={() => setSelectedProArtist(null)}
+                    className="flex-1 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 font-semibold"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={() => {
+                      playShutterSound('slr');
+                      setIsConsultSubmitted(true);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-vintage-950 font-bold transition-colors shadow-xs"
+                  >
+                    VIP 프라이빗 상담 신청
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

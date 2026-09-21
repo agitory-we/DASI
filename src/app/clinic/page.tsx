@@ -23,11 +23,22 @@ import {
 import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ClinicPage() {
-  const { coupons, useCoupon } = useDasi();
+  const { coupons, useCoupon, submitRepairEstimate } = useDasi();
   const [selectedMaster, setSelectedMaster] = useState<RepairMaster | null>(null);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState<boolean>(false);
   const [activeCoupon, setActiveCoupon] = useState<UserCoupon | null>(null);
   const [estimateSubmitted, setEstimateSubmitted] = useState<boolean>(false);
+  const [cameraModelInput, setCameraModelInput] = useState<string>('Nikon FM2');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['셔터가 안 눌리거나 멈춤', '차광 스펀지(빛샘 현상)']);
+  const [detailsInput, setDetailsInput] = useState<string>('셔터막 끈적임 및 1/1000초 셔터 랙 증상 수리 및 전체 오버홀 희망합니다.');
+
+  const handleToggleSymptom = (sym: string) => {
+    if (selectedSymptoms.includes(sym)) {
+      setSelectedSymptoms(selectedSymptoms.filter((s) => s !== sym));
+    } else {
+      setSelectedSymptoms([...selectedSymptoms, sym]);
+    }
+  };
 
   const handleUseCoupon = (couponId: string) => {
     playShutterSound('slr');
@@ -296,8 +307,10 @@ export default function ClinicPage() {
                   <label className="font-bold text-vintage-800">카메라 모델명</label>
                   <input
                     type="text"
+                    value={cameraModelInput}
+                    onChange={(e) => setCameraModelInput(e.target.value)}
                     placeholder="예: Nikon FM2, Canon AE-1, Olympus Mju-II 등"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -314,9 +327,19 @@ export default function ClinicPage() {
                     ].map((symptom) => (
                       <label
                         key={symptom}
-                        className="flex items-center gap-2 p-2.5 rounded-xl border border-vintage-200 hover:bg-vintage-50 cursor-pointer text-[11px]"
+                        onClick={() => handleToggleSymptom(symptom)}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer text-[11px] transition-colors ${
+                          selectedSymptoms.includes(symptom)
+                            ? 'bg-vintage-100 border-terracotta text-vintage-900 font-semibold'
+                            : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                        }`}
                       >
-                        <input type="checkbox" className="text-terracotta rounded" />
+                        <input
+                          type="checkbox"
+                          checked={selectedSymptoms.includes(symptom)}
+                          readOnly
+                          className="text-terracotta rounded"
+                        />
                         <span>{symptom}</span>
                       </label>
                     ))}
@@ -327,8 +350,10 @@ export default function ClinicPage() {
                   <label className="font-bold text-vintage-800">세부 증상 설명 (선택)</label>
                   <textarea
                     rows={2}
+                    value={detailsInput}
+                    onChange={(e) => setDetailsInput(e.target.value)}
                     placeholder="언제부터 고장이 났는지, 셔터 소리가 어떻게 나는지 적어주시면 정확한 견적에 도움이 됩니다."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta resize-none text-vintage-900"
                   />
                 </div>
 
@@ -336,8 +361,9 @@ export default function ClinicPage() {
                   <label className="font-bold text-vintage-800">연락처 (알림톡 수신용)</label>
                   <input
                     type="tel"
+                    defaultValue="010-8291-7721"
                     placeholder="010-0000-0000"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -351,6 +377,12 @@ export default function ClinicPage() {
                   <button
                     onClick={() => {
                       playShutterSound('slr');
+                      submitRepairEstimate({
+                        cameraModel: cameraModelInput || 'Nikon FM2',
+                        symptoms: selectedSymptoms.length > 0 ? selectedSymptoms : ['전체 종합 점검 (오버홀)'],
+                        details: detailsInput || '종합 기능 점검 희망',
+                        masterName: selectedMaster ? `${selectedMaster.name} (${selectedMaster.shopName})` : '충무로·을지로 명장 협회 공방',
+                      });
                       setEstimateSubmitted(true);
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"

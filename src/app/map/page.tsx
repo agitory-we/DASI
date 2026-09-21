@@ -364,16 +364,25 @@ export default function MapPage() {
             )}
           </div>
 
-          {/* Action Button */}
-          <div className="pt-3 border-t border-vintage-200 flex gap-2">
+          {/* Action Buttons: Dual Naver Map & KakaoMap Route Deep Links */}
+          <div className="pt-3 border-t border-vintage-200 grid grid-cols-2 gap-2.5">
             <a
               href={`https://map.naver.com/v5/search/${encodeURIComponent(activeSpot.name)}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              className="py-3 px-3 rounded-xl bg-[#03C75A] hover:bg-[#02b350] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs"
             >
               <Navigation className="w-3.5 h-3.5" />
-              <span>네이버 지도로 길찾기</span>
+              <span>네이버 지도 길찾기</span>
+            </a>
+            <a
+              href={`https://map.kakao.com/link/to/${encodeURIComponent(activeSpot.name)},${activeSpot.lat},${activeSpot.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="py-3 px-3 rounded-xl bg-[#FEE500] hover:bg-[#ebd300] text-[#191919] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs"
+            >
+              <Navigation className="w-3.5 h-3.5 text-[#191919]" />
+              <span>카카오맵 길찾기</span>
             </a>
           </div>
         </div>

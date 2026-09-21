@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   Compass,
   Calendar,
@@ -12,8 +13,13 @@ import {
   CheckCircle2,
   Ticket,
   X,
-  ArrowRight
+  ArrowRight,
+  QrCode,
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
+import { useDasi } from '@/context/DasiContext';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 interface Experience {
   id: string;
@@ -34,9 +40,12 @@ interface Experience {
 }
 
 export default function ExperiencesPage() {
+  const { bookExperience } = useDasi();
   const [selectedType, setSelectedType] = useState<'all' | 'photo_walk' | 'master_class'>('all');
   const [selectedExp, setSelectedExp] = useState<Experience | null>(null);
   const [isBooked, setIsBooked] = useState(false);
+  const [withRentalPackage, setWithRentalPackage] = useState(false);
+  const [issuedTicketCode, setIssuedTicketCode] = useState('');
 
   const experiences: Experience[] = [
     {
@@ -240,22 +249,77 @@ export default function ExperiencesPage() {
             </div>
 
             {isBooked ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
+              <div className="text-center py-6 space-y-5 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                  <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h4 className="font-serif text-xl font-bold text-vintage-900">
-                  예매가 성공적으로 완료되었습니다!
-                </h4>
-                <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
-                  모바일 티켓이 발송되었습니다. 당일 집결 장소(<strong>{selectedExp.location}</strong>)로 시간 맞춰 와주세요.
-                </p>
-                <button
-                  onClick={() => setSelectedExp(null)}
-                  className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs font-semibold"
-                >
-                  확인
-                </button>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    모바일 입장 티켓 발급 완료
+                  </span>
+                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                    {selectedExp.type === 'photo_walk' ? '출사 클럽' : '명장 클래스'} 예매 완료
+                  </h4>
+                  <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
+                    예약이 확정되었습니다. 당일 집결 장소(<strong>{selectedExp.location}</strong>)에서 명단 확인 후 입장합니다.
+                  </p>
+                </div>
+
+                {/* Digital Mobile Ticket Card */}
+                <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200 text-left max-w-sm mx-auto space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-vintage-200/60 pb-2.5">
+                    <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                      <Ticket className="w-4 h-4 text-terracotta" />
+                      DASI 디지털 입장권
+                    </span>
+                    <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
+                      {issuedTicketCode || 'TKT-EXP-9921'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-vintage-700">
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">프로그램</span>
+                      <span className="font-bold text-vintage-900 truncate max-w-[180px]">{selectedExp.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">진행 호스트</span>
+                      <span className="font-semibold text-vintage-800">{selectedExp.hostName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">일시</span>
+                      <span className="font-semibold text-vintage-800">{selectedExp.dateTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">결제 금액</span>
+                      <span className="font-bold text-terracotta">
+                        {(withRentalPackage ? selectedExp.price - 10000 : selectedExp.price).toLocaleString()}원
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-900">
+                    💡 <strong>현장 혜택:</strong> 필름 1롤 무료 제공 및 현상소 스캔 쿠폰이 당일 현장에서 지급됩니다.
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto pt-2">
+                  <Link
+                    href="/cabinet"
+                    onClick={() => setSelectedExp(null)}
+                    className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-xs"
+                  >
+                    <span>내 캐비닛에서 티켓 확인</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <button
+                    onClick={() => setSelectedExp(null)}
+                    className="px-5 py-3 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                  >
+                    닫기
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
@@ -277,11 +341,35 @@ export default function ExperiencesPage() {
                   </ul>
                 </div>
 
+                {/* Rental Bundle Discount Toggle */}
+                <div
+                  onClick={() => setWithRentalPackage(!withRentalPackage)}
+                  className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                    withRentalPackage
+                      ? 'border-terracotta bg-terracotta/5'
+                      : 'border-vintage-200 hover:bg-vintage-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={withRentalPackage}
+                      onChange={() => {}}
+                      className="text-terracotta rounded"
+                    />
+                    <div>
+                      <div className="font-bold text-vintage-900">DASI 카메라 주말 렌탈 결합 할인</div>
+                      <div className="text-[10px] text-vintage-500">카메라 대여 고객 티켓 10,000원 즉시 할인</div>
+                    </div>
+                  </div>
+                  <span className="font-bold text-terracotta">-10,000원</span>
+                </div>
+
                 <div className="pt-2 flex items-center justify-between border-t border-vintage-100">
                   <div>
-                    <span className="text-vintage-400">참가 결제 금액</span>
-                    <div className="text-base font-bold text-terracotta">
-                      {selectedExp.price.toLocaleString()}원
+                    <span className="text-vintage-400">최종 예매 결제 금액</span>
+                    <div className="text-lg font-bold text-terracotta">
+                      {(withRentalPackage ? selectedExp.price - 10000 : selectedExp.price).toLocaleString()}원
                     </div>
                   </div>
 
@@ -293,7 +381,20 @@ export default function ExperiencesPage() {
                       취소
                     </button>
                     <button
-                      onClick={() => setIsBooked(true)}
+                      onClick={() => {
+                        playShutterSound('slr');
+                        const code = bookExperience({
+                          experienceId: selectedExp.id,
+                          title: selectedExp.title,
+                          hostName: selectedExp.hostName,
+                          location: selectedExp.location,
+                          dateTime: selectedExp.dateTime,
+                          price: withRentalPackage ? selectedExp.price - 10000 : selectedExp.price,
+                          hasRentalPackage: withRentalPackage,
+                        });
+                        setIssuedTicketCode(code);
+                        setIsBooked(true);
+                      }}
                       className="px-6 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                     >
                       예매 확정하기
