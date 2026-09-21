@@ -1,6 +1,20 @@
 // Web Audio API based Realistic Camera Shutter Synthesizer
+export function isAudioMuted(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('dasi_audio_muted') === 'true';
+}
+
+export function toggleAudioMute(): boolean {
+  if (typeof window === 'undefined') return false;
+  const current = isAudioMuted();
+  const next = !current;
+  localStorage.setItem('dasi_audio_muted', String(next));
+  return next;
+}
+
 export function playShutterSound(type: 'slr' | 'leaf' | 'compact' | 'ccd' = 'slr') {
   if (typeof window === 'undefined') return;
+  if (isAudioMuted()) return;
 
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;

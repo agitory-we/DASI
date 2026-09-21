@@ -16,17 +16,31 @@ import {
   Award,
   Share2,
   Compass,
-  Calendar
+  Calendar,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
+import { isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations } = useDasi();
+  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast } = useDasi();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    setMuted(isAudioMuted());
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = toggleAudioMute();
+    setMuted(next);
+    showToast(next ? '셔터 효과음이 음소거되었습니다.' : '셔터 효과음이 켜졌습니다.', 'info');
+  };
 
   const totalCabinetCount =
     rentingItems.filter((r) => !r.isConvertedToOwn).length +
@@ -156,6 +170,19 @@ export const Header: React.FC = () => {
 
           {/* Right Action Bar */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Shutter Sound Mute Toggle */}
+            <button
+              onClick={handleToggleSound}
+              className={`p-2 rounded-xl border transition-all shadow-2xs ${
+                muted
+                  ? 'bg-vintage-100 text-vintage-400 border-vintage-300'
+                  : 'bg-white hover:bg-vintage-100 text-terracotta border-vintage-200'
+              }`}
+              title={muted ? '셔터 효과음 켜기' : '셔터 효과음 끄기 (음소거)'}
+            >
+              {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+
             {/* Search Trigger */}
             <button
               onClick={() => setIsSearchOpen(true)}
