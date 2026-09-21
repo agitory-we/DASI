@@ -18,7 +18,9 @@ import {
   ChevronRight,
   Flame,
   Ticket,
-  Compass
+  Compass,
+  Share2,
+  FolderLock
 } from 'lucide-react';
 import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
@@ -73,7 +75,7 @@ export default function HomePage() {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-3 pt-4">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/rent"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-terracotta text-white text-sm sm:text-base font-semibold hover:bg-terracotta-light active:scale-98 transition-all shadow-md"
@@ -89,37 +91,6 @@ export default function HomePage() {
                 >
                   <MapPin className="w-4 h-4 text-terracotta" />
                   <span>주변 현상소·자판기 지도</span>
-                </Link>
-              </div>
-
-              {/* Quick Feature Badges */}
-              <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
-                <Link
-                  href="/ai-appraisal"
-                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-terracotta" />
-                  <span>사진 3장 AI 감정</span>
-                </Link>
-                <Link
-                  href="/experiences"
-                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
-                >
-                  <Compass className="w-3.5 h-3.5 text-terracotta" />
-                  <span>작가 출사 &amp; 장인 클래스</span>
-                </Link>
-                <Link
-                  href="/frame"
-                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-terracotta" />
-                  <span>인스타 필름프레임 생성</span>
-                </Link>
-                <Link
-                  href="/cabinet"
-                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
-                >
-                  <span>내 기기 &amp; 보증서 캐비닛</span>
                 </Link>
               </div>
             </div>
@@ -181,6 +152,79 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* QUICK HUB: 4 Core Capabilities */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/ai-appraisal"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                사진 3장 AI 감정
+              </div>
+              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
+                외관 등급과 최근 6개월 실거래 시세 즉시 산출
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/experiences"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                작가 출사 &amp; 장인 클래스
+              </div>
+              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
+                을지로 골목 출사 워크숍 &amp; 렌즈 분해 세척 강습
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/frame"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Share2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                인스타 필름프레임 생성기
+              </div>
+              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
+                내 사진에 기종·현상소 워터마크 입혀 PNG 다운로드
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/cabinet"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-vintage-900/10 text-vintage-900 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <FolderLock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                마이 캐비닛 &amp; 보증서
+              </div>
+              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
+                대여 기기 반납 관리, 소장 전환 &amp; 디지털 보증서
+              </p>
+            </div>
+          </Link>
         </div>
       </section>
 
