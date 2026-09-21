@@ -75,7 +75,33 @@ export function playShutterSound(type: 'slr' | 'leaf' | 'compact' | 'ccd' = 'slr
       osc2.start(secondClickTime);
       osc2.stop(secondClickTime + 0.04);
     }
+
+    // Trigger subtle visual flash effect
+    triggerCameraFlash();
   } catch (err) {
     console.error('Audio synthesis failed', err);
   }
+}
+
+/**
+ * Creates a momentary analog strobe flash overlay for tactile sensory feedback
+ */
+export function triggerCameraFlash() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  
+  const flash = document.createElement('div');
+  flash.className = 'fixed inset-0 pointer-events-none z-[9999] bg-white transition-opacity duration-150';
+  flash.style.opacity = '0.45';
+  document.body.appendChild(flash);
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      flash.style.opacity = '0';
+      setTimeout(() => {
+        if (flash.parentNode) {
+          flash.parentNode.removeChild(flash);
+        }
+      }, 150);
+    }, 40);
+  });
 }

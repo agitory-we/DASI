@@ -11,11 +11,19 @@ import {
   TrendingUp,
   FileCheck,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  Printer,
+  QrCode,
+  Check,
+  X
 } from 'lucide-react';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function AIAppraisalPage() {
   const [step, setStep] = useState<'upload' | 'analyzing' | 'result'>('upload');
+  const [analyzingProgress, setAnalyzingProgress] = useState(0);
+  const [analyzingText, setAnalyzingText] = useState('시리얼 넘버 데이터베이스 대조 중...');
+  const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<{ [key: string]: boolean }>({
     front: false,
     back: false,
@@ -23,6 +31,7 @@ export default function AIAppraisalPage() {
   });
 
   const handleUploadSimulate = (key: string) => {
+    playShutterSound('compact');
     setUploadedPhotos((prev) => ({ ...prev, [key]: true }));
   };
 
@@ -30,7 +39,22 @@ export default function AIAppraisalPage() {
 
   const handleStartAnalysis = () => {
     setStep('analyzing');
+    setAnalyzingProgress(15);
+    setAnalyzingText('외관 스크래치 및 황동 에이징 딥러닝 스캔 중...');
+
     setTimeout(() => {
+      setAnalyzingProgress(45);
+      setAnalyzingText('셔터막 구동계 마모도 및 렌즈부 곰팡이 패턴 대조 중...');
+    }, 900);
+
+    setTimeout(() => {
+      setAnalyzingProgress(75);
+      setAnalyzingText('국내외 10만 건 실거래가 및 매입 시세 밴드 연산 중...');
+    }, 1800);
+
+    setTimeout(() => {
+      setAnalyzingProgress(100);
+      playShutterSound('slr');
       setStep('result');
     }, 2800);
   };
@@ -38,6 +62,7 @@ export default function AIAppraisalPage() {
   const handleReset = () => {
     setUploadedPhotos({ front: false, back: false, serial: false });
     setStep('upload');
+    setAnalyzingProgress(0);
   };
 
   return (
@@ -180,26 +205,42 @@ export default function AIAppraisalPage() {
 
       {/* STEP 2: ANALYZING ANIMATION */}
       {step === 'analyzing' && (
-        <div className="rounded-3xl bg-white border border-vintage-200 p-12 text-center shadow-xs space-y-6">
-          <div className="w-20 h-20 rounded-full border-4 border-vintage-200 border-t-terracotta animate-spin mx-auto" />
-          <div className="space-y-2">
+        <div className="rounded-3xl bg-white border border-vintage-200 p-10 sm:p-14 text-center shadow-xs space-y-6 animate-fade-in max-w-xl mx-auto">
+          <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full border-4 border-vintage-100 border-t-terracotta animate-spin" />
+            <Sparkles className="w-7 h-7 text-terracotta absolute" />
+          </div>
+
+          <div className="space-y-3">
             <h3 className="font-serif text-2xl font-bold text-vintage-900">
-              AI가 카메라를 정밀 분석하고 있습니다
+              AI 비전 정밀 감정 중
             </h3>
-            <p className="text-xs text-vintage-600">
-              시리얼 넘버 데이터베이스 대조 중 · 외관 스크래치 결함 검출 중 · 최근 6개월 실거래 시세 밴드 연산 중...
+            <p className="text-xs text-vintage-600 min-h-[1.5rem] font-medium transition-all">
+              {analyzingText}
             </p>
+
+            {/* Visual Progress Bar */}
+            <div className="w-full bg-vintage-100 rounded-full h-2.5 overflow-hidden mt-4">
+              <div
+                className="bg-terracotta h-full transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${analyzingProgress}%` }}
+              />
+            </div>
+            <div className="text-[11px] font-mono text-vintage-400">
+              분석 완료도: {analyzingProgress}%
+            </div>
           </div>
         </div>
       )}
 
       {/* STEP 3: RESULT REPORT */}
       {step === 'result' && (
-        <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-lg space-y-6">
+        <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-lg space-y-6 animate-fade-in">
           {/* Certificate Header */}
           <div className="bg-gradient-to-r from-vintage-900 to-vintage-800 text-white p-6 sm:p-8 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono tracking-widest text-amber-300 uppercase">
+              <span className="text-[10px] font-mono tracking-widest text-amber-300 uppercase flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                 DASI AI CERTIFICATE #2026-N8921
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-cream">
@@ -260,13 +301,84 @@ export default function AIAppraisalPage() {
               </button>
 
               <button
-                onClick={() => alert('DASI 마켓 판매 등록 및 제휴 매장 무료 기능 검수 접수가 완료되었습니다!')}
+                onClick={() => typeof window !== 'undefined' && window.print()}
+                className="py-3 px-4 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100 flex items-center justify-center gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>감정서 인쇄 / PDF 저장</span>
+              </button>
+
+              <button
+                onClick={() => setIsConsignmentModalOpen(true)}
                 className="flex-1 py-3 px-6 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-xs"
               >
-                <span>이 감정가로 DASI 마켓에 등록 / 제휴 매장에 판매 위탁하기</span>
+                <span>이 감정가로 DASI 마켓 판매 위탁 신청</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONSIGNMENT APPLICATION MODAL */}
+      {isConsignmentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <Check className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif text-lg font-bold text-vintage-900">
+                  판매 위탁 &amp; 무료 장인 검수 접수
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsConsignmentModalOpen(false)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-vintage-700">
+              <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">감정 기종</span>
+                  <span className="font-bold text-vintage-900">Nikon FM2 (B+)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">희망 판매가</span>
+                  <span className="font-bold text-terracotta">380,000원 (권장 범위 내)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">지정 검수처</span>
+                  <span className="font-semibold text-vintage-800">충무로 보성광학 (김상철 장인)</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-700" />
+                  <span>DASI 위탁 판매 안심 보증</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  매장 방문 또는 택배 발송 시 명장님이 셔터 속도 측정기와 콜리메이터로 <strong>무료 기능 검수</strong>를 진행하며, 통과 시 DASI 마켓에 <strong>&apos;장인 인증 마크&apos;</strong>와 함께 등록됩니다.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-800 rounded-xl text-[11px] font-medium">
+                <QrCode className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>접수 번호: DASI-APP-2026-N89 (카카오 알림톡 발송 완료)</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsConsignmentModalOpen(false)}
+              className="w-full py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors"
+            >
+              확인 및 접수 완료
+            </button>
           </div>
         </div>
       )}

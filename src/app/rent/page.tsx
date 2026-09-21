@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Camera, CameraCategory, ConditionGrade } from '@/types';
 import { mockCameras, mockPickupShops } from '@/data/mockData';
 import {
@@ -14,7 +15,9 @@ import {
   Info,
   X,
   HeartHandshake,
-  Volume2
+  Volume2,
+  QrCode,
+  Receipt
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -246,28 +249,83 @@ export default function RentPage() {
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6">
               {isBooked ? (
-                <div className="text-center py-8 space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                    <Check className="w-8 h-8" />
+                <div className="text-center py-6 space-y-5 animate-fade-in">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                    <Check className="w-7 h-7" />
                   </div>
-                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
-                    대여 예약이 완료되었습니다!
-                  </h4>
-                  <p className="text-xs sm:text-sm text-vintage-600 max-w-md mx-auto leading-relaxed">
-                    선택하신 <strong>{currentShop.name}</strong>에서 장인님이 기다리고 계십니다.
-                    기기 픽업 시 <strong>10분 온보딩 강습</strong>과 함께 필름을 장착해 드립니다.
-                  </p>
-                  <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs text-left max-w-sm mx-auto space-y-2">
-                    <div>📍 <strong>픽업 매장:</strong> {currentShop.name} ({currentShop.address})</div>
-                    <div>👤 <strong>담당 명장:</strong> {currentShop.masterName} ({currentShop.contact})</div>
-                    <div>🕒 <strong>영업 시간:</strong> {currentShop.openHours}</div>
+                  
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      픽업 예약 확정 · 가승인 완료
+                    </span>
+                    <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                      {selectedCamera.name} 대여 완료
+                    </h4>
+                    <p className="text-xs text-vintage-600 max-w-md mx-auto leading-relaxed">
+                      선택하신 <strong>{currentShop.name}</strong> 장인님께 예약 정보가 전달되었습니다.<br />
+                      현장 픽업 시 <strong>10분 온보딩 강습</strong> 및 필름 장착이 무료 지원됩니다.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => setSelectedCamera(null)}
-                    className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs font-semibold"
-                  >
-                    확인
-                  </button>
+
+                  {/* Digital Mobile Voucher Card */}
+                  <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200/80 text-left max-w-md mx-auto space-y-4 shadow-xs relative overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-vintage-200/60 pb-3">
+                      <div className="flex items-center gap-2">
+                        <QrCode className="w-5 h-5 text-terracotta" />
+                        <span className="text-xs font-bold text-vintage-900">DASI 모바일 픽업 바우처</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
+                        RTO-{Math.floor(100000 + Math.random() * 900000)}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs text-vintage-700">
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">대여 기종</span>
+                        <span className="font-bold text-vintage-900">{selectedCamera.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">대여 일정</span>
+                        <span className="font-semibold text-vintage-800">{rentalDays}일 대여</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">픽업 장소</span>
+                        <span className="font-semibold text-vintage-900 text-right">{currentShop.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">담당 명장</span>
+                        <span className="font-semibold text-vintage-800">{currentShop.masterName} ({currentShop.contact})</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-900 space-y-0.5">
+                      <div className="font-bold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Rent-to-Own 소장 전환 혜택 유지</span>
+                      </div>
+                      <p className="text-[10px] text-amber-800">
+                        대여 기간 종료 전 언제든지 이미 결제한 {(selectedCamera.rentalPricePerDay * rentalDays).toLocaleString()}원을 100% 공제하고 영구 소장하실 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto pt-2">
+                    <Link
+                      href="/cabinet"
+                      onClick={() => setSelectedCamera(null)}
+                      className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                    >
+                      <span>내 캐비닛에서 예약 확인하기</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <button
+                      onClick={() => setSelectedCamera(null)}
+                      className="px-5 py-3 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                    >
+                      계속 둘러보기
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>

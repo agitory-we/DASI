@@ -124,18 +124,49 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
         {/* Results List */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
           {!trimmed ? (
-            <div className="space-y-4 text-xs text-vintage-500">
-              <div className="font-semibold text-vintage-800">추천 검색어</div>
-              <div className="flex flex-wrap gap-2">
-                {['Nikon FM2', '망우삼림', '성수동 외국인 스냅', '오버홀 명장', '경복궁 야경'].map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => setQuery(tag)}
-                    className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 transition-colors"
-                  >
-                    #{tag}
-                  </button>
-                ))}
+            <div className="space-y-6 text-xs text-vintage-500 py-2 animate-fade-in">
+              {/* Popular Tags */}
+              <div className="space-y-2.5">
+                <div className="font-semibold text-vintage-800 flex items-center justify-between">
+                  <span>🔥 실시간 인기 검색어</span>
+                  <span className="text-[11px] text-vintage-400 font-normal">자주 찾는 키워드</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['Nikon FM2', '망우삼림', '성수동 외국인 스냅', '오버홀 명장', '경복궁 야경', '후지 X100V', '롤라이 35'].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setQuery(tag)}
+                      className="px-3 py-1.5 rounded-xl bg-vintage-100/80 hover:bg-terracotta hover:text-white text-vintage-800 transition-all font-medium"
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Jump Tiles */}
+              <div className="space-y-2.5 pt-2 border-t border-vintage-100">
+                <div className="font-semibold text-vintage-800">⚡ 빠른 서비스 바로가기</div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { label: '카메라 렌탈', href: '/rent', icon: '📷', sub: 'Rent-to-Own' },
+                    { label: '아날로그 맵', href: '/map', icon: '📍', sub: '현상소·자판기' },
+                    { label: '로컬 포토긱', href: '/gigs', icon: '🤝', sub: '1:1 스냅 의뢰' },
+                    { label: '명장 클리닉', href: '/clinic', icon: '🔧', sub: '무료 견적 진단' },
+                  ].map((item) => (
+                    <button
+                      key={item.href}
+                      onClick={() => handleNavigate(item.href)}
+                      className="p-3 rounded-2xl border border-vintage-200/80 hover:border-terracotta bg-vintage-50/50 hover:bg-white text-left transition-all group"
+                    >
+                      <div className="text-xl mb-1">{item.icon}</div>
+                      <div className="font-bold text-vintage-900 group-hover:text-terracotta text-xs transition-colors">
+                        {item.label}
+                      </div>
+                      <div className="text-[10px] text-vintage-400">{item.sub}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : totalResults === 0 ? (
