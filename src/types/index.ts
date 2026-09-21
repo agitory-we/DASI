@@ -131,3 +131,21 @@ export interface EventOrHotSpot {
   imageUrl: string;
   tags: string[];
 }
+
+export interface Experience {
+  id: string;
+  type: 'photo_walk' | 'master_class';
+  title: string;
+  hostName: string;
+  hostRole: string;
+  hostAvatar: string;
+  location: string;
+  dateTime: string;
+  duration: string;
+  price: number;
+  rentalPackageDiscount: string;
+  capacity: string;
+  description: string;
+  imageUrl: string;
+  included: string[];
+}

@@ -1,4 +1,4 @@
-import { Camera, PickupShop, AnalogSpot, PhotoGig, RepairMaster, UserCoupon, EventOrHotSpot } from '@/types';
+import { Camera, PickupShop, AnalogSpot, PhotoGig, RepairMaster, UserCoupon, EventOrHotSpot, Experience } from '@/types';
 
 export const mockPickupShops: PickupShop[] = [
   {
@@ -460,5 +460,59 @@ export const mockEventsAndHotSpots: EventOrHotSpot[] = [
     tips: '드라마 <나의 아저씨> 촬영지로 유명한 도심 속 옛 철길 건널목입니다. 기차가 통과할 때 차단기와 역광 실루엣을 노려보세요.',
     imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
     tags: ['철길감성', '나의아저씨', '영화스틸컷', '역광포토'],
+  }
+];
+
+export const mockExperiences: Experience[] = [
+  {
+    id: 'exp-1',
+    type: 'photo_walk',
+    title: '을지로 골목길 매직아워 출사 & 흑백 필름 감성 워크',
+    hostName: '김민우 사진작가',
+    hostRole: '인스타그램 12만 빈티지 스트리트 포토그래퍼',
+    hostAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    location: '을지로3가역 세운상가 3층 보행로 집결',
+    dateTime: '2026.09.26 (토) 16:30 - 19:00',
+    duration: '2시간 30분',
+    price: 45000,
+    rentalPackageDiscount: 'DASI 카메라 렌탈 고객 10,000원 즉시 할인',
+    capacity: '정원 8명 (잔여 2석)',
+    description: '빛과 그림자가 드라마틱하게 변하는 골목길에서 레인지파인더 수동 초점 맞추는 법과 흑백 필름의 구도를 1:1로 코칭해 드립니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    included: ['코닥 Tri-X 400 흑백 필름 1롤 무료 제공', '을지로 망우삼림 당일 스캔권 포함', '현장 1:1 사진 구도 피드백'],
+  },
+  {
+    id: 'exp-2',
+    type: 'master_class',
+    title: '정인수 명장에게 배우는 필름카메라 렌즈 분해 & 자가 클리닝 클래스',
+    hostName: '정인수 명장',
+    hostRole: '을지로 신성카메라 (수리 경력 42년)',
+    hostAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&auto=format&fit=crop&q=80',
+    location: '을지로 대림상가 3층 신성카메라 수리 공방',
+    dateTime: '2026.09.27 (일) 14:00 - 16:30',
+    duration: '2시간 30분',
+    price: 60000,
+    rentalPackageDiscount: 'DASI 케어 회원 15,000원 제휴 쿠폰 사용 가능',
+    capacity: '정원 5명 (선착순 밀착 지도)',
+    description: '장롱 속 먼지 낀 수동 렌즈를 직접 전용 렌즈 스패너로 분해하고, 곰팡이 제거제 및 헬리코이드 그리스를 도포하는 장인 비법을 전수합니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+    included: ['자가 정비용 고급 극세사 융 & 블로워 증정', '전문 렌즈 분해 공구 실습 대여', '내 카메라 1대 무상 종합 건강검진'],
+  },
+  {
+    id: 'exp-3',
+    type: 'photo_walk',
+    title: '성수동 붉은 벽돌 & 카페거리 필름 스냅 산책',
+    hostName: '이수아 작가',
+    hostRole: '라이프스타일 매거진 필진',
+    hostAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    location: '성수역 3번 출구 필름로그 성수점 앞',
+    dateTime: '2026.10.03 (토) 14:00 - 16:30',
+    duration: '2시간 30분',
+    price: 40000,
+    rentalPackageDiscount: 'DASI 카메라 렌탈 고객 10,000원 즉시 할인',
+    capacity: '정원 10명 (잔여 4석)',
+    description: '공장 지대와 세련된 쇼룸이 공존하는 성수동 골목에서 필름 감성의 인물 샷과 텍스처를 포착하는 노하우를 나눕니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80',
+    included: ['후지 C200 컬러 필름 1롤 제공', '성수 카페 음료 1잔 무료', '베스트 컷 인화권 2매'],
   }
 ];

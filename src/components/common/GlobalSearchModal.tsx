@@ -11,14 +11,16 @@ import {
   Users,
   Wrench,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Ticket
 } from 'lucide-react';
 import {
   mockCameras,
   mockAnalogSpots,
   mockPhotoGigs,
   mockMasters,
-  mockEventsAndHotSpots
+  mockEventsAndHotSpots,
+  mockExperiences
 } from '@/data/mockData';
 
 interface GlobalSearchModalProps {
@@ -82,12 +84,21 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       )
     : [];
 
+  const filteredExperiences = trimmed
+    ? mockExperiences.filter((exp) =>
+        exp.title.toLowerCase().includes(trimmed) ||
+        exp.hostName.toLowerCase().includes(trimmed) ||
+        exp.location.toLowerCase().includes(trimmed)
+      )
+    : [];
+
   const totalResults =
     filteredCameras.length +
     filteredSpots.length +
     filteredGigs.length +
     filteredMasters.length +
-    filteredExplore.length;
+    filteredExplore.length +
+    filteredExperiences.length;
 
   const handleNavigate = (href: string) => {
     onClose();
@@ -150,9 +161,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {[
                     { label: '카메라 렌탈', href: '/rent', icon: '📷', sub: 'Rent-to-Own' },
-                    { label: '아날로그 맵', href: '/map', icon: '📍', sub: '현상소·자판기' },
+                    { label: '아날로그 맵', href: '/map', icon: '📍', sub: '현상소·스캐너' },
                     { label: '로컬 포토긱', href: '/gigs', icon: '🤝', sub: '1:1 스냅 의뢰' },
                     { label: '명장 클리닉', href: '/clinic', icon: '🔧', sub: '무료 견적 진단' },
+                    { label: '출사 & 클래스', href: '/experiences', icon: '🎟️', sub: '주말 워크숍' },
+                    { label: 'AI 가치 감정', href: '/ai-appraisal', icon: '✨', sub: '외관 등급·시세' },
+                    { label: '감성 프레임', href: '/frame', icon: '🖼️', sub: '인스타 4:5' },
+                    { label: 'DASI Pro', href: '/pro', icon: '🏛️', sub: 'B2B 스튜디오' },
                   ].map((item) => (
                     <button
                       key={item.href}
@@ -293,6 +308,33 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                         <div>
                           <div className="font-bold text-vintage-900">{exp.title}</div>
                           <div className="text-[11px] text-vintage-500">{exp.location}</div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-vintage-400" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Experiences */}
+              {filteredExperiences.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-bold text-vintage-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <Ticket className="w-3.5 h-3.5 text-terracotta" />
+                    <span>출사 &amp; 명장 클래스 ({filteredExperiences.length})</span>
+                  </div>
+                  <div className="divide-y divide-vintage-100 border border-vintage-100 rounded-2xl overflow-hidden">
+                    {filteredExperiences.map((exp) => (
+                      <div
+                        key={exp.id}
+                        onClick={() => handleNavigate('/experiences')}
+                        className="p-3 bg-white hover:bg-vintage-50 flex items-center justify-between cursor-pointer transition-colors"
+                      >
+                        <div>
+                          <div className="font-bold text-vintage-900">{exp.title}</div>
+                          <div className="text-[11px] text-vintage-500">
+                            {exp.hostName} · {exp.location} · {exp.price.toLocaleString()}원
+                          </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-vintage-400" />
                       </div>

@@ -197,14 +197,40 @@ export default function ExplorePage() {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-vintage-100 text-vintage-800 flex items-center justify-between">
-                <span>📍 이 출사지 인근 제휴 현상소 확인</span>
-                <a
-                  href="/map"
-                  className="font-bold text-terracotta hover:underline"
-                >
-                  아날로그 맵 열기 →
-                </a>
+              {/* Cross-selling Action Bridge */}
+              <div className="space-y-2 pt-1">
+                <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider">
+                  연계 서비스 바로가기
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <a
+                    href="/rent"
+                    className="p-2.5 rounded-xl border border-vintage-200 hover:border-terracotta bg-vintage-50 hover:bg-white text-center transition-all group"
+                  >
+                    <div className="text-sm">📷</div>
+                    <div className="text-[11px] font-bold text-vintage-900 group-hover:text-terracotta">
+                      추천 카메라 렌탈
+                    </div>
+                  </a>
+                  <a
+                    href="/gigs"
+                    className="p-2.5 rounded-xl border border-vintage-200 hover:border-terracotta bg-vintage-50 hover:bg-white text-center transition-all group"
+                  >
+                    <div className="text-sm">🤝</div>
+                    <div className="text-[11px] font-bold text-vintage-900 group-hover:text-terracotta">
+                      이 장소 스냅 작가
+                    </div>
+                  </a>
+                  <a
+                    href="/map"
+                    className="p-2.5 rounded-xl border border-vintage-200 hover:border-terracotta bg-vintage-50 hover:bg-white text-center transition-all group"
+                  >
+                    <div className="text-sm">📍</div>
+                    <div className="text-[11px] font-bold text-vintage-900 group-hover:text-terracotta">
+                      인근 제휴 현상소
+                    </div>
+                  </a>
+                </div>
               </div>
             </div>
 

@@ -22,7 +22,7 @@ import {
   Share2,
   FolderLock
 } from 'lucide-react';
-import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
+import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots, mockExperiences } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
 
 export default function HomePage() {
@@ -630,6 +630,149 @@ export default function HomePage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* NEW: ANALOG ACADEMY EXPERIENCES & WORKSHOPS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
+              <Compass className="w-4 h-4" />
+              <span>DASI Experiences &amp; Workshops</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
+              주말 골목 출사 워크숍 &amp; 40년 명장 정비 클래스
+            </h2>
+            <p className="text-sm text-vintage-600 mt-1">
+              인스타 유명 작가와 걷는 을지로 매직아워 출사부터, 내 손으로 렌즈를 분해 청소해보는 장인 실습까지.
+            </p>
+          </div>
+          <Link
+            href="/experiences"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
+          >
+            <span>전체 클래스 &amp; 출사 보기</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {mockExperiences.slice(0, 2).map((exp) => (
+            <div
+              key={exp.id}
+              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group"
+            >
+              <div>
+                <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
+                  <img
+                    src={exp.imageUrl}
+                    alt={exp.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
+                    {exp.type === 'photo_walk' ? '골목길 출사 워크' : '장인 정비 클래스'}
+                  </div>
+                  <div className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-lg bg-amber-500/90 text-white text-[10px] font-bold">
+                    {exp.capacity}
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-vintage-500">
+                    <Clock className="w-3.5 h-3.5 text-terracotta" />
+                    <span>{exp.dateTime}</span>
+                  </div>
+                  <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors leading-snug">
+                    {exp.title}
+                  </h3>
+                  <div className="flex items-center gap-2 pt-1">
+                    <img
+                      src={exp.hostAvatar}
+                      alt={exp.hostName}
+                      className="w-8 h-8 rounded-full object-cover border border-vintage-200"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-vintage-900">{exp.hostName}</div>
+                      <div className="text-[10px] text-vintage-500">{exp.hostRole}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 pt-0 border-t border-vintage-100 flex items-center justify-between mt-2">
+                <div>
+                  <div className="text-[10px] text-emerald-700 font-bold">{exp.rentalPackageDiscount}</div>
+                  <div className="text-lg font-bold text-vintage-900">{exp.price.toLocaleString()}원</div>
+                </div>
+                <Link
+                  href="/experiences"
+                  className="px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs"
+                >
+                  모바일 티켓 예약
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* NEW: DUAL INTERACTIVE BANNERS (AI APPRAISAL & FRAME MAKER) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Banner 1: AI Camera Appraisal */}
+          <div className="p-8 rounded-3xl bg-gradient-to-br from-[#2D241E] to-[#1E1813] text-white space-y-5 border border-vintage-800 shadow-xl flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>DASI Vision AI 감정 엔진</span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight">
+                장롱 속 잠든 내 카메라, <br />
+                사진 3장으로 AI 시세 감정
+              </h3>
+              <p className="text-xs sm:text-sm text-vintage-300 leading-relaxed">
+                외관 사진만 올리면 10만 건의 국내외 실거래가와 대조하여 모델명, 연식, 외관 등급, 즉시 매입가를 산출하고 마이 캐비닛에 디지털 정품 보증서로 등록합니다.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href="/ai-appraisal"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-md"
+              >
+                <span>무료 AI 감정 시작하기</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Banner 2: Analog Frame Maker */}
+          <div className="p-8 rounded-3xl bg-[#FAF6EE] text-vintage-900 space-y-5 border border-vintage-300 shadow-sm flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
+                <Share2 className="w-3.5 h-3.5" />
+                <span>DASI Analog Frame Maker</span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight text-vintage-900">
+                인스타그램 4:5 감성, <br />
+                필름 메타데이터 프레임 입히기
+              </h3>
+              <p className="text-xs sm:text-sm text-vintage-600 leading-relaxed">
+                스마트폰이나 디카로 찍은 사진에 카메라 기종, 현상소 색감, 날짜 워터마크를 자동으로 합성하여 고화질 다운로드하거나 장인의 원목 액자로 주문하세요.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href="/frame"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs sm:text-sm font-bold transition-colors shadow-xs"
+              >
+                <span>감성 프레임 생성기 열기</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
