@@ -15,8 +15,12 @@ import {
   X,
   Phone,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  QrCode,
+  Truck,
+  Check
 } from 'lucide-react';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ClinicPage() {
   const { coupons, useCoupon } = useDasi();
@@ -26,6 +30,7 @@ export default function ClinicPage() {
   const [estimateSubmitted, setEstimateSubmitted] = useState<boolean>(false);
 
   const handleUseCoupon = (couponId: string) => {
+    playShutterSound('slr');
     useCoupon(couponId);
     setActiveCoupon(null);
   };
@@ -223,21 +228,66 @@ export default function ClinicPage() {
             </div>
 
             {estimateSubmitted ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
+              <div className="text-center py-6 space-y-5 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+                  <Check className="w-7 h-7" />
                 </div>
-                <h4 className="font-serif text-xl font-bold text-vintage-900">
-                  견적 요청이 접수되었습니다!
-                </h4>
-                <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
-                  명장님께서 증상을 검토 후 <strong>오늘 중으로 예상 견적과 수리 기간</strong>을 카카오 알림톡으로 안내해 드립니다.
-                </p>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    장인 1:1 수리 진단 접수 완료
+                  </span>
+                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
+                    견적 요청 접수 완료
+                  </h4>
+                  <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
+                    <strong>{selectedMaster ? `${selectedMaster.name} 명장님` : '충무로·을지로 명장 협회'}</strong>께 증상 데이터가 전달되었습니다.<br />
+                    당일 내 예상 견적 및 정비 일정이 알림톡으로 전송됩니다.
+                  </p>
+                </div>
+
+                {/* Repair Voucher Card */}
+                <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200 text-left max-w-sm mx-auto space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-vintage-200/60 pb-2.5">
+                    <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                      <Wrench className="w-4 h-4 text-terracotta" />
+                      닥터 DASI 사전 진단 접수증
+                    </span>
+                    <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
+                      EST-{Math.floor(100000 + Math.random() * 900000)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-vintage-700">
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">담당 명장</span>
+                      <span className="font-bold text-vintage-900">
+                        {selectedMaster ? `${selectedMaster.name} (${selectedMaster.shopName})` : '장인 협회 최적 공방 매칭'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vintage-500">진단 방식</span>
+                      <span className="font-semibold text-emerald-800">무료 온라인 사전 견적</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-vintage-500">안심 수거</span>
+                      <span className="text-[11px] font-bold text-terracotta flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>우체국 안심 픽업 박스 지원</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-900">
+                    🔒 <strong>DASI 무상 재수리 보증:</strong> 공식 명장 수리실에서 정비된 기기는 6개월간 동일 증상 발생 시 100% 무상 재정비가 보증됩니다.
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setIsEstimateModalOpen(false)}
-                  className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs font-semibold"
+                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
                 >
-                  확인
+                  확인 및 닫기
                 </button>
               </div>
             ) : (
@@ -299,8 +349,11 @@ export default function ClinicPage() {
                     취소
                   </button>
                   <button
-                    onClick={() => setEstimateSubmitted(true)}
-                    className="flex-1 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors"
+                    onClick={() => {
+                      playShutterSound('slr');
+                      setEstimateSubmitted(true);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                   >
                     견적 요청 접수하기
                   </button>
