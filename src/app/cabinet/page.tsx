@@ -49,6 +49,17 @@ export default function CabinetPage() {
 
   const activeRentings = rentingItems.filter((r) => !r.isConvertedToOwn);
   const activeRenting = activeRentings[0] || null;
+  const [selectedFilmRoll, setSelectedFilmRoll] = useState<{
+    id: string;
+    title: string;
+    filmType: string;
+    labName: string;
+    scannedDate: string;
+    totalPhotos: number;
+    previewUrl: string;
+    photos: string[];
+  } | null>(null);
+  const [selectedPhotoViewer, setSelectedPhotoViewer] = useState<string | null>(null);
 
   // Mock Scanned Film Rolls
   const mockFilmRolls = [
@@ -56,21 +67,37 @@ export default function CabinetPage() {
       id: 'roll-1',
       title: '을지로 & 세운상가 골목 출사',
       filmType: 'Kodak Portra 400 (36컷)',
-      labName: '망우삼림 을지로 (SP3000 스캔)',
+      labName: '망우삼림 을지로 (Fuji Frontier SP3000 스캔)',
       scannedDate: '2026.09.21',
       status: 'scanned',
       previewUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
       totalPhotos: 36,
+      photos: [
+        'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1000&auto=format&fit=crop&q=80'
+      ]
     },
     {
       id: 'roll-2',
       title: '경복궁 가을 야간개장 한복 스냅',
-      filmType: 'Fuji Superia X-TRA 400',
-      labName: '고래사진관 충무로 (Noritsu HS-1800)',
+      filmType: 'Fuji Superia X-TRA 400 (37컷)',
+      labName: '고래사진관 충무로 (Noritsu HS-1800 스캔)',
       scannedDate: '2026.09.18',
       status: 'scanned',
       previewUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
       totalPhotos: 37,
+      photos: [
+        'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1519741497674-611481863552?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80'
+      ]
     },
   ];
 
@@ -606,20 +633,30 @@ export default function CabinetPage() {
                     </div>
                   </div>
 
-                  <div className="p-5 pt-0 flex gap-2">
-                    <a
-                      href="/frame"
-                      className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold text-center transition-colors"
-                    >
-                      감성 프레임 입히기
-                    </a>
+                  <div className="p-5 pt-0 space-y-2">
                     <button
-                      onClick={() => showToast(`[${roll.title}] 원본 압축 ZIP 파일 다운로드가 시작되었습니다.`, 'info')}
-                      className="px-4 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-700 text-xs font-semibold flex items-center gap-1.5"
+                      onClick={() => setSelectedFilmRoll(roll)}
+                      className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                     >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>전체 다운로드</span>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      <span>웹 갤러리 열기 ({roll.totalPhotos}컷 보기)</span>
                     </button>
+
+                    <div className="flex gap-2">
+                      <a
+                        href="/frame"
+                        className="flex-1 py-2 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-semibold text-center transition-colors"
+                      >
+                        감성 프레임 입히기
+                      </a>
+                      <button
+                        onClick={() => showToast(`[${roll.title}] 원본 압축 ZIP 파일 다운로드가 시작되었습니다.`, 'info')}
+                        className="px-4 py-2 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-700 text-xs font-semibold flex items-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>ZIP 다운</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1047,6 +1084,119 @@ export default function CabinetPage() {
             >
               닫기
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* SCANNED FILM ROLL WEB GALLERY MODAL */}
+      {selectedFilmRoll && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-vintage-100 flex items-center justify-between bg-vintage-50/70">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                    {selectedFilmRoll.filmType}
+                  </span>
+                  <span className="text-xs text-vintage-500">{selectedFilmRoll.scannedDate} 스캔</span>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-vintage-900 mt-1">
+                  {selectedFilmRoll.title}
+                </h3>
+                <p className="text-xs text-vintage-600">
+                  현상소: {selectedFilmRoll.labName} · 총 {selectedFilmRoll.totalPhotos}컷 인덱스
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedFilmRoll(null)}
+                className="p-2 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Gallery Grid */}
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {selectedFilmRoll.photos.map((photo, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setSelectedPhotoViewer(photo)}
+                    className="relative aspect-square rounded-2xl overflow-hidden bg-vintage-100 border border-vintage-200 cursor-pointer group hover:shadow-md transition-all"
+                  >
+                    <img
+                      src={photo}
+                      alt={`Cut ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-bold px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs transition-opacity">
+                        #{idx + 1} 크게보기
+                      </span>
+                    </div>
+                    <span className="absolute bottom-1.5 left-2 text-[10px] font-mono text-white/90 drop-shadow">
+                      EXP {String(idx + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-vintage-100 bg-vintage-50 flex items-center justify-between">
+              <span className="text-xs text-vintage-600">
+                사진을 클릭하면 큰 화면으로 감상하거나 프레임 생성기로 연결됩니다.
+              </span>
+              <div className="flex gap-2">
+                <a
+                  href="/frame"
+                  className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold shadow-xs"
+                >
+                  프레임 메이커로 이동
+                </a>
+                <button
+                  onClick={() => setSelectedFilmRoll(null)}
+                  className="px-4 py-2 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SINGLE PHOTO LIGHTBOX VIEWER */}
+      {selectedPhotoViewer && (
+        <div
+          onClick={() => setSelectedPhotoViewer(null)}
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-2xl max-h-[85vh] rounded-3xl overflow-hidden bg-vintage-900 border border-vintage-800 shadow-2xl flex flex-col cursor-default"
+          >
+            <button
+              onClick={() => setSelectedPhotoViewer(null)}
+              className="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white bg-black/50 rounded-full backdrop-blur-xs"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src={selectedPhotoViewer}
+              alt="High res photo"
+              className="w-full h-auto max-h-[75vh] object-contain"
+            />
+            <div className="p-4 bg-vintage-900/90 text-white flex items-center justify-between border-t border-white/10">
+              <span className="text-xs text-vintage-300">DASI Lab Web Scanner 3000dpi High-Res</span>
+              <a
+                href="/frame"
+                className="px-3.5 py-1.5 rounded-xl bg-terracotta text-white text-xs font-semibold hover:bg-terracotta-light"
+              >
+                이 사진에 프레임 입히기 →
+              </a>
+            </div>
           </div>
         </div>
       )}
