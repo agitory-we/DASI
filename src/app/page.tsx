@@ -25,8 +25,27 @@ import {
 import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots, mockExperiences } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
 
+import { Bell, Heart } from 'lucide-react';
+
 export default function HomePage() {
-  const { isWelcomeClaimed, claimWelcomeCoupons } = useDasi();
+  const {
+    isWelcomeClaimed,
+    claimWelcomeCoupons,
+    rentingItems,
+    ownedItems,
+    bookedGigs,
+    bookedExperiences,
+    repairEstimates,
+    proConsultations,
+    savedSpotIds,
+    showToast,
+  } = useDasi();
+
+  const activeRenting = rentingItems.find(r => !r.isConvertedToOwn) || null;
+  const totalCabinet = rentingItems.filter(r => !r.isConvertedToOwn).length
+    + ownedItems.length + bookedGigs.length + bookedExperiences.length
+    + repairEstimates.length + proConsultations.length;
+
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -227,6 +246,81 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* PERSONAL DASHBOARD WIDGET — 나의 활성 대여·예약 현황 */}
+      {totalCabinet > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl bg-gradient-to-br from-vintage-900 to-[#1E1813] border border-vintage-800 p-6 sm:p-8 text-white overflow-hidden relative">
+            {/* Background decoration */}
+            <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-terracotta/10 blur-3xl pointer-events-none" />
+            <div className="absolute right-20 bottom-0 w-32 h-32 rounded-full bg-amber-500/5 blur-2xl pointer-events-none" />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>나의 DASI 활성 현황</span>
+                </div>
+                <h2 className="font-serif text-xl sm:text-2xl font-bold">
+                  마이 캐비닛에 {totalCabinet}건이 있습니다
+                </h2>
+                {activeRenting && (
+                  <p className="text-xs text-vintage-300 flex items-center gap-1.5 mt-1">
+                    <Camera className="w-3.5 h-3.5 text-terracotta-light shrink-0" />
+                    <span>
+                      <strong className="text-white">{activeRenting.name}</strong> 대여 진행 중
+                      {activeRenting.purchaseTotal > 0 && ` · 소장 전환 ${Math.round((activeRenting.rentalPaid / activeRenting.purchaseTotal) * 100)}% 달성`}
+                    </span>
+                  </p>
+                )}
+              </div>
+
+              {/* Stats strip */}
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 shrink-0">
+                {[
+                  { label: '대여 중', value: rentingItems.filter(r => !r.isConvertedToOwn).length, color: 'text-terracotta-light' },
+                  { label: '소장 컬렉션', value: ownedItems.length, color: 'text-amber-300' },
+                  { label: '스냅 예약', value: bookedGigs.length + bookedExperiences.length, color: 'text-emerald-300' },
+                  { label: '수리 접수', value: repairEstimates.length, color: 'text-blue-300' },
+                  { label: '찜한 스팟', value: savedSpotIds.length, color: 'text-rose-300' },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                    <div className={`text-xl font-bold font-serif ${stat.color}`}>{stat.value}</div>
+                    <div className="text-[10px] text-vintage-400 mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center gap-3 relative z-10">
+              <Link
+                href="/cabinet"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <FolderLock className="w-3.5 h-3.5" />
+                <span>마이 캐비닛 전체 보기</span>
+              </Link>
+              {activeRenting && (
+                <Link
+                  href="/cabinet"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/10"
+                >
+                  <span>Rent-to-Own 전환 진행하기 →</span>
+                </Link>
+              )}
+              {savedSpotIds.length > 0 && (
+                <Link
+                  href="/explore"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/10"
+                >
+                  <Heart className="w-3.5 h-3.5 text-rose-300" />
+                  <span>찜한 스팟 {savedSpotIds.length}곳 보기</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 2. RENT-TO-OWN CAMERA SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

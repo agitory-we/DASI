@@ -16,18 +16,20 @@ import {
   Store,
   ChevronRight,
   Info,
-  X
+  X,
+  Heart
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 
 export default function MapPage() {
-  const { showToast } = useDasi();
+  const { showToast, savedSpotIds, toggleSaveSpot } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<SpotCategory | 'all'>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpot, setActiveSpot] = useState<AnalogSpot>(mockAnalogSpots[0]);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
+
   const [sortByNearest, setSortByNearest] = useState<boolean>(false);
 
   // Haversine Distance formula in meters/km
@@ -367,7 +369,23 @@ export default function MapPage() {
           </div>
 
           {/* Action Buttons: Dual Naver Map & KakaoMap Route Deep Links */}
-          <div className="pt-3 border-t border-vintage-200 grid grid-cols-2 gap-2.5">
+          <div className="pt-3 border-t border-vintage-200 space-y-2.5">
+            {/* Wishlist toggle */}
+            <button
+              onClick={() => toggleSaveSpot(activeSpot.id)}
+              className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border ${
+                savedSpotIds.includes(activeSpot.id)
+                  ? 'bg-rose-50 border-rose-300 text-rose-600 hover:bg-rose-100'
+                  : 'bg-white border-vintage-200 text-vintage-700 hover:border-terracotta/50 hover:text-terracotta'
+              }`}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 transition-all ${savedSpotIds.includes(activeSpot.id) ? 'fill-rose-500 text-rose-500' : ''}`}
+              />
+              <span>{savedSpotIds.includes(activeSpot.id) ? '❤️ 위시리스트에 저장됨' : '이 스팟 위시리스트에 담기'}</span>
+            </button>
+
+            <div className="grid grid-cols-2 gap-2.5">
             <a
               href={`https://map.naver.com/v5/search/${encodeURIComponent(activeSpot.name)}`}
               target="_blank"
@@ -386,6 +404,7 @@ export default function MapPage() {
               <Navigation className="w-3.5 h-3.5 text-[#191919]" />
               <span>카카오맵 길찾기</span>
             </a>
+            </div>
           </div>
         </div>
       </div>

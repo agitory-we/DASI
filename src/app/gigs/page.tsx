@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { PhotoGig, GigCategory } from '@/types';
 import { mockPhotoGigs } from '@/data/mockData';
 import {
@@ -24,7 +25,7 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 
 export default function GigsPage() {
-  const { bookGig } = useDasi();
+  const { bookGig, showToast } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<GigCategory | 'all'>('all');
   const [selectedGig, setSelectedGig] = useState<PhotoGig | null>(null);
   const [activePortfolioImg, setActivePortfolioImg] = useState<string | null>(null);
@@ -319,12 +320,21 @@ export default function GigsPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setSelectedGig(null)}
-                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
-                >
-                  확인 및 닫기
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  <button
+                    onClick={() => setSelectedGig(null)}
+                    className="flex-1 px-5 py-3 rounded-xl border border-vintage-200 text-vintage-700 text-xs font-semibold transition-colors hover:bg-vintage-100"
+                  >
+                    닫기
+                  </button>
+                  <Link
+                    href="/cabinet"
+                    onClick={() => setSelectedGig(null)}
+                    className="flex-1 px-5 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs text-center"
+                  >
+                    🎟️ 마이 캐비닛에서 에스크로 확인
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
@@ -385,6 +395,7 @@ export default function GigsPage() {
                           price: selectedGig.pricePerHour,
                           scheduledAt: scheduledAtInput,
                         });
+                        showToast(`${selectedGig.creatorName} 작가님 예약이 에스크로 보호 하에 접수되었습니다!`, 'success');
                         setIsBooked(true);
                       }}
                       className="px-5 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
