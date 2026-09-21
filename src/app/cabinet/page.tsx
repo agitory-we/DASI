@@ -12,23 +12,56 @@ import {
   RotateCcw,
   QrCode,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Film,
+  Download,
+  ExternalLink,
+  Check,
+  X,
+  TrendingUp
 } from 'lucide-react';
-import { mockUserCoupons } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
+import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function CabinetPage() {
   const { rentingItems, ownedItems, convertToOwn } = useDasi();
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [isResellModalOpen, setIsResellModalOpen] = useState(false);
+  const [selectedResellItem, setSelectedResellItem] = useState<any | null>(null);
 
   const activeRenting = rentingItems[0] || null;
 
-  const handleConvertToOwn = (id: string, name: string, total: number, paid: number) => {
-    const diff = total - paid;
-    if (confirm(`대여료가 공제된 차액 ${diff.toLocaleString()}원만 결제하고 이 카메라를 영구 소장하시겠습니까?`)) {
-      convertToOwn(id);
-      alert('소장 전환이 완료되었습니다! 정품 보증서가 발행되었습니다.');
-    }
+  // Mock Scanned Film Rolls
+  const mockFilmRolls = [
+    {
+      id: 'roll-1',
+      title: '을지로 & 세운상가 골목 출사',
+      filmType: 'Kodak Portra 400 (36컷)',
+      labName: '망우삼림 을지로 (SP3000 스캔)',
+      scannedDate: '2026.09.21',
+      status: 'scanned',
+      previewUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
+      totalPhotos: 36,
+    },
+    {
+      id: 'roll-2',
+      title: '경복궁 가을 야간개장 한복 스냅',
+      filmType: 'Fuji Superia X-TRA 400',
+      labName: '고래사진관 충무로 (Noritsu HS-1800)',
+      scannedDate: '2026.09.18',
+      status: 'scanned',
+      previewUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+      totalPhotos: 37,
+    },
+  ];
+
+  const handleConfirmConvert = () => {
+    if (!activeRenting) return;
+    playShutterSound('slr');
+    convertToOwn(activeRenting.id);
+    setIsConvertModalOpen(false);
   };
 
   return (
@@ -122,13 +155,13 @@ export default function CabinetPage() {
                 {/* Actions */}
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => handleConvertToOwn(activeRenting.id, activeRenting.name, activeRenting.purchaseTotal, activeRenting.rentalPaid)}
+                    onClick={() => setIsConvertModalOpen(true)}
                     className="px-6 py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-xs"
                   >
                     대여료 빼고 내 것으로 소장하기
                   </button>
                   <button
-                    onClick={() => alert('반납 일정이 상점에 통보되었습니다. 매장에 방문해 주세요!')}
+                    onClick={() => setIsReturnModalOpen(true)}
                     className="px-5 py-3 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs sm:text-sm font-semibold transition-colors"
                   >
                     매장 방문 반납 신청
@@ -195,7 +228,10 @@ export default function CabinetPage() {
                   <span>디지털 정품 보증서 열기</span>
                 </button>
                 <button
-                  onClick={() => alert('DASI 인증 리셀(재판매) 견적을 산출 중입니다. 감가 방어율 92%!')}
+                  onClick={() => {
+                    setSelectedResellItem(item);
+                    setIsResellModalOpen(true);
+                  }}
                   className="px-4 py-2 rounded-xl border border-vintage-300 hover:bg-vintage-50 text-vintage-700 text-xs font-semibold"
                 >
                   재판매(Resell)
@@ -205,6 +241,253 @@ export default function CabinetPage() {
           ))}
         </div>
       </div>
+
+      {/* 3. MY SCANNED FILM ROLLS & GALLERY */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-vintage-900 flex items-center gap-2">
+              <Film className="w-6 h-6 text-terracotta" />
+              <span>내 보관 필름 롤 &amp; 현상소 스캔</span>
+            </h2>
+            <p className="text-xs text-vintage-600 mt-0.5">
+              제휴 현상소에서 스캔 완료된 원본 사진을 다운로드하거나 프레임 생성기로 바로 보낼 수 있습니다.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-vintage-700">보관 롤 {mockFilmRolls.length}건</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {mockFilmRolls.map((roll) => (
+            <div
+              key={roll.id}
+              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
+                  <img
+                    src={roll.previewUrl}
+                    alt={roll.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
+                    {roll.filmType}
+                  </div>
+                  <div className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-lg bg-emerald-600/90 text-white text-[10px] font-bold">
+                    ✓ 고화질 스캔 완료 ({roll.totalPhotos}장)
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-2">
+                  <div className="text-[11px] text-vintage-500">{roll.scannedDate} 스캔</div>
+                  <h3 className="font-serif text-lg font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                    {roll.title}
+                  </h3>
+                  <p className="text-xs text-vintage-600">
+                    📍 {roll.labName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-5 pt-0 flex gap-2">
+                <a
+                  href="/frame"
+                  className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold text-center transition-colors"
+                >
+                  감성 프레임 입히기
+                </a>
+                <button
+                  onClick={() => alert(`[${roll.title}] 원본 압축 ZIP 파일 다운로드를 시작합니다!`)}
+                  className="px-4 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-700 text-xs font-semibold flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>전체 다운로드</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RTO CONVERT CONFIRMATION MODAL */}
+      {isConvertModalOpen && activeRenting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-terracotta" />
+                <h3 className="font-serif text-xl font-bold text-vintage-900">
+                  Rent-to-Own 소장 전환
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsConvertModalOpen(false)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-vintage-700">
+              <p className="leading-relaxed">
+                이미 지불하신 대여료 <strong>{activeRenting.rentalPaid.toLocaleString()}원</strong>을 100% 공제하고 잔금만 결제하시면, 이 카메라의 소유권이 영구히 이전되며 <strong>디지털 정품 보증서</strong>가 즉시 발행됩니다.
+              </p>
+
+              <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">소장 대상 기종</span>
+                  <span className="font-bold text-vintage-900">{activeRenting.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">정상 소장가</span>
+                  <span className="text-vintage-800">{activeRenting.purchaseTotal.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between text-terracotta">
+                  <span>대여료 전액 공제 (100%)</span>
+                  <span>- {activeRenting.rentalPaid.toLocaleString()}원</span>
+                </div>
+                <div className="pt-2 border-t border-vintage-200 flex justify-between text-sm font-bold text-vintage-900">
+                  <span>최종 실결제 잔금</span>
+                  <span className="text-emerald-800">
+                    {(activeRenting.purchaseTotal - activeRenting.rentalPaid).toLocaleString()}원
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-emerald-50 text-emerald-900 rounded-xl text-[11px] space-y-1">
+                <div className="font-bold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>DASI 평생 케어 보증 혜택 부여</span>
+                </div>
+                <p className="text-[10px] text-emerald-800 leading-relaxed">
+                  소장 전환 즉시 충무로·을지로 명장 오버홀 이력 카드가 활성화되며, 6개월간 무상 기능 점검을 보증합니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setIsConvertModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 text-xs font-semibold hover:bg-vintage-100"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleConfirmConvert}
+                className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                {(activeRenting.purchaseTotal - activeRenting.rentalPaid).toLocaleString()}원 결제하고 소장 완료
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RETURN APPLICATION MODAL */}
+      {isReturnModalOpen && activeRenting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-5 h-5 text-vintage-700" />
+                <h3 className="font-serif text-xl font-bold text-vintage-900">
+                  매장 방문 반납 접수
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsReturnModalOpen(false)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-vintage-700">
+              <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+                <div>📍 <strong>반납 지정 매장:</strong> {activeRenting.shopName}</div>
+                <div>📷 <strong>반납 기종:</strong> {activeRenting.name}</div>
+                <div>🕒 <strong>반납 마감:</strong> 대여 종료일 19:00까지</div>
+              </div>
+
+              <div className="p-3 bg-amber-50 text-amber-900 rounded-xl text-[11px]">
+                💡 <strong>가승인 자동 해제 안내:</strong> 현장 방문 시 장인님의 3분 외관 검수 완료 즉시 신용카드 보증금 가승인이 자동 전액 취소됩니다.
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsReturnModalOpen(false)}
+              className="w-full py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
+            >
+              반납 일정 확정 완료
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* RESELL MODAL */}
+      {isResellModalOpen && selectedResellItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-serif text-xl font-bold text-vintage-900">
+                  DASI 인증 리셀(재판매) 견적
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsResellModalOpen(false)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-vintage-700">
+              <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">기종</span>
+                  <span className="font-bold text-vintage-900">{selectedResellItem.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">보증 상태</span>
+                  <span className="text-emerald-700 font-bold">DASI 정품 이력 인증 완료</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-vintage-500">감가 방어율</span>
+                  <span className="font-bold text-vintage-900">92% (최상위 티어)</span>
+                </div>
+                <div className="pt-2 border-t border-vintage-200 flex justify-between text-sm font-bold text-vintage-900">
+                  <span>DASI 즉시 매입 보장가</span>
+                  <span className="text-terracotta">390,000원</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-vintage-500 leading-relaxed">
+                DASI 디지털 정품 여권(Passport)이 발급된 카메라는 충무로 제휴 매장에서 감가 없이 즉시 현금 매입을 보장합니다.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsResellModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 text-xs font-semibold"
+              >
+                다음에 하기
+              </button>
+              <button
+                onClick={() => {
+                  alert('제휴 매장 즉시 매입 신청이 접수되었습니다! 카카오 알림톡을 확인해 주세요.');
+                  setIsResellModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors"
+              >
+                390,000원에 매입 신청
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CERTIFICATE MODAL */}
       {selectedCertificate && (
