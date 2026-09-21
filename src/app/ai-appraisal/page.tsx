@@ -18,12 +18,15 @@ import {
   X
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { useDasi } from '@/context/DasiContext';
 
 export default function AIAppraisalPage() {
+  const { addOwnedCamera } = useDasi();
   const [step, setStep] = useState<'upload' | 'analyzing' | 'result'>('upload');
   const [analyzingProgress, setAnalyzingProgress] = useState(0);
   const [analyzingText, setAnalyzingText] = useState('시리얼 넘버 데이터베이스 대조 중...');
   const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
+  const [isCabinetRegistered, setIsCabinetRegistered] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<{ [key: string]: boolean }>({
     front: false,
     back: false,
@@ -290,30 +293,81 @@ export default function AIAppraisalPage() {
               </div>
             </div>
 
+            {/* Registered to Cabinet Success Banner */}
+            {isCabinetRegistered && (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">
+                    ✓
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-emerald-950">
+                      마이 캐비닛 소장 컬렉션 &amp; 디지털 여권 등록 완료!
+                    </div>
+                    <div className="text-[11px] text-emerald-800">
+                      충무로 감가 방어율 92% 보증 및 원클릭 리셀이 활성화되었습니다.
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href="/cabinet"
+                  className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shrink-0 transition-colors"
+                >
+                  내 캐비닛에서 보증서 확인
+                </a>
+              </div>
+            )}
+
             {/* Next Steps Buttons */}
-            <div className="pt-4 border-t border-vintage-200 flex flex-col sm:flex-row gap-3">
+            <div className="pt-4 border-t border-vintage-200 flex flex-wrap gap-2.5">
               <button
                 onClick={handleReset}
-                className="py-3 px-4 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100 flex items-center justify-center gap-1.5"
+                className="py-2.5 px-3.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100 flex items-center justify-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>다른 기기 감정하기</span>
+                <span>다시 감정하기</span>
               </button>
 
               <button
                 onClick={() => typeof window !== 'undefined' && window.print()}
-                className="py-3 px-4 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100 flex items-center justify-center gap-1.5"
+                className="py-2.5 px-3.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100 flex items-center justify-center gap-1.5"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>감정서 인쇄 / PDF 저장</span>
+                <span>감정서 인쇄</span>
               </button>
+
+              {!isCabinetRegistered ? (
+                <button
+                  onClick={() => {
+                    playShutterSound('slr');
+                    addOwnedCamera({
+                      name: 'Nikon FM2 (전기형 허니컴 셔터)',
+                      serial: 'DASI-AI-N724981',
+                      acquiredDate: `${new Date().toISOString().slice(0, 10)} (AI 감정 기기 등록)`,
+                      condition: 'B+',
+                      masterInspection: 'AI 비전 감정 완료 (신뢰도 96.4%)',
+                      imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+                    });
+                    setIsCabinetRegistered(true);
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-vintage-900 hover:bg-vintage-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  <span>내 캐비닛 소장 등록</span>
+                </button>
+              ) : (
+                <span className="py-2.5 px-3.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>소장 등록됨</span>
+                </span>
+              )}
 
               <button
                 onClick={() => setIsConsignmentModalOpen(true)}
-                className="flex-1 py-3 px-6 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-xs"
+                className="flex-1 py-2.5 px-5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
               >
-                <span>이 감정가로 DASI 마켓 판매 위탁 신청</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>DASI 마켓 판매 위탁 신청</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

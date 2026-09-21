@@ -19,12 +19,21 @@ import {
   Calendar
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
+import { useDasi } from '@/context/DasiContext';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates } = useDasi();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
+
+  const totalCabinetCount =
+    rentingItems.filter((r) => !r.isConvertedToOwn).length +
+    ownedItems.length +
+    bookedGigs.length +
+    bookedExperiences.length +
+    repairEstimates.length;
 
   // Bind Ctrl+K or Cmd+K
   useEffect(() => {
@@ -162,11 +171,16 @@ export const Header: React.FC = () => {
             {/* My Cabinet */}
             <Link
               href="/cabinet"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white hover:bg-vintage-100/80 text-vintage-700 border border-vintage-200 flex items-center gap-1.5 transition-all shadow-2xs text-xs font-semibold"
+              className="relative p-2 sm:px-3 sm:py-2 rounded-xl bg-white hover:bg-vintage-100/80 text-vintage-700 border border-vintage-200 flex items-center gap-1.5 transition-all shadow-2xs text-xs font-semibold"
               title="마이 캐비닛"
             >
               <FolderLock className="w-4 h-4 text-terracotta" />
               <span className="hidden sm:inline-block">캐비닛</span>
+              {totalCabinetCount > 0 && (
+                <span className="inline-flex items-center justify-center px-1.5 py-0.2 min-w-[18px] h-[18px] rounded-full bg-terracotta text-white text-[10px] font-bold">
+                  {totalCabinetCount}
+                </span>
+              )}
             </Link>
 
             {/* Primary CTA */}
@@ -191,6 +205,20 @@ export const Header: React.FC = () => {
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-vintage-200 bg-white p-4 space-y-3 animate-fadeIn">
+          {/* Quick Cabinet Access in Mobile Menu */}
+          <Link
+            href="/cabinet"
+            className="p-3 rounded-2xl bg-gradient-to-r from-vintage-900 to-vintage-800 text-white flex items-center justify-between shadow-xs"
+          >
+            <div className="flex items-center gap-2">
+              <FolderLock className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold">마이 디지털 캐비닛</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-mono font-bold">
+              {totalCabinetCount}건 보관 중
+            </span>
+          </Link>
+
           <div className="grid grid-cols-2 gap-2 text-xs">
             {coreNavItems.map((item) => (
               <Link

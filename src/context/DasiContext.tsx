@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserCoupon } from '@/types';
 import { mockUserCoupons } from '@/data/mockData';
+import { CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 export interface RentingCameraItem {
   id: string;
@@ -73,12 +74,15 @@ interface DasiContextType {
   repairEstimates: RepairEstimateItem[];
   bookCameraRental: (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => void;
   convertToOwn: (rentingId: string) => void;
+  addOwnedCamera: (item: Omit<OwnedCameraItem, 'id'>) => string;
   useCoupon: (couponId: string) => void;
   claimWelcomeCoupons: () => void;
   isWelcomeClaimed: boolean;
   bookGig: (item: Omit<BookedGigItem, 'id' | 'bookedAt' | 'status'>) => void;
   bookExperience: (item: Omit<BookedExperienceItem, 'id' | 'ticketCode' | 'bookedAt' | 'status'>) => string;
   submitRepairEstimate: (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => string;
+  toast: { message: string; type: 'info' | 'success' | 'warning' } | null;
+  showToast: (message: string, type?: 'info' | 'success' | 'warning') => void;
 }
 
 const DasiContext = createContext<DasiContextType | undefined>(undefined);
@@ -92,6 +96,14 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [repairEstimates, setRepairEstimates] = useState<RepairEstimateItem[]>([]);
   const [isWelcomeClaimed, setIsWelcomeClaimed] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
+
+  const showToast = (message: string, type: 'info' | 'success' | 'warning' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  };
 
   // Initialize from LocalStorage
   useEffect(() => {
@@ -240,6 +252,16 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOwnedItems((prev) => [newOwned, ...prev]);
   };
 
+  const addOwnedCamera = (item: Omit<OwnedCameraItem, 'id'>) => {
+    const id = `own-${Date.now()}`;
+    const newOwned: OwnedCameraItem = {
+      ...item,
+      id,
+    };
+    setOwnedItems((prev) => [newOwned, ...prev]);
+    return id;
+  };
+
   const useCoupon = (couponId: string) => {
     setCoupons((prev) =>
       prev.map((c) => (c.id === couponId ? { ...c, isUsed: true } : c))
@@ -297,15 +319,36 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         repairEstimates,
         bookCameraRental,
         convertToOwn,
+        addOwnedCamera,
         useCoupon,
         claimWelcomeCoupons,
         isWelcomeClaimed,
         bookGig,
         bookExperience,
         submitRepairEstimate,
+        toast,
+        showToast,
       }}
     >
       {children}
+      {toast && (
+        <div className="fixed bottom-20 md:bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-vintage-950/95 text-white shadow-2xl border border-vintage-700/60 backdrop-blur-md animate-fadeIn text-xs sm:text-sm font-medium">
+          {toast.type === 'success' ? (
+            <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          ) : toast.type === 'warning' ? (
+            <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+          )}
+          <span className="leading-snug">{toast.message}</span>
+        </div>
+      )}
     </DasiContext.Provider>
   );
 };

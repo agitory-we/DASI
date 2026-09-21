@@ -31,7 +31,8 @@ export default function CabinetPage() {
     convertToOwn,
     bookedGigs,
     bookedExperiences,
-    repairEstimates
+    repairEstimates,
+    showToast
   } = useDasi();
   const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs'>('camera');
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
@@ -597,7 +598,7 @@ export default function CabinetPage() {
                       감성 프레임 입히기
                     </a>
                     <button
-                      onClick={() => alert(`[${roll.title}] 원본 압축 ZIP 파일 다운로드를 시작합니다!`)}
+                      onClick={() => showToast(`[${roll.title}] 원본 압축 ZIP 파일 다운로드가 시작되었습니다.`, 'info')}
                       className="px-4 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-700 text-xs font-semibold flex items-center gap-1.5"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -779,7 +780,7 @@ export default function CabinetPage() {
               </button>
               <button
                 onClick={() => {
-                  alert('제휴 매장 즉시 매입 신청이 접수되었습니다! 카카오 알림톡을 확인해 주세요.');
+                  showToast('제휴 매장 즉시 매입 신청이 접수되었습니다! 카카오 알림톡을 확인해 주세요.', 'success');
                   setIsResellModalOpen(false);
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors"

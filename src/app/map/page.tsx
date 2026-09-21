@@ -18,8 +18,10 @@ import {
   Info,
   X
 } from 'lucide-react';
+import { useDasi } from '@/context/DasiContext';
 
 export default function MapPage() {
+  const { showToast } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<SpotCategory | 'all'>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpot, setActiveSpot] = useState<AnalogSpot>(mockAnalogSpots[0]);
@@ -45,7 +47,7 @@ export default function MapPage() {
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
-      alert('브라우저에서 위치 서비스를 지원하지 않습니다.');
+      showToast('브라우저에서 위치 서비스를 지원하지 않습니다.', 'warning');
       return;
     }
     setIsLocating(true);
@@ -442,7 +444,7 @@ export default function MapPage() {
               </button>
               <button
                 onClick={() => {
-                  alert('상점 파트너 입점 신청이 접수되었습니다. DASI 팀이 24시간 내 연락드립니다!');
+                  showToast('상점 파트너 입점 신청이 접수되었습니다. DASI 팀이 24시간 내 연락드립니다!', 'success');
                   setIsPartnerModalOpen(false);
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors"

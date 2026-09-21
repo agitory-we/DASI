@@ -17,8 +17,10 @@ import {
   Printer
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { useDasi } from '@/context/DasiContext';
 
 export default function FrameMakerPage() {
+  const { showToast } = useDasi();
   const [selectedModel, setSelectedModel] = useState<string>('Nikon FM2 / Nikkor 50mm F1.4');
   const [selectedLab, setSelectedLab] = useState<string>('망우삼림 을지로 (Fuji Frontier SP3000)');
   const [dateText, setDateText] = useState<string>('2026.09.22');
@@ -155,6 +157,7 @@ export default function FrameMakerPage() {
       link.href = canvas.toDataURL('image/png');
       link.click();
       setIsGenerating(false);
+      showToast('고화질 4:5 감성 프레임 이미지가 다운로드되었습니다.', 'success');
     }, 300);
   };
 
@@ -404,7 +407,7 @@ export default function FrameMakerPage() {
               </button>
               <button
                 onClick={() => {
-                  alert('원목 액자 제작 의뢰가 접수되었습니다! 장인님이 사진 해상도를 최종 검수한 뒤 카카오톡으로 시안을 전송해 드립니다.');
+                  showToast('원목 액자 제작 의뢰가 접수되었습니다! 장인님이 사진 검수 후 카카오톡으로 시안을 전송합니다.', 'success');
                   setIsPhysicalOrderModalOpen(false);
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors"
