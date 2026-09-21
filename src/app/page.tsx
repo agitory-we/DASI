@@ -22,13 +22,19 @@ import {
   Share2,
   FolderLock
 } from 'lucide-react';
-import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots, mockExperiences } from '@/data/mockData';
+import { mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
 
 import { Bell, Heart } from 'lucide-react';
 
 export default function HomePage() {
   const {
+    cameras,
+    analogSpots,
+    photoGigs,
+    repairMasters,
+    experiences,
+    isLoadingData,
     isWelcomeClaimed,
     claimWelcomeCoupons,
     rentingItems,
@@ -347,7 +353,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {mockCameras.slice(0, 3).map((camera) => (
+          {cameras.slice(0, 3).map((camera) => (
             <div
               key={camera.id}
               className="rounded-2xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group"
@@ -470,7 +476,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-3">
-                  {mockAnalogSpots.slice(0, 2).map((spot) => (
+                  {analogSpots.slice(0, 2).map((spot) => (
                     <div
                       key={spot.id}
                       className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-terracotta/40 transition-colors"
@@ -530,7 +536,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {mockPhotoGigs.map((gig) => (
+          {photoGigs.map((gig) => (
             <div
               key={gig.id}
               className="rounded-2xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
@@ -648,13 +654,13 @@ export default function HomePage() {
               </p>
               <div className="flex items-center gap-3 pt-2 border-t border-white/10">
                 <img
-                  src={mockMasters[0].profileImage}
-                  alt={mockMasters[0].name}
+                  src={(repairMasters[0] || mockMasters[0]).profileImage}
+                  alt={(repairMasters[0] || mockMasters[0]).name}
                   className="w-10 h-10 rounded-full object-cover border border-white/30"
                 />
                 <div>
-                  <div className="text-xs font-bold text-white">{mockMasters[0].name} (경력 42년)</div>
-                  <div className="text-[11px] text-vintage-300">{mockMasters[0].shopName}</div>
+                  <div className="text-xs font-bold text-white">{(repairMasters[0] || mockMasters[0]).name} (경력 {(repairMasters[0] || mockMasters[0]).experienceYears}년)</div>
+                  <div className="text-[11px] text-vintage-300">{(repairMasters[0] || mockMasters[0]).shopName}</div>
                 </div>
               </div>
             </div>
@@ -752,7 +758,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {mockExperiences.slice(0, 2).map((exp) => (
+          {experiences.slice(0, 2).map((exp) => (
             <div
               key={exp.id}
               className="rounded-3xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group"

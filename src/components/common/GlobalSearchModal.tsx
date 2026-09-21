@@ -14,14 +14,8 @@ import {
   ChevronRight,
   Ticket
 } from 'lucide-react';
-import {
-  mockCameras,
-  mockAnalogSpots,
-  mockPhotoGigs,
-  mockMasters,
-  mockEventsAndHotSpots,
-  mockExperiences
-} from '@/data/mockData';
+import { mockEventsAndHotSpots } from '@/data/mockData';
+import { useDasi } from '@/context/DasiContext';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -31,6 +25,13 @@ interface GlobalSearchModalProps {
 export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const router = useRouter();
+  const {
+    cameras,
+    analogSpots,
+    photoGigs,
+    repairMasters,
+    experiences,
+  } = useDasi();
 
   // Handle ESC key
   useEffect(() => {
@@ -46,7 +47,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   const trimmed = query.trim().toLowerCase();
 
   const filteredCameras = trimmed
-    ? mockCameras.filter((c) =>
+    ? cameras.filter((c) =>
         c.name.toLowerCase().includes(trimmed) ||
         c.brand.toLowerCase().includes(trimmed) ||
         c.description.toLowerCase().includes(trimmed)
@@ -54,7 +55,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     : [];
 
   const filteredSpots = trimmed
-    ? mockAnalogSpots.filter((s) =>
+    ? analogSpots.filter((s) =>
         s.name.toLowerCase().includes(trimmed) ||
         s.area.toLowerCase().includes(trimmed) ||
         s.address.toLowerCase().includes(trimmed)
@@ -62,7 +63,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     : [];
 
   const filteredGigs = trimmed
-    ? mockPhotoGigs.filter((g) =>
+    ? photoGigs.filter((g) =>
         g.title.toLowerCase().includes(trimmed) ||
         g.location.toLowerCase().includes(trimmed) ||
         g.creatorName.toLowerCase().includes(trimmed)
@@ -70,7 +71,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     : [];
 
   const filteredMasters = trimmed
-    ? mockMasters.filter((m) =>
+    ? repairMasters.filter((m) =>
         m.name.toLowerCase().includes(trimmed) ||
         m.shopName.toLowerCase().includes(trimmed) ||
         m.specialty.toLowerCase().includes(trimmed)
@@ -85,7 +86,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     : [];
 
   const filteredExperiences = trimmed
-    ? mockExperiences.filter((exp) =>
+    ? experiences.filter((exp) =>
         exp.title.toLowerCase().includes(trimmed) ||
         exp.hostName.toLowerCase().includes(trimmed) ||
         exp.location.toLowerCase().includes(trimmed)

@@ -24,15 +24,13 @@ import { mockExperiences } from '@/data/mockData';
 import { Experience } from '@/types';
 
 export default function ExperiencesPage() {
-  const { bookExperience, showToast } = useDasi();
+  const { experiences, cameras, isLoadingData, bookExperience, showToast } = useDasi();
   const [selectedType, setSelectedType] = useState<'all' | 'photo_walk' | 'master_class'>('all');
   const [selectedExp, setSelectedExp] = useState<Experience | null>(null);
   const [isBooked, setIsBooked] = useState(false);
   const [withRentalPackage, setWithRentalPackage] = useState(false);
   const [bundledCamera, setBundledCamera] = useState<string>('Olympus PEN EE-3 (하프 필름)');
   const [issuedTicketCode, setIssuedTicketCode] = useState('');
-
-  const experiences = mockExperiences;
 
   const filtered = selectedType === 'all'
     ? experiences
@@ -76,9 +74,21 @@ export default function ExperiencesPage() {
         ))}
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {filtered.map((exp) => (
+      {/* Grid or Skeleton */}
+      {isLoadingData ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="rounded-3xl bg-white border border-vintage-200 p-6 space-y-4 animate-pulse">
+              <div className="aspect-[16/10] bg-vintage-100 rounded-2xl" />
+              <div className="h-5 bg-vintage-200 rounded w-2/3" />
+              <div className="h-4 bg-vintage-100 rounded w-full" />
+              <div className="h-10 bg-vintage-100 rounded-xl w-full" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {filtered.map((exp) => (
           <div
             key={exp.id}
             className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
@@ -159,6 +169,7 @@ export default function ExperiencesPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* TICKET BOOKING MODAL */}
       {selectedExp && (
@@ -305,12 +316,13 @@ export default function ExperiencesPage() {
                       <select
                         value={bundledCamera}
                         onChange={(e) => setBundledCamera(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-vintage-300 text-xs bg-white text-vintage-900 font-medium focus:outline-none focus:border-terracotta"
+                        className="w-full px-3 py-2 rounded-xl border border-vintage-300 text-xs bg-white text-vintage-900 font-medium focus:outline-hidden focus:border-terracotta"
                       >
-                        <option value="Olympus PEN EE-3 (하프 필름)">Olympus PEN EE-3 (하프 아날로그 필름)</option>
-                        <option value="Nikon FM2 (완전 기계식 SLR)">Nikon FM2 (완전 기계식 SLR)</option>
-                        <option value="Fujifilm X100VI (하이엔드 디카)">Fujifilm X100VI (하이엔드 디카)</option>
-                        <option value="Ricoh GR IIIx (스트리트 스냅 디카)">Ricoh GR IIIx (스트리트 스냅 디카)</option>
+                        {cameras.map((cam) => (
+                          <option key={cam.id} value={`${cam.name} (${cam.brand})`}>
+                            {cam.name} ({cam.brand}) · {cam.conditionGrade} 등급
+                          </option>
+                        ))}
                       </select>
                       <div className="text-[10px] text-vintage-500">
                         * 선택하신 기종과 필름 1롤이 집결 장소에서 호스트를 통해 즉시 전달됩니다.

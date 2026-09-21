@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Wrench
 } from 'lucide-react';
+import { UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
 
@@ -33,11 +34,14 @@ export default function CabinetPage() {
     bookedExperiences,
     repairEstimates,
     proConsultations,
+    coupons,
+    useCoupon,
     showToast
   } = useDasi();
-  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons'>('camera');
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
+  const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [selectedConvertingItem, setSelectedConvertingItem] = useState<any | null>(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -136,6 +140,7 @@ export default function CabinetPage() {
           { id: 'tickets', label: '🎟️ 스냅 & 출사 클래스 티켓', count: bookedGigs.length + bookedExperiences.length },
           { id: 'repairs', label: '🔧 명장 수리 & 필름 보관함', count: repairEstimates.length + mockFilmRolls.length },
           { id: 'pro', label: '🏆 PRO 스튜디오 VIP 상담', count: proConsultations.length },
+          { id: 'coupons', label: '🎫 멤버십 & 쿠폰팩', count: coupons.length },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -757,6 +762,100 @@ export default function CabinetPage() {
         </div>
       )}
 
+      {/* ======================================================== */}
+      {/* TAB 5: MEMBERSHIP BENEFITS & COUPON WALLET               */}
+      {/* ======================================================== */}
+      {activeTab === 'coupons' && (
+        <div className="space-y-8 animate-fadeIn">
+          <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs">
+            <div className="p-6 border-b border-vintage-100 flex items-center justify-between bg-vintage-50/50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-terracotta" />
+                  <h2 className="font-serif text-lg font-bold text-vintage-900">
+                    내 보유 멤버십 쿠폰 &amp; 바우처 ({coupons.length})
+                  </h2>
+                </div>
+                <p className="text-xs text-vintage-600 mt-0.5">
+                  현상소 방문 및 명장 클리닉 정비 시 즉시 적용 가능한 모바일 할인권입니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              {coupons.length === 0 ? (
+                <div className="text-center py-10 space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center mx-auto">
+                    <Ticket className="w-7 h-7" />
+                  </div>
+                  <p className="text-xs text-vintage-500">보유 중인 쿠폰이 없습니다. 장인 클리닉에서 웰컴 쿠폰팩을 받아보세요!</p>
+                  <a
+                    href="/clinic"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-terracotta text-white text-xs font-semibold hover:bg-terracotta-light transition-colors"
+                  >
+                    <span>웰컴 쿠폰팩 받으러 가기</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {coupons.map((coupon) => (
+                    <div
+                      key={coupon.id}
+                      className={`p-5 rounded-2xl border flex flex-col justify-between space-y-4 transition-all ${
+                        coupon.isUsed
+                          ? 'bg-vintage-50 border-vintage-200 opacity-60'
+                          : 'bg-gradient-to-br from-white to-[#FAF6EE] border-vintage-300 shadow-xs hover:border-terracotta/50'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            coupon.isUsed ? 'bg-vintage-200 text-vintage-600' : 'bg-terracotta/10 text-terracotta'
+                          }`}>
+                            {coupon.category === 'lab' ? '현상·스캔' : coupon.category === 'repair' ? '명장 수리' : '필름·소모품'}
+                          </span>
+                          <span className="text-[10px] text-vintage-400">유효기간: {coupon.validUntil}</span>
+                        </div>
+
+                        <div>
+                          <h3 className="font-serif text-base font-bold text-vintage-900 leading-snug">
+                            {coupon.title}
+                          </h3>
+                          <p className="text-xs text-vintage-500 mt-0.5">
+                            발행처: {coupon.issuerName}
+                          </p>
+                        </div>
+
+                        <div className="text-lg font-extrabold text-terracotta">
+                          {coupon.discountText}
+                        </div>
+                      </div>
+
+                      <div>
+                        {coupon.isUsed ? (
+                          <div className="py-2 text-center text-xs font-semibold text-vintage-400 bg-vintage-100 rounded-xl">
+                            사용 완료됨
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setSelectedBarcodeCoupon(coupon)}
+                            className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                          >
+                            <QrCode className="w-3.5 h-3.5" />
+                            <span>현장 사용 (바코드)</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* RTO CONVERT CONFIRMATION MODAL */}
       {isConvertModalOpen && selectedConvertingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -1196,6 +1295,77 @@ export default function CabinetPage() {
               >
                 이 사진에 프레임 입히기 →
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BARCODE / QR MODAL FOR COUPONS */}
+      {selectedBarcodeCoupon && (
+        <div
+          onClick={() => setSelectedBarcodeCoupon(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm bg-[#FAF7F0] rounded-3xl overflow-hidden shadow-2xl border-4 border-vintage-300 p-6 sm:p-8 space-y-5 text-center cursor-default"
+          >
+            <div className="space-y-1.5 border-b-2 border-vintage-200 pb-4">
+              <div className="w-12 h-12 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center mx-auto mb-1">
+                <Ticket className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] tracking-widest uppercase font-mono text-terracotta font-bold">
+                DASI MEMBERSHIP BENEFIT PASS
+              </span>
+              <h3 className="font-serif text-xl font-bold text-vintage-900 leading-snug">
+                {selectedBarcodeCoupon.title}
+              </h3>
+              <p className="text-xs text-vintage-600">
+                발행처: <strong className="text-vintage-800">{selectedBarcodeCoupon.issuerName}</strong>
+              </p>
+            </div>
+
+            {/* BARCODE GRAPHIC */}
+            <div className="bg-white p-5 rounded-2xl border border-vintage-200 shadow-inner space-y-3">
+              <div className="flex justify-center items-center h-16 gap-1 px-4 py-2 bg-white rounded-lg">
+                {[4, 2, 6, 2, 4, 3, 2, 5, 2, 3, 4, 2, 5, 3, 2, 4, 3, 2, 5, 2, 4, 2, 3, 5, 2, 4, 3].map((w, idx) => (
+                  <div
+                    key={idx}
+                    className="h-full bg-vintage-900 rounded-[1px]"
+                    style={{ width: `${w}px` }}
+                  />
+                ))}
+              </div>
+              <div className="text-[11px] font-mono tracking-widest text-vintage-600 font-bold">
+                DASI-{selectedBarcodeCoupon.id.toUpperCase()}-7721
+              </div>
+              <div className="text-xs text-terracotta font-bold">
+                혜택: {selectedBarcodeCoupon.discountText}
+              </div>
+            </div>
+
+            <div className="p-3 bg-vintage-100/70 rounded-xl text-[11px] text-vintage-600 text-left space-y-1">
+              <div>• 현장(제휴 현상소/수리실/매장) 카운터에 위 바코드를 제시해 주세요.</div>
+              <div>• 유효기간: <strong>{selectedBarcodeCoupon.validUntil}</strong>까지</div>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={() => {
+                  useCoupon(selectedBarcodeCoupon.id);
+                  setSelectedBarcodeCoupon(null);
+                  showToast(`${selectedBarcodeCoupon.title} 쿠폰 사용이 완료되었습니다!`, 'success');
+                }}
+                className="w-full py-3 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light shadow-md transition-all active:scale-95"
+              >
+                현장에서 사용 완료 처리하기
+              </button>
+              <button
+                onClick={() => setSelectedBarcodeCoupon(null)}
+                className="w-full py-2.5 rounded-xl bg-vintage-200 text-vintage-700 text-xs font-semibold hover:bg-vintage-300 transition-colors"
+              >
+                닫기
+              </button>
             </div>
           </div>
         </div>

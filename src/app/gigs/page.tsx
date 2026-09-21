@@ -25,7 +25,7 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 
 export default function GigsPage() {
-  const { bookGig, showToast } = useDasi();
+  const { photoGigs, isLoadingData, bookGig, showToast } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<GigCategory | 'all'>('all');
   const [selectedGig, setSelectedGig] = useState<PhotoGig | null>(null);
   const [activePortfolioImg, setActivePortfolioImg] = useState<string | null>(null);
@@ -35,8 +35,8 @@ export default function GigsPage() {
   const [scheduledAtInput, setScheduledAtInput] = useState<string>('2026-09-27 14:00');
 
   const filteredGigs = selectedCategory === 'all'
-    ? mockPhotoGigs
-    : mockPhotoGigs.filter((g) => g.category === selectedCategory);
+    ? photoGigs
+    : photoGigs.filter((g) => g.category === selectedCategory);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -113,9 +113,21 @@ export default function GigsPage() {
         ))}
       </div>
 
-      {/* Gigs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filteredGigs.map((gig) => (
+      {/* Gigs Grid or Skeleton */}
+      {isLoadingData ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="rounded-3xl bg-white border border-vintage-200 p-5 space-y-4 animate-pulse">
+              <div className="aspect-[16/10] bg-vintage-100 rounded-2xl" />
+              <div className="h-5 bg-vintage-200 rounded w-2/3" />
+              <div className="h-4 bg-vintage-100 rounded w-full" />
+              <div className="h-8 bg-vintage-100 rounded-xl w-full" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {filteredGigs.map((gig) => (
           <div
             key={gig.id}
             className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between group"
@@ -220,6 +232,7 @@ export default function GigsPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* PORTFOLIO VIEWER MODAL */}
       {activePortfolioImg && (
