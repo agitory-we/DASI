@@ -17,7 +17,8 @@ import {
   ExternalLink,
   ChevronRight,
   Flame,
-  Ticket
+  Ticket,
+  Compass
 } from 'lucide-react';
 import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
 
@@ -87,6 +88,37 @@ export default function HomePage() {
                 >
                   <MapPin className="w-4 h-4 text-terracotta" />
                   <span>주변 현상소·자판기 지도</span>
+                </Link>
+              </div>
+
+              {/* Quick Feature Badges */}
+              <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
+                <Link
+                  href="/ai-appraisal"
+                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-terracotta" />
+                  <span>사진 3장 AI 감정</span>
+                </Link>
+                <Link
+                  href="/experiences"
+                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
+                >
+                  <Compass className="w-3.5 h-3.5 text-terracotta" />
+                  <span>작가 출사 &amp; 장인 클래스</span>
+                </Link>
+                <Link
+                  href="/frame"
+                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-terracotta" />
+                  <span>인스타 필름프레임 생성</span>
+                </Link>
+                <Link
+                  href="/cabinet"
+                  className="px-3 py-1.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium flex items-center gap-1 transition-colors"
+                >
+                  <span>내 기기 &amp; 보증서 캐비닛</span>
                 </Link>
               </div>
             </div>
@@ -571,17 +603,13 @@ export default function HomePage() {
               본식 웨딩, 브랜드 화보, 개인 프로필 전문 준프로·프로 사진작가의 독점 포트폴리오 관으로 연결됩니다.
             </p>
           </div>
-          <a
-            href="#pro-studio"
-            onClick={(e) => {
-              e.preventDefault();
-              alert('DASI Pro 아티스트 연계 전문관 준비 중입니다. 곧 오픈됩니다!');
-            }}
+          <Link
+            href="/pro"
             className="shrink-0 px-6 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors"
           >
             <span>DASI Pro 스튜디오 방문하기</span>
             <ExternalLink className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
       </section>
     </div>
