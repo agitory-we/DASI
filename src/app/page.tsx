@@ -21,9 +21,10 @@ import {
   Compass
 } from 'lucide-react';
 import { mockCameras, mockAnalogSpots, mockPhotoGigs, mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
+import { useDasi } from '@/context/DasiContext';
 
 export default function HomePage() {
-  const [couponClaimed, setCouponClaimed] = useState(false);
+  const { isWelcomeClaimed, claimWelcomeCoupons } = useDasi();
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -477,16 +478,16 @@ export default function HomePage() {
 
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
-                  onClick={() => setCouponClaimed(true)}
-                  disabled={couponClaimed}
+                  onClick={claimWelcomeCoupons}
+                  disabled={isWelcomeClaimed}
                   className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md ${
-                    couponClaimed
+                    isWelcomeClaimed
                       ? 'bg-emerald-700 text-white'
                       : 'bg-terracotta text-white hover:bg-terracotta-light active:scale-95'
                   }`}
                 >
                   <Ticket className="w-4 h-4" />
-                  <span>{couponClaimed ? '웰컴 쿠폰팩 발급 완료!' : '웰컴 케어 쿠폰팩 무료 받기'}</span>
+                  <span>{isWelcomeClaimed ? '웰컴 쿠폰팩 발급 완료!' : '웰컴 케어 쿠폰팩 무료 받기'}</span>
                 </button>
 
                 <Link

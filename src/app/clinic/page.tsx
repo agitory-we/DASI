@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { mockMasters, mockUserCoupons } from '@/data/mockData';
+import { mockMasters } from '@/data/mockData';
 import { RepairMaster, UserCoupon } from '@/types';
+import { useDasi } from '@/context/DasiContext';
 import {
   Wrench,
   ShieldCheck,
@@ -18,16 +19,14 @@ import {
 } from 'lucide-react';
 
 export default function ClinicPage() {
-  const [coupons, setCoupons] = useState<UserCoupon[]>(mockUserCoupons);
+  const { coupons, useCoupon } = useDasi();
   const [selectedMaster, setSelectedMaster] = useState<RepairMaster | null>(null);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState<boolean>(false);
   const [activeCoupon, setActiveCoupon] = useState<UserCoupon | null>(null);
   const [estimateSubmitted, setEstimateSubmitted] = useState<boolean>(false);
 
   const handleUseCoupon = (couponId: string) => {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === couponId ? { ...c, isUsed: true } : c))
-    );
+    useCoupon(couponId);
     setActiveCoupon(null);
   };
 

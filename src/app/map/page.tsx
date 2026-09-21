@@ -24,11 +24,59 @@ export default function MapPage() {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpot, setActiveSpot] = useState<AnalogSpot>(mockAnalogSpots[0]);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState<boolean>(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [sortByNearest, setSortByNearest] = useState<boolean>(false);
 
-  const filteredSpots = mockAnalogSpots.filter((spot) => {
+  // Haversine Distance formula in meters/km
+  const getDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('브라우저에서 위치 서비스를 지원하지 않습니다.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+        setSortByNearest(true);
+        setIsLocating(false);
+      },
+      () => {
+        // Fallback to Jongno / Euljiro central coordinates if denied
+        setUserLocation({ lat: 37.5665, lng: 126.9910 });
+        setSortByNearest(true);
+        setIsLocating(false);
+      },
+      { timeout: 5000 }
+    );
+  };
+
+  const sortedSpots = [...mockAnalogSpots].filter((spot) => {
     const matchCategory = selectedCategory === 'all' || spot.category === selectedCategory;
     const matchArea = selectedArea === 'all' || spot.area === selectedArea;
     return matchCategory && matchArea;
+  }).sort((a, b) => {
+    if (!sortByNearest || !userLocation) return 0;
+    const distA = getDistanceKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
+    const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
+    return distA - distB;
   });
 
   const getCategoryIcon = (category: SpotCategory) => {
@@ -65,14 +113,28 @@ export default function MapPage() {
           </p>
         </div>
 
-        {/* Micro-Ads Partner Registration Button */}
-        <button
-          onClick={() => setIsPartnerModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all shadow-2xs shrink-0"
-        >
-          <Store className="w-4 h-4 text-amber-700" />
-          <span>사장님 파트너 핀 등록 (월 1.4만)</span>
-        </button>
+        {/* Micro-Ads & GPS Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleLocateMe}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-2xs ${
+              sortByNearest
+                ? 'bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-200'
+                : 'bg-white hover:bg-vintage-50 border-vintage-300 text-vintage-800'
+            }`}
+          >
+            <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+            <span>{isLocating ? '위치 측정 중...' : sortByNearest ? '📍 내 주변순 정렬됨' : '내 위치 주변 찾기'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsPartnerModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all shadow-2xs shrink-0"
+          >
+            <Store className="w-4 h-4 text-amber-700" />
+            <span>사장님 파트너 핀 등록 (월 1.4만)</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Chips Bar */}
@@ -130,17 +192,21 @@ export default function MapPage() {
           <div className="relative z-10 flex items-center justify-between">
             <div className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-vintage-300 text-xs font-bold text-vintage-800 shadow-xs flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>현재 서울 중구 을지로·충무로 중심</span>
+              <span>{userLocation ? '현재 내 GPS 위치 기반 반경' : '서울 중구 을지로·충무로 중심'}</span>
             </div>
             <span className="text-[11px] text-vintage-600 bg-white/80 px-2.5 py-1 rounded-lg border border-vintage-200">
-              검색된 장소: {filteredSpots.length}곳
+              검색된 장소: {sortedSpots.length}곳
             </span>
           </div>
 
           {/* Interactive Spot Pins on Canvas */}
           <div className="relative z-10 my-auto py-12 flex flex-wrap justify-around items-center gap-6">
-            {filteredSpots.map((spot) => {
+            {sortedSpots.map((spot) => {
               const isSelected = activeSpot.id === spot.id;
+              const dist = userLocation
+                ? getDistanceKm(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
+                : null;
+
               return (
                 <div
                   key={spot.id}
@@ -161,6 +227,11 @@ export default function MapPage() {
                   >
                     <span>{getCategoryIcon(spot.category)}</span>
                     <span className="text-xs font-bold whitespace-nowrap">{spot.name}</span>
+                    {dist !== null && (
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-vintage-100 text-vintage-600 font-mono">
+                        {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
+                      </span>
+                    )}
                     {spot.isMicroAdPartner && (
                       <span className="w-2 h-2 rounded-full bg-amber-500" />
                     )}

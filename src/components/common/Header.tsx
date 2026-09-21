@@ -13,11 +13,26 @@ import {
   ShieldCheck,
   Award,
   Share2,
-  FolderLock
+  FolderLock,
+  Search
 } from 'lucide-react';
+import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+
+  // Bind Ctrl+K or Cmd+K
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const primaryNavItems = [
     { href: '/', label: '홈' },
@@ -104,6 +119,19 @@ export const Header: React.FC = () => {
               })}
             </div>
 
+            {/* Search Trigger Button */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 rounded-xl bg-white/70 hover:bg-white text-vintage-700 hover:text-vintage-900 border border-vintage-200 flex items-center gap-1.5 transition-colors shadow-2xs"
+              title="전역 검색 (Ctrl+K)"
+            >
+              <Search className="w-4 h-4 text-terracotta" />
+              <span className="hidden sm:inline-block text-xs font-medium text-vintage-500">검색</span>
+              <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[9px] font-mono text-vintage-500 bg-vintage-100 rounded border border-vintage-200">
+                ⌘K
+              </kbd>
+            </button>
+
             {/* DASI Pro Studio Link */}
             <Link
               href="/pro"
@@ -123,6 +151,9 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Global Search Modal */}
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 };
