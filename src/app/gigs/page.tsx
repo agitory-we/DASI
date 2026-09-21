@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { PhotoGig, GigCategory } from '@/types';
-import { mockPhotoGigs } from '@/data/mockData';
 import {
   Users,
   Sparkles,

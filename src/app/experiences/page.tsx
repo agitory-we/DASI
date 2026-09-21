@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
-import { mockExperiences } from '@/data/mockData';
 import { Experience } from '@/types';
 
 export default function ExperiencesPage() {

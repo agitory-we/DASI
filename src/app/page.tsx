@@ -22,7 +22,7 @@ import {
   Share2,
   FolderLock
 } from 'lucide-react';
-import { mockMasters, mockEventsAndHotSpots } from '@/data/mockData';
+import { mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
 
 import { Bell, Heart } from 'lucide-react';
@@ -654,13 +654,13 @@ export default function HomePage() {
               </p>
               <div className="flex items-center gap-3 pt-2 border-t border-white/10">
                 <img
-                  src={(repairMasters[0] || mockMasters[0]).profileImage}
-                  alt={(repairMasters[0] || mockMasters[0]).name}
+                  src={repairMasters[0]?.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80'}
+                  alt={repairMasters[0]?.name || '정인수'}
                   className="w-10 h-10 rounded-full object-cover border border-white/30"
                 />
                 <div>
-                  <div className="text-xs font-bold text-white">{(repairMasters[0] || mockMasters[0]).name} (경력 {(repairMasters[0] || mockMasters[0]).experienceYears}년)</div>
-                  <div className="text-[11px] text-vintage-300">{(repairMasters[0] || mockMasters[0]).shopName}</div>
+                  <div className="text-xs font-bold text-white">{repairMasters[0]?.name || '정인수'} (경력 {repairMasters[0]?.experienceYears || 42}년)</div>
+                  <div className="text-[11px] text-vintage-300">{repairMasters[0]?.shopName || '을지로 신성카메라'}</div>
                 </div>
               </div>
             </div>
