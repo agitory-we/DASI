@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { mockMasters } from '@/data/mockData';
 import { RepairMaster, UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
@@ -295,12 +296,21 @@ export default function ClinicPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setIsEstimateModalOpen(false)}
-                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
-                >
-                  확인 및 닫기
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
+                  <button
+                    onClick={() => setIsEstimateModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                  >
+                    닫기
+                  </button>
+                  <Link
+                    href="/cabinet"
+                    onClick={() => setIsEstimateModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs text-center"
+                  >
+                    🔧 마이 캐비닛에서 확인
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
@@ -345,6 +355,20 @@ export default function ClinicPage() {
                       </label>
                     ))}
                   </div>
+
+                  {selectedSymptoms.length > 0 && (
+                    <div className="p-3 bg-terracotta/5 border border-terracotta/20 rounded-xl space-y-1 animate-fadeIn">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-bold text-vintage-900">선택 증상 기준 예상 수리 공임</span>
+                        <span className="font-bold text-terracotta">
+                          {(selectedSymptoms.length * 25000).toLocaleString()}원 ~ {((selectedSymptoms.length + 1) * 35000).toLocaleString()}원
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-vintage-500">
+                        * 부품 교체가 필요한 경우 정밀 분해 후 사전 고지 드립니다.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

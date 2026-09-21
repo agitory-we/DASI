@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Camera, CameraCategory, ConditionGrade } from '@/types';
-import { mockCameras, mockPickupShops } from '@/data/mockData';
+import { Camera, CameraCategory } from '@/types';
 import {
   Sparkles,
   Calendar,
@@ -17,34 +16,60 @@ import {
   HeartHandshake,
   Volume2,
   QrCode,
-  Receipt
+  Receipt,
+  Clock,
+  CreditCard,
+  Camera as CameraIcon
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 
 export default function RentPage() {
-  const { bookCameraRental, showToast } = useDasi();
+  const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
-  const [rentalDays, setRentalDays] = useState<number>(2);
+
+  // Date picker state
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const defaultEndStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  const [startDate, setStartDate] = useState<string>(todayStr);
+  const [endDate, setEndDate] = useState<string>(defaultEndStr);
+  const [pickupTime, setPickupTime] = useState<string>('14:00');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'toss' | 'kakao'>('card');
   const [selectedShopId, setSelectedShopId] = useState<string>('shop-1');
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
   const [isBooked, setIsBooked] = useState<boolean>(false);
+  const [bookedTicketCode, setBookedTicketCode] = useState<string>('');
 
-  const filteredCameras = selectedCategory === 'all'
-    ? mockCameras
-    : mockCameras.filter((c) => c.category === selectedCategory);
+  const rentalDays = useMemo(() => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 1;
+  }, [startDate, endDate]);
+
+  const filteredCameras = useMemo(() => {
+    return selectedCategory === 'all'
+      ? cameras
+      : cameras.filter((c) => c.category === selectedCategory);
+  }, [cameras, selectedCategory]);
 
   const handleOpenBooking = (camera: Camera) => {
     setSelectedCamera(camera);
-    setSelectedShopId(camera.shopId);
+    setSelectedShopId(camera.shopId || pickupShops[0]?.id || 'shop-1');
     setIncludeFilm(false);
     setIncludeCleaningKit(false);
     setIsBooked(false);
+    setBookedTicketCode('');
   };
 
-  const currentShop = mockPickupShops.find((s) => s.id === selectedShopId) || mockPickupShops[0];
+  const currentShop = pickupShops.find((s) => s.id === selectedShopId) || pickupShops[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -117,246 +142,238 @@ export default function RentPage() {
         ))}
       </div>
 
-      {/* Camera Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCameras.map((camera) => {
-          const rentTotal = camera.rentalPricePerDay * 2;
-          const remainingToBuy = camera.purchasePrice - rentTotal;
-
-          return (
+      {/* Camera Grid or Skeleton Loading */}
+      {isLoadingData ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div key={idx} className="rounded-3xl bg-white border border-vintage-200 p-5 space-y-4 animate-pulse">
+              <div className="aspect-4/3 bg-vintage-100 rounded-2xl" />
+              <div className="h-5 bg-vintage-200 rounded-md w-3/4" />
+              <div className="h-4 bg-vintage-100 rounded-md w-1/2" />
+              <div className="h-10 bg-vintage-100 rounded-xl w-full" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCameras.map((camera) => (
             <div
               key={camera.id}
-              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between group"
+              className="group rounded-3xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg hover:border-vintage-300 transition-all flex flex-col"
             >
-              <div>
-                <div className="relative aspect-[16/10] bg-vintage-100 overflow-hidden">
-                  <img
-                    src={camera.imageUrl}
-                    alt={camera.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
-                      {camera.era}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-700/80 text-white text-[10px] font-semibold">
-                      {camera.conditionGrade} 등급
-                    </span>
-                  </div>
-                  <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        playShutterSound(
-                          camera.name.includes('FM2')
-                            ? 'slr'
-                            : camera.category === 'digital_compact'
-                            ? 'leaf'
-                            : 'compact'
-                        );
-                      }}
-                      className="px-2 py-0.5 rounded-md bg-black/75 hover:bg-terracotta text-white text-[10px] font-semibold flex items-center gap-1 backdrop-blur-xs transition-colors shadow-xs"
-                      title="실제 기계식 셔터 소리 들어보기"
-                    >
-                      <Volume2 className="w-3 h-3 text-amber-300" />
-                      <span>셔터음</span>
-                    </button>
-                    <span className="px-2 py-0.5 rounded-md bg-white/95 text-vintage-900 text-[11px] font-bold shadow-xs">
-                      {camera.specs.difficulty}
-                    </span>
-                  </div>
+              {/* Thumbnail Image */}
+              <div className="relative aspect-4/3 bg-vintage-100 overflow-hidden">
+                <img
+                  src={camera.imageUrl}
+                  alt={camera.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 flex gap-1.5">
+                  <span className="px-2.5 py-1 rounded-full bg-vintage-950/80 text-white text-[11px] font-medium backdrop-blur-xs">
+                    {camera.era}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-terracotta text-white text-[11px] font-bold">
+                    {camera.conditionGrade} 등급
+                  </span>
                 </div>
 
-                <div className="p-6 space-y-4">
-                  <div>
-                    <div className="text-[11px] text-vintage-500 font-medium">{camera.brand}</div>
-                    <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                      {camera.name}
-                    </h3>
-                    <p className="text-xs text-vintage-600 line-clamp-2 mt-1.5 leading-relaxed">
-                      {camera.description}
-                    </p>
-                  </div>
-
-                  {/* Specs Pill */}
-                  <div className="grid grid-cols-2 gap-2 text-[11px] bg-vintage-50 p-3 rounded-xl border border-vintage-100">
-                    <div>
-                      <span className="text-vintage-400">렌즈:</span>{' '}
-                      <span className="font-medium text-vintage-800">{camera.specs.lens}</span>
-                    </div>
-                    <div>
-                      <span className="text-vintage-400">무게:</span>{' '}
-                      <span className="font-medium text-vintage-800">{camera.specs.weight}</span>
-                    </div>
-                  </div>
-
-                  {/* Rent-to-Own Highlight Box */}
-                  <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-amber-900 font-semibold">주말(2일) 대여료</span>
-                      <span className="font-bold text-terracotta text-sm">
-                        {rentTotal.toLocaleString()}원
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-amber-800">
-                      <span>소장 시 잔금 (대여료 차감)</span>
-                      <span className="font-bold text-vintage-900">
-                        {remainingToBuy.toLocaleString()}원
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-vintage-500 pt-0.5">
-                      📍 픽업: {camera.shopName}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 pt-0">
                 <button
-                  onClick={() => handleOpenBooking(camera)}
-                  className="w-full py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                  onClick={() => playShutterSound(camera.category === 'film' ? 'slr' : 'compact')}
+                  className="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 text-vintage-800 hover:bg-white shadow-md transition-all active:scale-90"
+                  title="실제 셔터 소리 미리듣기"
                 >
-                  <Calendar className="w-4 h-4" />
-                  <span>대여 일정 선택 &amp; 픽업 예약</span>
+                  <Volume2 className="w-4 h-4 text-terracotta" />
                 </button>
               </div>
-            </div>
-          );
-        })}
-      </div>
 
-      {/* BOOKING & RENT-TO-OWN MODAL */}
-      {selectedCamera && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-vintage-200 bg-vintage-50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center font-bold">
-                  📷
-                </div>
-                <div>
-                  <h3 className="font-serif text-lg font-bold text-vintage-900">
-                    {selectedCamera.name} 주말 대여 예약
+              {/* Body Content */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-vintage-500">
+                    <span>{camera.brand}</span>
+                    <span className="flex items-center gap-1 text-amber-600 font-bold">
+                      ★ {camera.rating.toFixed(1)} ({camera.reviewsCount})
+                    </span>
+                  </div>
+
+                  <h3 className="font-serif text-lg font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                    {camera.name}
                   </h3>
-                  <span className="text-xs text-vintage-500">{selectedCamera.era} · {selectedCamera.conditionGrade} 등급</span>
+
+                  <p className="text-xs text-vintage-600 line-clamp-2 leading-relaxed">
+                    {camera.description}
+                  </p>
+                </div>
+
+                {/* Specs Pill */}
+                <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-100 text-[11px] text-vintage-700 grid grid-cols-2 gap-1.5">
+                  <div>렌즈: <span className="font-semibold text-vintage-900">{camera.specs.lens}</span></div>
+                  <div>셔터: <span className="font-semibold text-vintage-900">{camera.specs.shutterSpeed}</span></div>
+                  <div>난이도: <span className="font-semibold text-terracotta">{camera.specs.difficulty}</span></div>
+                  <div>배터리: <span className="font-semibold text-vintage-900">{camera.specs.battery}</span></div>
+                </div>
+
+                {/* Pricing & CTA */}
+                <div className="pt-2 border-t border-vintage-100 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] text-vintage-500">1일 대여료</div>
+                    <div className="text-base sm:text-lg font-bold text-terracotta">
+                      {camera.rentalPricePerDay.toLocaleString()}원
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-[11px] text-vintage-400 line-through">
+                      소장가 {camera.purchasePrice.toLocaleString()}원
+                    </div>
+                    <button
+                      onClick={() => handleOpenBooking(camera)}
+                      className="mt-1 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>날짜 예약하기</span>
+                    </button>
+                  </div>
                 </div>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* BOOKING MODAL (캘린더 & Rent-to-Own 실시간 시뮬레이션)     */}
+      {/* ======================================================== */}
+      {selectedCamera && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-vintage-200 overflow-hidden animate-scaleUp my-8">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-vintage-200 flex items-center justify-between bg-vintage-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center font-bold">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg font-bold text-vintage-900">
+                    {selectedCamera.name} 주말 렌탈 예약
+                  </h2>
+                  <p className="text-xs text-vintage-500">
+                    {selectedCamera.brand} · {selectedCamera.era} · {selectedCamera.conditionGrade} 등급
+                  </p>
+                </div>
+              </div>
+
               <button
                 onClick={() => setSelectedCamera(null)}
-                className="p-2 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100"
+                className="p-2 rounded-full text-vintage-400 hover:text-vintage-700 hover:bg-vintage-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6">
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
               {isBooked ? (
-                <div className="text-center py-6 space-y-5 animate-fade-in">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
-                    <Check className="w-7 h-7" />
+                /* 예약 완료 화면 */
+                <div className="text-center py-6 space-y-4 animate-fadeIn">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                    <Check className="w-8 h-8" />
                   </div>
-                  
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                      픽업 예약 확정 · 가승인 완료
-                    </span>
-                    <h4 className="font-serif text-2xl font-bold text-vintage-900">
-                      {selectedCamera.name} 대여 완료
-                    </h4>
-                    <p className="text-xs text-vintage-600 max-w-md mx-auto leading-relaxed">
-                      선택하신 <strong>{currentShop.name}</strong> 장인님께 예약 정보가 전달되었습니다.<br />
-                      현장 픽업 시 <strong>10분 온보딩 강습</strong> 및 필름 장착이 무료 지원됩니다.
-                    </p>
-                  </div>
+                  <h3 className="font-serif text-xl font-bold text-vintage-900">
+                    대여 예약이 정상 완료되었습니다!
+                  </h3>
+                  <p className="text-xs sm:text-sm text-vintage-600 max-w-md mx-auto leading-relaxed">
+                    선택하신 매장에 예약 정보가 실시간 접수되었습니다.
+                    방문 시 매장 장인에게 예약 확인증(모바일 티켓)을 보여주시면 1:1 강습과 함께 기기를 전달해 드립니다.
+                  </p>
 
-                  {/* Digital Mobile Voucher Card */}
-                  <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200/80 text-left max-w-md mx-auto space-y-4 shadow-xs relative overflow-hidden">
-                    <div className="flex items-center justify-between border-b border-vintage-200/60 pb-3">
-                      <div className="flex items-center gap-2">
-                        <QrCode className="w-5 h-5 text-terracotta" />
-                        <span className="text-xs font-bold text-vintage-900">DASI 모바일 픽업 바우처</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
-                        RTO-{Math.floor(100000 + Math.random() * 900000)}
+                  <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 max-w-md mx-auto text-left space-y-2 text-xs">
+                    <div className="flex justify-between py-1 border-b border-vintage-200">
+                      <span className="text-vintage-500">예약 번호</span>
+                      <span className="font-mono font-bold text-vintage-900">{bookedTicketCode}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-vintage-200">
+                      <span className="text-vintage-500">대여 기간</span>
+                      <span className="font-bold text-vintage-900">{startDate} ~ {endDate} ({rentalDays}일간)</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-vintage-200">
+                      <span className="text-vintage-500">픽업 장소 &amp; 시간</span>
+                      <span className="font-bold text-terracotta">{currentShop?.name} ({pickupTime})</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-vintage-500">결제 금액</span>
+                      <span className="font-bold text-vintage-900">
+                        {(
+                          selectedCamera.rentalPricePerDay * rentalDays +
+                          (includeFilm ? 14000 : 0) +
+                          (includeCleaningKit ? 3000 : 0)
+                        ).toLocaleString()}원 (대여료 100% 소장 공제 보장)
                       </span>
                     </div>
-
-                    <div className="space-y-2 text-xs text-vintage-700">
-                      <div className="flex justify-between">
-                        <span className="text-vintage-500">대여 기종</span>
-                        <span className="font-bold text-vintage-900">{selectedCamera.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-vintage-500">대여 일정</span>
-                        <span className="font-semibold text-vintage-800">{rentalDays}일 대여</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-vintage-500">픽업 장소</span>
-                        <span className="font-semibold text-vintage-900 text-right">{currentShop.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-vintage-500">담당 명장</span>
-                        <span className="font-semibold text-vintage-800">{currentShop.masterName} ({currentShop.contact})</span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-900 space-y-0.5">
-                      <div className="font-bold flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Rent-to-Own 소장 전환 혜택 유지</span>
-                      </div>
-                      <p className="text-[10px] text-amber-800">
-                        대여 기간 종료 전 언제든지 이미 결제한 {(selectedCamera.rentalPricePerDay * rentalDays).toLocaleString()}원을 100% 공제하고 영구 소장하실 수 있습니다.
-                      </p>
-                    </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto pt-2">
+                  <div className="flex justify-center gap-3 pt-4">
                     <Link
                       href="/cabinet"
-                      onClick={() => setSelectedCamera(null)}
-                      className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                      className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                     >
-                      <span>내 캐비닛에서 예약 확인하기</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      마이 캐비닛에서 예약 확인하기 →
                     </Link>
                     <button
                       onClick={() => setSelectedCamera(null)}
-                      className="px-5 py-3 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                      className="px-5 py-2.5 rounded-xl border border-vintage-300 text-xs sm:text-sm font-semibold text-vintage-700 hover:bg-vintage-100"
                     >
-                      계속 둘러보기
+                      닫기
                     </button>
                   </div>
                 </div>
               ) : (
                 <>
-                  {/* Step 1: 대여 일수 선택 */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
-                      1. 대여 기간 선택 (일자)
+                  {/* Step 1: 날짜 피커 캘린더 엔진 */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider flex items-center justify-between">
+                      <span>1. 대여 일정 선택 (캘린더)</span>
+                      <span className="text-terracotta font-bold">총 {rentalDays}일간 대여</span>
                     </label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { days: 2, label: '주말 1박 2일 (토~일)' },
-                        { days: 3, label: '연휴 2박 3일 (금~일)' },
-                        { days: 7, label: '일주일 여행 (7일)' },
-                      ].map((item) => (
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-1">
+                        <span className="text-[11px] text-vintage-500 font-medium">대여 시작일 (방문 픽업)</span>
+                        <input
+                          type="date"
+                          value={startDate}
+                          min={todayStr}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="w-full bg-white border border-vintage-200 rounded-xl px-3 py-2 text-xs font-semibold text-vintage-900 focus:outline-hidden focus:border-terracotta"
+                        />
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-1">
+                        <span className="text-[11px] text-vintage-500 font-medium">반납 예정일 (매장 반납)</span>
+                        <input
+                          type="date"
+                          value={endDate}
+                          min={startDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full bg-white border border-vintage-200 rounded-xl px-3 py-2 text-xs font-semibold text-vintage-900 focus:outline-hidden focus:border-terracotta"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <Clock className="w-3.5 h-3.5 text-vintage-400" />
+                      <span className="text-[11px] text-vintage-600">픽업 희망 시간:</span>
+                      {['11:00', '14:00', '17:00'].map((time) => (
                         <button
-                          key={item.days}
-                          onClick={() => setRentalDays(item.days)}
-                          className={`p-3 rounded-2xl border text-center transition-all ${
-                            rentalDays === item.days
-                              ? 'border-terracotta bg-terracotta/5 text-terracotta font-bold shadow-2xs'
-                              : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                          key={time}
+                          onClick={() => setPickupTime(time)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                            pickupTime === time
+                              ? 'bg-vintage-900 text-white'
+                              : 'bg-vintage-100 text-vintage-700 hover:bg-vintage-200'
                           }`}
                         >
-                          <div className="text-sm font-semibold">{item.label}</div>
-                          <div className="text-xs mt-0.5 opacity-80">
-                            {(selectedCamera.rentalPricePerDay * item.days).toLocaleString()}원
-                          </div>
+                          {time}
                         </button>
                       ))}
                     </div>
@@ -368,7 +385,7 @@ export default function RentPage() {
                       2. 방문 픽업 &amp; 10분 강습 매장 선택
                     </label>
                     <div className="space-y-2">
-                      {mockPickupShops.map((shop) => (
+                      {pickupShops.map((shop) => (
                         <div
                           key={shop.id}
                           onClick={() => setSelectedShopId(shop.id)}
@@ -382,7 +399,7 @@ export default function RentPage() {
                             <MapPin className={`w-4 h-4 ${selectedShopId === shop.id ? 'text-terracotta' : 'text-vintage-400'}`} />
                             <div>
                               <div className="text-xs font-bold text-vintage-900">{shop.name}</div>
-                              <div className="text-[11px] text-vintage-500">{shop.address} · {shop.masterName}</div>
+                              <div className="text-[11px] text-vintage-500">{shop.address} · {shop.masterName} ({shop.masterExperienceYears}년)</div>
                             </div>
                           </div>
                           <span className="text-[11px] font-semibold text-terracotta">
@@ -479,7 +496,32 @@ export default function RentPage() {
                     </div>
                   </div>
 
-                  {/* Step 5: 안심 결제 보증금 안내 */}
+                  {/* Step 5: 결제 수단 선택 및 안심 가승인 안내 */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
+                      4. 결제 수단 선택
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'card', label: '신용/체크카드' },
+                        { id: 'toss', label: '토스페이' },
+                        { id: 'kakao', label: '카카오페이' }
+                      ].map((pay) => (
+                        <button
+                          key={pay.id}
+                          onClick={() => setPaymentMethod(pay.id as any)}
+                          className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                            paymentMethod === pay.id
+                              ? 'border-vintage-900 bg-vintage-900 text-white shadow-2xs'
+                              : 'border-vintage-200 bg-white text-vintage-700 hover:bg-vintage-50'
+                          }`}
+                        >
+                          {pay.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="p-3 rounded-xl bg-vintage-50 border border-vintage-200 text-[11px] text-vintage-600 flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     <span>
@@ -495,7 +537,7 @@ export default function RentPage() {
             {!isBooked && (
               <div className="p-6 border-t border-vintage-200 bg-vintage-50 flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-vintage-500">결제 예정 총액 (대여료 + 옵션)</span>
+                  <span className="text-xs text-vintage-500">결제 예정 총액 ({rentalDays}일간)</span>
                   <div className="text-lg font-bold text-terracotta">
                     {(
                       selectedCamera.rentalPricePerDay * rentalDays +
@@ -514,24 +556,30 @@ export default function RentPage() {
                   </button>
                   <button
                     onClick={() => {
-                      playShutterSound('slr');
+                      playShutterSound(selectedCamera.category === 'film' ? 'slr' : 'compact');
                       const totalPaid = selectedCamera.rentalPricePerDay * rentalDays;
+                      const bookingId = `rent-${Date.now()}`;
+                      const code = `DASI-${Math.floor(100000 + Math.random() * 900000)}`;
+                      setBookedTicketCode(code);
+
                       bookCameraRental({
-                        id: `rent-${Date.now()}`,
+                        id: bookingId,
                         name: selectedCamera.name,
                         brand: selectedCamera.brand,
                         rentalPaid: totalPaid,
                         purchaseTotal: selectedCamera.purchasePrice,
                         rentalDays: rentalDays,
-                        shopName: currentShop.name,
+                        shopName: currentShop?.name || '을지로 신성카메라',
                         imageUrl: selectedCamera.imageUrl,
                       });
-                      showToast(`${selectedCamera.name} 대여 예약이 완료되었습니다! (픽업: ${currentShop.name})`, 'success');
+
+                      showToast(`${selectedCamera.name} ${rentalDays}일 대여 예약 완료! (픽업: ${currentShop?.name})`, 'success');
                       setIsBooked(true);
                     }}
-                    className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs"
+                    className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs flex items-center gap-1.5"
                   >
-                    대여 예약 완료하기
+                    <CreditCard className="w-4 h-4" />
+                    <span>대여 결제 예약하기</span>
                   </button>
                 </div>
               </div>

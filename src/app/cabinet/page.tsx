@@ -39,11 +39,16 @@ export default function CabinetPage() {
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [selectedConvertingItem, setSelectedConvertingItem] = useState<any | null>(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [selectedReturningItem, setSelectedReturningItem] = useState<any | null>(null);
   const [isResellModalOpen, setIsResellModalOpen] = useState(false);
   const [selectedResellItem, setSelectedResellItem] = useState<any | null>(null);
+  const [convertPaymentMethod, setConvertPaymentMethod] = useState<'card' | 'toss' | 'kakao'>('card');
+  const [isConvertingProcessing, setIsConvertingProcessing] = useState(false);
 
-  const activeRenting = rentingItems[0] || null;
+  const activeRentings = rentingItems.filter((r) => !r.isConvertedToOwn);
+  const activeRenting = activeRentings[0] || null;
 
   // Mock Scanned Film Rolls
   const mockFilmRolls = [
@@ -70,10 +75,15 @@ export default function CabinetPage() {
   ];
 
   const handleConfirmConvert = () => {
-    if (!activeRenting) return;
-    playShutterSound('slr');
-    convertToOwn(activeRenting.id);
-    setIsConvertModalOpen(false);
+    if (!selectedConvertingItem) return;
+    setIsConvertingProcessing(true);
+    setTimeout(() => {
+      playShutterSound('slr');
+      convertToOwn(selectedConvertingItem.id);
+      setIsConvertingProcessing(false);
+      setIsConvertModalOpen(false);
+      showToast(`${selectedConvertingItem.name} 소장 전환이 완료되었습니다! 정품 보증서가 발급되었습니다.`, 'success');
+    }, 800);
   };
 
   return (
@@ -133,16 +143,16 @@ export default function CabinetPage() {
                   현재 대여 중인 카메라 ({rentingItems.filter(r => !r.isConvertedToOwn).length})
                 </h2>
               </div>
-              {activeRenting && !activeRenting.isConvertedToOwn && (
+              {activeRentings.length > 0 && (
                 <span className="text-xs text-terracotta font-bold flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>대여 {activeRenting.rentalDays}일차 이용 중</span>
+                  <span>{activeRentings.length}대 이용 중</span>
                 </span>
               )}
             </div>
 
             <div className="p-6 sm:p-8">
-              {!activeRenting ? (
+              {activeRentings.length === 0 ? (
                 <div className="text-center py-10 space-y-3">
                   <p className="text-xs text-vintage-500">현재 대여 중인 카메라가 없습니다. 이번 주말 감성 출사용 카메라를 예약해 보세요!</p>
                   <a
@@ -153,72 +163,76 @@ export default function CabinetPage() {
                     <ChevronRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
-              ) : activeRenting.isConvertedToOwn ? (
-                <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto font-bold">
-                    ✓
-                  </div>
-                  <h3 className="font-serif text-xl font-bold text-emerald-950">
-                    소장 전환이 완료되었습니다!
-                  </h3>
-                  <p className="text-xs text-emerald-800">
-                    이제 완전히 대표님의 소중한 카메라가 되었습니다. 아래 [소장 컬렉션]에서 디지털 정품 보증서를 확인하세요.
-                  </p>
-                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                  <div className="md:col-span-4 relative aspect-[4/3] rounded-2xl overflow-hidden bg-vintage-100">
-                    <img
-                      src={activeRenting.imageUrl}
-                      alt={activeRenting.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                <div className="space-y-6 divide-y divide-vintage-100">
+                  {activeRentings.map((rentItem, idx) => (
+                    <div key={rentItem.id} className={`grid grid-cols-1 md:grid-cols-12 gap-8 items-center ${idx > 0 ? 'pt-6' : ''}`}>
+                      <div className="md:col-span-4 relative aspect-[4/3] rounded-2xl overflow-hidden bg-vintage-100">
+                        <img
+                          src={rentItem.imageUrl}
+                          alt={rentItem.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-vintage-950/80 text-white text-[10px] font-bold backdrop-blur-xs flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-terracotta" />
+                          <span>{rentItem.rentalDays}일 렌탈</span>
+                        </div>
+                      </div>
 
-                  <div className="md:col-span-8 space-y-5">
-                    <div>
-                      <span className="text-xs text-vintage-500">{activeRenting.brand}</span>
-                      <h3 className="font-serif text-2xl font-bold text-vintage-900">
-                        {activeRenting.name}
-                      </h3>
-                      <div className="text-xs text-vintage-600 mt-1">
-                        반납처: <strong>{activeRenting.shopName}</strong>
+                      <div className="md:col-span-8 space-y-4">
+                        <div>
+                          <span className="text-xs text-vintage-500">{rentItem.brand} · 예약일 {rentItem.bookedAt}</span>
+                          <h3 className="font-serif text-2xl font-bold text-vintage-900">
+                            {rentItem.name}
+                          </h3>
+                          <div className="text-xs text-vintage-600 mt-1">
+                            픽업/반납 지정처: <strong>{rentItem.shopName}</strong>
+                          </div>
+                        </div>
+
+                        {/* Rent to Own Math Box */}
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-vintage-50 border border-amber-200/80 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-amber-900 flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                              Rent-to-Own 즉시 소장 잔금
+                            </span>
+                            <span className="text-emerald-700 font-bold">기결제 대여료 {rentItem.rentalPaid.toLocaleString()}원 100% 공제</span>
+                          </div>
+                          <div className="flex items-baseline justify-between text-xs pt-1">
+                            <span className="text-vintage-600">정상가 {rentItem.purchaseTotal.toLocaleString()}원 - 대여료 {rentItem.rentalPaid.toLocaleString()}원 =</span>
+                            <span className="text-lg font-bold text-terracotta">
+                              {Math.max(0, rentItem.purchaseTotal - rentItem.rentalPaid).toLocaleString()}원
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedConvertingItem(rentItem);
+                              setIsConvertModalOpen(true);
+                            }}
+                            className="px-6 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-xs flex items-center gap-1.5"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            <span>대여료 전액 빼고 내 것으로 소장하기</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedReturningItem(rentItem);
+                              setIsReturnModalOpen(true);
+                            }}
+                            className="px-5 py-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5"
+                          >
+                            <RotateCcw className="w-4 h-4 text-vintage-600" />
+                            <span>매장 방문 반납 신청</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Rent to Own Math Box */}
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-vintage-50 border border-amber-200/80 space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-amber-900 flex items-center gap-1">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          Rent-to-Own 즉시 소장 잔금
-                        </span>
-                        <span className="text-emerald-700 font-bold">대여료 {activeRenting.rentalPaid.toLocaleString()}원 100% 공제</span>
-                      </div>
-                      <div className="flex items-baseline justify-between text-xs pt-1">
-                        <span className="text-vintage-600">정상가 {activeRenting.purchaseTotal.toLocaleString()}원 - 기결제 대여료 {activeRenting.rentalPaid.toLocaleString()}원 =</span>
-                        <span className="text-lg font-bold text-terracotta">
-                          {(activeRenting.purchaseTotal - activeRenting.rentalPaid).toLocaleString()}원
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => setIsConvertModalOpen(true)}
-                        className="px-6 py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-xs"
-                      >
-                        대여료 빼고 내 것으로 소장하기
-                      </button>
-                      <button
-                        onClick={() => setIsReturnModalOpen(true)}
-                        className="px-5 py-3 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs sm:text-sm font-semibold transition-colors"
-                      >
-                        매장 방문 반납 신청
-                      </button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -707,7 +721,7 @@ export default function CabinetPage() {
       )}
 
       {/* RTO CONVERT CONFIRMATION MODAL */}
-      {isConvertModalOpen && activeRenting && (
+      {isConvertModalOpen && selectedConvertingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
@@ -727,27 +741,52 @@ export default function CabinetPage() {
 
             <div className="space-y-4 text-xs text-vintage-700">
               <p className="leading-relaxed">
-                이미 지불하신 대여료 <strong>{activeRenting.rentalPaid.toLocaleString()}원</strong>을 100% 공제하고 잔금만 결제하시면, 이 카메라의 소유권이 영구히 이전되며 <strong>디지털 정품 보증서</strong>가 즉시 발행됩니다.
+                이미 지불하신 대여료 <strong>{selectedConvertingItem.rentalPaid.toLocaleString()}원</strong>을 100% 공제하고 잔금만 결제하시면, 이 카메라의 소유권이 영구히 이전되며 <strong>디지털 정품 보증서</strong>가 즉시 발행됩니다.
               </p>
 
               <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-vintage-500">소장 대상 기종</span>
-                  <span className="font-bold text-vintage-900">{activeRenting.name}</span>
+                  <span className="font-bold text-vintage-900">{selectedConvertingItem.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-vintage-500">정상 소장가</span>
-                  <span className="text-vintage-800">{activeRenting.purchaseTotal.toLocaleString()}원</span>
+                  <span className="text-vintage-800">{selectedConvertingItem.purchaseTotal.toLocaleString()}원</span>
                 </div>
-                <div className="flex justify-between text-terracotta">
+                <div className="flex justify-between text-terracotta font-semibold">
                   <span>대여료 전액 공제 (100%)</span>
-                  <span>- {activeRenting.rentalPaid.toLocaleString()}원</span>
+                  <span>- {selectedConvertingItem.rentalPaid.toLocaleString()}원</span>
                 </div>
                 <div className="pt-2 border-t border-vintage-200 flex justify-between text-sm font-bold text-vintage-900">
                   <span>최종 실결제 잔금</span>
-                  <span className="text-emerald-800">
-                    {(activeRenting.purchaseTotal - activeRenting.rentalPaid).toLocaleString()}원
+                  <span className="text-emerald-800 font-extrabold text-base">
+                    {Math.max(0, selectedConvertingItem.purchaseTotal - selectedConvertingItem.rentalPaid).toLocaleString()}원
                   </span>
+                </div>
+              </div>
+
+              {/* 결제 수단 선택 */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-vintage-800">잔액 결제 수단</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'card', label: '신용카드' },
+                    { id: 'toss', label: '토스페이' },
+                    { id: 'kakao', label: '카카오페이' }
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setConvertPaymentMethod(m.id as any)}
+                      className={`py-2 text-[11px] font-semibold rounded-xl border transition-all ${
+                        convertPaymentMethod === m.id
+                          ? 'border-vintage-900 bg-vintage-900 text-white'
+                          : 'border-vintage-200 bg-white text-vintage-700 hover:bg-vintage-50'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -765,15 +804,21 @@ export default function CabinetPage() {
             <div className="flex gap-2.5">
               <button
                 onClick={() => setIsConvertModalOpen(false)}
+                disabled={isConvertingProcessing}
                 className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 text-xs font-semibold hover:bg-vintage-100"
               >
                 취소
               </button>
               <button
                 onClick={handleConfirmConvert}
-                className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs"
+                disabled={isConvertingProcessing}
+                className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-2"
               >
-                {(activeRenting.purchaseTotal - activeRenting.rentalPaid).toLocaleString()}원 결제하고 소장 완료
+                {isConvertingProcessing ? (
+                  <span>안전 결제 승인 중...</span>
+                ) : (
+                  <span>{Math.max(0, selectedConvertingItem.purchaseTotal - selectedConvertingItem.rentalPaid).toLocaleString()}원 결제하고 소장 완료</span>
+                )}
               </button>
             </div>
           </div>
@@ -781,7 +826,7 @@ export default function CabinetPage() {
       )}
 
       {/* RETURN APPLICATION MODAL */}
-      {isReturnModalOpen && activeRenting && (
+      {isReturnModalOpen && selectedReturningItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
@@ -801,8 +846,8 @@ export default function CabinetPage() {
 
             <div className="space-y-4 text-xs text-vintage-700">
               <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
-                <div>📍 <strong>반납 지정 매장:</strong> {activeRenting.shopName}</div>
-                <div>📷 <strong>반납 기종:</strong> {activeRenting.name}</div>
+                <div>📍 <strong>반납 지정 매장:</strong> {selectedReturningItem.shopName}</div>
+                <div>📷 <strong>반납 기종:</strong> {selectedReturningItem.name}</div>
                 <div>🕒 <strong>반납 마감:</strong> 대여 종료일 19:00까지</div>
               </div>
 
@@ -812,7 +857,10 @@ export default function CabinetPage() {
             </div>
 
             <button
-              onClick={() => setIsReturnModalOpen(false)}
+              onClick={() => {
+                setIsReturnModalOpen(false);
+                showToast(`${selectedReturningItem.name} 반납 일정이 매장에 접수되었습니다.`, 'info');
+              }}
               className="w-full py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
             >
               반납 일정 확정 완료
