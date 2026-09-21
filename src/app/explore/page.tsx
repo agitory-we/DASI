@@ -47,6 +47,49 @@ export default function ExplorePage() {
         </p>
       </div>
 
+      {/* Realtime Golden Hour & Weather Station Widget */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-[#FAF6EE] to-terracotta/10 border border-amber-300/60 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
+            <Sun className="w-5 h-5 animate-spin-slow" />
+          </div>
+          <div>
+            <div className="text-[10px] text-vintage-500 font-medium">오늘 서울 일몰 (Sunset)</div>
+            <div className="font-serif text-base font-bold text-vintage-900">18:24 PM</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] text-vintage-500 font-medium">매직 골든아워 (Golden Hour)</div>
+            <div className="font-serif text-base font-bold text-terracotta">17:45 ~ 18:35</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-700 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] text-vintage-500 font-medium">오늘의 추천 필름 감도</div>
+            <div className="font-serif text-base font-bold text-emerald-800">ISO 200 · 400</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-700 flex items-center justify-center shrink-0">
+            <Compass className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] text-vintage-500 font-medium">출사 가시거리 지수</div>
+            <div className="font-serif text-base font-bold text-blue-900">쾌청 25km (최상급)</div>
+          </div>
+        </div>
+      </div>
+
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-vintage-200 pb-4 overflow-x-auto">
         {[

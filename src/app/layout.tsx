@@ -41,7 +41,8 @@ export const metadata: Metadata = {
     title: '다시 DASI | 그때 그 취미, 다시',
     description: '아날로그 카메라 렌탈 & Rent-to-Own 소장 플랫폼',
     images: ['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1200&auto=format&fit=crop&q=80']
-  }
+  },
+  manifest: '/manifest.json'
 };
 
 export default function RootLayout({

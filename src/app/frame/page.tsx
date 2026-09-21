@@ -25,6 +25,7 @@ export default function FrameMakerPage() {
   const [selectedLab, setSelectedLab] = useState<string>('망우삼림 을지로 (Fuji Frontier SP3000)');
   const [dateText, setDateText] = useState<string>('2026.09.22');
   const [frameColor, setFrameColor] = useState<'cream' | 'white' | 'black'>('cream');
+  const [filmTone, setFilmTone] = useState<'natural' | 'classic_neg' | 'kodak_warm' | 'monochrome'>('natural');
   const [uploadedImageSrc, setUploadedImageSrc] = useState<string>(
     'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80'
   );
@@ -41,7 +42,7 @@ export default function FrameMakerPage() {
   // Redraw canvas whenever settings change
   useEffect(() => {
     drawFrame();
-  }, [selectedModel, selectedLab, dateText, frameColor, uploadedImageSrc]);
+  }, [selectedModel, selectedLab, dateText, frameColor, filmTone, uploadedImageSrc]);
 
   const drawFrame = () => {
     const canvas = canvasRef.current;
@@ -76,8 +77,19 @@ export default function FrameMakerPage() {
       ctx.fillRect(paddingX, paddingTop, photoWidth, photoHeight);
       ctx.restore();
 
-      // Draw image object-cover inside target rect
+      // Draw image object-cover inside target rect with film tone filter
+      ctx.save();
+      if (filmTone === 'classic_neg') {
+        ctx.filter = 'contrast(1.15) saturate(0.85) sepia(0.12)';
+      } else if (filmTone === 'kodak_warm') {
+        ctx.filter = 'sepia(0.18) saturate(1.22) contrast(1.05)';
+      } else if (filmTone === 'monochrome') {
+        ctx.filter = 'grayscale(1) contrast(1.28)';
+      } else {
+        ctx.filter = 'none';
+      }
       drawImageProp(ctx, img, paddingX, paddingTop, photoWidth, photoHeight);
+      ctx.restore();
 
       // Bottom Metadata Section
       const bottomAreaY = paddingTop + photoHeight + 35;
@@ -233,6 +245,31 @@ export default function FrameMakerPage() {
                     }`}
                   >
                     {col.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Film Simulation Tone Preset */}
+            <div className="space-y-2">
+              <label className="font-bold text-vintage-800">필름 시뮬레이션 색감</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: 'natural', label: '내추럴 원본' },
+                  { id: 'classic_neg', label: '클래식 네거티브' },
+                  { id: 'kodak_warm', label: '코닥 웜 골드' },
+                  { id: 'monochrome', label: '일포드 흑백' },
+                ].map((tone) => (
+                  <button
+                    key={tone.id}
+                    onClick={() => setFilmTone(tone.id as any)}
+                    className={`py-2 px-1 rounded-xl border text-[11px] font-semibold transition-all text-center ${
+                      filmTone === tone.id
+                        ? 'border-vintage-900 bg-vintage-900 text-white shadow-2xs'
+                        : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                    }`}
+                  >
+                    {tone.label}
                   </button>
                 ))}
               </div>

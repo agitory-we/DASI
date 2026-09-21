@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { mockMasters } from '@/data/mockData';
 import { RepairMaster, UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
 import {
@@ -19,16 +18,18 @@ import {
   HelpCircle,
   QrCode,
   Truck,
-  Check
+  Check,
+  ChevronRight
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ClinicPage() {
-  const { coupons, useCoupon, submitRepairEstimate, showToast } = useDasi();
+  const { repairMasters, isLoadingData, coupons, useCoupon, submitRepairEstimate, showToast } = useDasi();
   const [selectedMaster, setSelectedMaster] = useState<RepairMaster | null>(null);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState<boolean>(false);
   const [activeCoupon, setActiveCoupon] = useState<UserCoupon | null>(null);
   const [estimateSubmitted, setEstimateSubmitted] = useState<boolean>(false);
+  const [submittedEstimateCode, setSubmittedEstimateCode] = useState<string>('');
   const [cameraModelInput, setCameraModelInput] = useState<string>('Nikon FM2');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['셔터가 안 눌리거나 멈춤', '차광 스펀지(빛샘 현상)']);
   const [detailsInput, setDetailsInput] = useState<string>('셔터막 끈적임 및 1/1000초 셔터 랙 증상 수리 및 전체 오버홀 희망합니다.');
@@ -46,6 +47,26 @@ export default function ClinicPage() {
     useCoupon(couponId);
     showToast('쿠폰이 성공적으로 사용되었습니다. 혜택이 즉시 적용됩니다.', 'success');
     setActiveCoupon(null);
+  };
+
+  const handleOpenEstimate = (master: RepairMaster) => {
+    setSelectedMaster(master);
+    setEstimateSubmitted(false);
+    setSubmittedEstimateCode('');
+    setIsEstimateModalOpen(true);
+  };
+
+  const handleSubmitEstimateForm = () => {
+    playShutterSound('slr');
+    const code = submitRepairEstimate({
+      cameraModel: cameraModelInput,
+      symptoms: selectedSymptoms,
+      details: detailsInput,
+      masterName: selectedMaster?.name || '명장 종합 진단팀',
+    });
+    setSubmittedEstimateCode(code);
+    setEstimateSubmitted(true);
+    showToast('수리 견적 접수가 완료되었습니다. 마이 캐비닛에서 확인하실 수 있습니다.', 'success');
   };
 
   return (
@@ -126,110 +147,119 @@ export default function ClinicPage() {
         </div>
       </div>
 
-      {/* 2. REPAIR MASTERS SHOWCASE */}
+      {/* 2. REPAIR MASTERS DIRECTORY */}
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
-            <div className="text-terracotta text-xs font-bold uppercase tracking-wider">
-              DASI Verified Master
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              을지로·충무로 40년 공식 수리 명장
+            <h2 className="font-serif text-2xl font-bold text-vintage-900">
+              DASI 인증 수리 명장 네트워크
             </h2>
+            <p className="text-xs text-vintage-600 mt-0.5">
+              35년 이상 외길을 걸어온 장인들이 직접 분해소제(오버홀) 및 광학 렌즈를 복원합니다.
+            </p>
           </div>
-          <button
-            onClick={() => {
-              setIsEstimateModalOpen(true);
-              setEstimateSubmitted(false);
-            }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs shrink-0"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>온라인 수리 간편 견적 신청</span>
-          </button>
+          <span className="text-xs font-semibold text-vintage-500">
+            총 {repairMasters.length}명의 공식 인증 명장 활동 중
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {mockMasters.map((master) => (
-            <div
-              key={master.id}
-              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs p-6 sm:p-8 space-y-6"
-            >
-              <div className="flex items-start gap-4">
-                <img
-                  src={master.profileImage}
-                  alt={master.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-vintage-200 shrink-0"
-                />
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-serif text-xl font-bold text-vintage-900">
-                      {master.name}
-                    </h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold">
-                      경력 {master.experienceYears}년
-                    </span>
-                  </div>
-                  <div className="text-xs text-vintage-500 font-medium">{master.shopName} · {master.location}</div>
-                  <p className="text-xs text-vintage-700 italic pt-1">
-                    &ldquo;{master.quote}&rdquo;
-                  </p>
-                </div>
+        {isLoadingData ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2].map((idx) => (
+              <div key={idx} className="p-6 rounded-3xl bg-white border border-vintage-200 animate-pulse space-y-4">
+                <div className="h-6 bg-vintage-200 rounded w-1/3" />
+                <div className="h-4 bg-vintage-100 rounded w-2/3" />
+                <div className="h-24 bg-vintage-100 rounded-2xl w-full" />
               </div>
-
-              {/* Specialty */}
-              <div className="p-3 rounded-xl bg-vintage-50 border border-vintage-100 text-xs text-vintage-800">
-                <strong>전문 분야:</strong> {master.specialty}
-              </div>
-
-              {/* Standard Price List */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-vintage-900">대표 정비 항목 및 표준 공임표</div>
-                <div className="divide-y divide-vintage-100 border border-vintage-100 rounded-xl overflow-hidden text-xs">
-                  {master.availableServices.map((service, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-white flex items-center justify-between hover:bg-vintage-50 transition-colors"
-                    >
-                      <div>
-                        <div className="font-medium text-vintage-900">{service.name}</div>
-                        <div className="text-[10px] text-vintage-400">예상 소요: {service.duration}</div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {repairMasters.map((master) => (
+              <div
+                key={master.id}
+                className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 shadow-xs space-y-6 flex flex-col justify-between hover:shadow-md transition-all"
+              >
+                <div className="space-y-4">
+                  {/* Profile Header */}
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={master.profileImage}
+                      alt={master.name}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-vintage-200 shrink-0"
+                    />
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-serif text-xl font-bold text-vintage-900">
+                          {master.name}
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                          경력 {master.experienceYears}년
+                        </span>
                       </div>
-                      <div className="font-bold text-terracotta text-right">
-                        {service.estimatedCost}
+                      <div className="text-xs font-semibold text-terracotta">
+                        {master.shopName}
+                      </div>
+                      <div className="text-xs text-vintage-600 flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-vintage-400 shrink-0" />
+                        <span>{master.location} ({master.address})</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Actions */}
-              <div className="pt-2 flex gap-2">
+                  {/* Master Quote */}
+                  <div className="p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100 text-xs text-vintage-700 italic leading-relaxed">
+                    "{master.quote}"
+                  </div>
+
+                  {/* Specialty Tag */}
+                  <div className="text-xs">
+                    <span className="text-vintage-500 font-medium">주력 전문 분야: </span>
+                    <span className="font-semibold text-vintage-900">{master.specialty}</span>
+                  </div>
+
+                  {/* Available Services Table */}
+                  <div className="space-y-2 pt-2">
+                    <span className="text-xs font-bold text-vintage-800 block">
+                      표준 정찰제 수리/클리닝 항목
+                    </span>
+                    <div className="rounded-2xl border border-vintage-200 overflow-hidden divide-y divide-vintage-100 text-xs">
+                      {master.availableServices.map((srv, idx) => (
+                        <div key={idx} className="p-3 flex items-center justify-between bg-white hover:bg-vintage-50/50">
+                          <span className="font-medium text-vintage-900">{srv.name}</span>
+                          <div className="text-right">
+                            <span className="font-bold text-terracotta">{srv.estimatedCost}</span>
+                            <span className="text-[10px] text-vintage-400 block">{srv.duration}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Action */}
                 <button
-                  onClick={() => {
-                    setSelectedMaster(master);
-                    setIsEstimateModalOpen(true);
-                    setEstimateSubmitted(false);
-                  }}
-                  className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors"
+                  onClick={() => handleOpenEstimate(master)}
+                  className="w-full py-3 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white text-xs sm:text-sm font-bold transition-colors shadow-xs flex items-center justify-center gap-2"
                 >
-                  {master.name} 명장에게 견적 문의하기
+                  <Wrench className="w-4 h-4" />
+                  <span>{master.name}에게 비대면 무료 견적 문의하기</span>
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ESTIMATE MODAL */}
-      {isEstimateModalOpen && (
+      {isEstimateModalOpen && selectedMaster && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-3">
               <div className="flex items-center gap-2">
                 <Wrench className="w-5 h-5 text-terracotta" />
-                <h3 className="font-serif text-lg font-bold text-vintage-900">
-                  온라인 간편 수리 견적 신청
+                <h3 className="font-serif text-xl font-bold text-vintage-900">
+                  {selectedMaster.name} 비대면 견적 접수
                 </h3>
               </div>
               <button
@@ -241,229 +271,165 @@ export default function ClinicPage() {
             </div>
 
             {estimateSubmitted ? (
-              <div className="text-center py-6 space-y-5 animate-fade-in">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
-                  <Check className="w-7 h-7" />
+              <div className="text-center py-6 space-y-4 animate-fadeIn">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                  <Check className="w-8 h-8" />
                 </div>
-                
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    장인 1:1 수리 진단 접수 완료
-                  </span>
-                  <h4 className="font-serif text-2xl font-bold text-vintage-900">
-                    견적 요청 접수 완료
-                  </h4>
-                  <p className="text-xs text-vintage-600 leading-relaxed max-w-sm mx-auto">
-                    <strong>{selectedMaster ? `${selectedMaster.name} 명장님` : '충무로·을지로 명장 협회'}</strong>께 증상 데이터가 전달되었습니다.<br />
-                    당일 내 예상 견적 및 정비 일정이 알림톡으로 전송됩니다.
-                  </p>
-                </div>
+                <h4 className="font-serif text-xl font-bold text-vintage-900">
+                  수리 견적이 정상 접수되었습니다!
+                </h4>
+                <p className="text-xs text-vintage-600 max-w-sm mx-auto leading-relaxed">
+                  <strong>{selectedMaster.shopName}</strong> {selectedMaster.name}님에게 진단 의뢰서가 전달되었습니다. 24시간 내 예상 수리비와 입고 안내가 카카오톡/문자로 발송됩니다.
+                </p>
 
-                {/* Repair Voucher Card */}
-                <div className="p-5 rounded-3xl bg-vintage-50 border border-vintage-200 text-left max-w-sm mx-auto space-y-3 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-vintage-200/60 pb-2.5">
-                    <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
-                      <Wrench className="w-4 h-4 text-terracotta" />
-                      닥터 DASI 사전 진단 접수증
-                    </span>
-                    <span className="text-[10px] font-mono text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full font-bold">
-                      EST-{Math.floor(100000 + Math.random() * 900000)}
-                    </span>
+                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-left text-xs space-y-2">
+                  <div className="flex justify-between py-1 border-b border-vintage-200">
+                    <span className="text-vintage-500">접수 코드</span>
+                    <span className="font-mono font-bold text-vintage-900">{submittedEstimateCode}</span>
                   </div>
-
-                  <div className="space-y-1.5 text-xs text-vintage-700">
-                    <div className="flex justify-between">
-                      <span className="text-vintage-500">담당 명장</span>
-                      <span className="font-bold text-vintage-900">
-                        {selectedMaster ? `${selectedMaster.name} (${selectedMaster.shopName})` : '장인 협회 최적 공방 매칭'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-vintage-500">진단 방식</span>
-                      <span className="font-semibold text-emerald-800">무료 온라인 사전 견적</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-vintage-500">안심 수거</span>
-                      <span className="text-[11px] font-bold text-terracotta flex items-center gap-1">
-                        <Truck className="w-3.5 h-3.5" />
-                        <span>우체국 안심 픽업 박스 지원</span>
-                      </span>
-                    </div>
+                  <div className="flex justify-between py-1 border-b border-vintage-200">
+                    <span className="text-vintage-500">기종명</span>
+                    <span className="font-bold text-vintage-900">{cameraModelInput}</span>
                   </div>
-
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-900">
-                    🔒 <strong>DASI 무상 재수리 보증:</strong> 공식 명장 수리실에서 정비된 기기는 6개월간 동일 증상 발생 시 100% 무상 재정비가 보증됩니다.
+                  <div className="flex justify-between py-1">
+                    <span className="text-vintage-500">담당 명장</span>
+                    <span className="font-bold text-terracotta">{selectedMaster.name} ({selectedMaster.shopName})</span>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
+                <div className="flex justify-center gap-3 pt-2">
+                  <Link
+                    href="/cabinet"
+                    className="px-5 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors shadow-xs"
+                  >
+                    마이 캐비닛에서 확인하기 →
+                  </Link>
                   <button
                     onClick={() => setIsEstimateModalOpen(false)}
-                    className="flex-1 px-4 py-3 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
+                    className="px-4 py-2.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100"
                   >
                     닫기
                   </button>
-                  <Link
-                    href="/cabinet"
-                    onClick={() => setIsEstimateModalOpen(false)}
-                    className="flex-1 px-4 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs text-center"
-                  >
-                    🔧 마이 캐비닛에서 확인
-                  </Link>
                 </div>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">카메라 모델명</label>
+                <div>
+                  <label className="font-bold text-vintage-800 block mb-1">카메라 기종명</label>
                   <input
                     type="text"
                     value={cameraModelInput}
                     onChange={(e) => setCameraModelInput(e.target.value)}
-                    placeholder="예: Nikon FM2, Canon AE-1, Olympus Mju-II 등"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
+                    placeholder="예: Nikon FM2, Olympus OM-1, Rollei 35"
+                    className="w-full bg-vintage-50 border border-vintage-200 rounded-xl px-3 py-2 text-xs text-vintage-900 focus:outline-hidden focus:border-terracotta font-semibold"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">고장 증상 선택</label>
+                <div>
+                  <label className="font-bold text-vintage-800 block mb-1.5">발생 중인 증상 (복수 선택 가능)</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       '셔터가 안 눌리거나 멈춤',
-                      '렌즈에 곰팡이/먼지',
-                      '노출계 배터리 누액/미작동',
-                      '필름 레버가 헛돔',
                       '차광 스펀지(빛샘 현상)',
-                      '단순 종합 점검 (오버홀)',
+                      '렌즈 내부 곰팡이/먼지',
+                      '노출계 배터리실 부식',
+                      '뷰파인더 이중상 핀 어긋남',
+                      '필름 와인딩 레버 헛돔'
                     ].map((symptom) => (
-                      <label
+                      <button
                         key={symptom}
+                        type="button"
                         onClick={() => handleToggleSymptom(symptom)}
-                        className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer text-[11px] transition-colors ${
+                        className={`p-2.5 rounded-xl border text-left text-[11px] transition-all flex items-center justify-between ${
                           selectedSymptoms.includes(symptom)
-                            ? 'bg-vintage-100 border-terracotta text-vintage-900 font-semibold'
-                            : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                            ? 'border-terracotta bg-terracotta/5 font-semibold text-vintage-900'
+                            : 'border-vintage-200 bg-white text-vintage-600 hover:bg-vintage-50'
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={selectedSymptoms.includes(symptom)}
-                          readOnly
-                          className="text-terracotta rounded"
-                        />
                         <span>{symptom}</span>
-                      </label>
+                        {selectedSymptoms.includes(symptom) && <Check className="w-3.5 h-3.5 text-terracotta shrink-0" />}
+                      </button>
                     ))}
                   </div>
-
-                  {selectedSymptoms.length > 0 && (
-                    <div className="p-3 bg-terracotta/5 border border-terracotta/20 rounded-xl space-y-1 animate-fadeIn">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-bold text-vintage-900">선택 증상 기준 예상 수리 공임</span>
-                        <span className="font-bold text-terracotta">
-                          {(selectedSymptoms.length * 25000).toLocaleString()}원 ~ {((selectedSymptoms.length + 1) * 35000).toLocaleString()}원
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-vintage-500">
-                        * 부품 교체가 필요한 경우 정밀 분해 후 사전 고지 드립니다.
-                      </p>
-                    </div>
-                  )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">세부 증상 설명 (선택)</label>
+                <div>
+                  <label className="font-bold text-vintage-800 block mb-1">상세 증상 설명</label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={detailsInput}
                     onChange={(e) => setDetailsInput(e.target.value)}
-                    placeholder="언제부터 고장이 났는지, 셔터 소리가 어떻게 나는지 적어주시면 정확한 견적에 도움이 됩니다."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta resize-none text-vintage-900"
+                    className="w-full bg-vintage-50 border border-vintage-200 rounded-xl px-3 py-2 text-xs focus:outline-hidden focus:border-terracotta"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-vintage-800">연락처 (알림톡 수신용)</label>
-                  <input
-                    type="tel"
-                    defaultValue="010-8291-7721"
-                    placeholder="010-0000-0000"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
-                  />
+                <div className="p-3 bg-emerald-50 text-emerald-900 rounded-xl text-[11px] leading-relaxed">
+                  ✓ 무료 택배 픽업 발송 또는 을지로/충무로 매장 직접 방문 접수 모두 가능합니다.
                 </div>
 
-                <div className="pt-2 flex gap-2">
-                  <button
-                    onClick={() => setIsEstimateModalOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 font-semibold"
-                  >
-                    취소
-                  </button>
-                  <button
-                    onClick={() => {
-                      playShutterSound('slr');
-                      const code = submitRepairEstimate({
-                        cameraModel: cameraModelInput || 'Nikon FM2',
-                        symptoms: selectedSymptoms.length > 0 ? selectedSymptoms : ['전체 종합 점검 (오버홀)'],
-                        details: detailsInput || '종합 기능 점검 희망',
-                        masterName: selectedMaster ? `${selectedMaster.name} (${selectedMaster.shopName})` : '충무로·을지로 명장 협회 공방',
-                      });
-                      setEstimateSubmitted(true);
-                      showToast(`명장 수리 사전 견적 [${code}]이 접수되었습니다. 마이 캐비닛에서 진단 상태를 확인하실 수 있습니다.`, 'success');
-                    }}
-                    className="flex-1 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
-                  >
-                    견적 요청 접수하기
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleSubmitEstimateForm}
+                  className="w-full py-3 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs"
+                >
+                  비대면 무료 견적 접수하기
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* COUPON USE BARCODE MODAL */}
+      {/* BARCODE COUPON MODAL */}
       {activeCoupon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 space-y-5 text-center">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-terracotta/10 text-terracotta">
-                {activeCoupon.issuerName} 공식 쿠폰
-              </span>
-              <h3 className="font-serif text-lg font-bold text-vintage-900">
-                {activeCoupon.title}
-              </h3>
-              <div className="text-terracotta font-bold text-sm">
-                {activeCoupon.discountText}
-              </div>
-            </div>
-
-            {/* Simulated Barcode */}
-            <div className="p-4 bg-white rounded-xl border-2 border-dashed border-vintage-300 space-y-2">
-              <div className="h-16 bg-[repeating-linear-gradient(90deg,#2d241e,#2d241e_3px,transparent_3px,transparent_6px,#2d241e_6px,#2d241e_10px,transparent_10px,transparent_12px)] w-48 mx-auto" />
-              <div className="font-mono text-xs text-vintage-600 tracking-widest">
-                DASI-2026-9812-7712
-              </div>
-            </div>
-
-            <p className="text-[11px] text-vintage-500">
-              결제 시 매장 사장님께 위 바코드를 보여주세요.
-            </p>
-
-            <div className="flex gap-2 pt-2">
+          <div className="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 text-center space-y-5">
+            <div className="flex justify-between items-center border-b border-vintage-100 pb-2">
+              <span className="text-xs font-bold text-terracotta">DASI 공식 모바일 바코드</span>
               <button
                 onClick={() => setActiveCoupon(null)}
-                className="flex-1 py-2 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-50"
+                className="p-1 text-vintage-400 hover:text-vintage-800 rounded-full"
               >
-                닫기
-              </button>
-              <button
-                onClick={() => handleUseCoupon(activeCoupon.id)}
-                className="flex-1 py-2 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light"
-              >
-                사용 완료 처리
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            <div className="space-y-1">
+              <h4 className="font-serif text-lg font-bold text-vintage-900">
+                {activeCoupon.title}
+              </h4>
+              <div className="text-base font-bold text-terracotta font-serif">
+                {activeCoupon.discountText}
+              </div>
+              <p className="text-xs text-vintage-500">발행처: {activeCoupon.issuerName}</p>
+            </div>
+
+            {/* Barcode Mock */}
+            <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+              <div className="h-16 flex items-center justify-center gap-1">
+                {[4, 2, 6, 1, 3, 5, 2, 7, 3, 2, 6, 1, 4, 3, 5, 2, 8, 3, 2, 5, 1, 4].map((h, idx) => (
+                  <div
+                    key={idx}
+                    className="w-1 bg-stone-900 rounded-full"
+                    style={{ height: `${h * 7}px` }}
+                  />
+                ))}
+              </div>
+              <div className="font-mono text-xs text-vintage-600 tracking-widest">
+                DASI-{activeCoupon.id.toUpperCase()}-2026
+              </div>
+            </div>
+
+            <p className="text-[11px] text-vintage-500 leading-snug">
+              매장 결제 시 사장님에게 이 화면을 보여주시면 즉시 혜택이 적용됩니다.
+            </p>
+
+            <button
+              onClick={() => handleUseCoupon(activeCoupon.id)}
+              className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs"
+            >
+              사용 완료 처리하기
+            </button>
           </div>
         </div>
       )}
