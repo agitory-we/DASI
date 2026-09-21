@@ -14,15 +14,20 @@ import {
   ArrowRight,
   Sun,
   Flame,
-  X
+  X,
+  Heart
 } from 'lucide-react';
+import { useDasi } from '@/context/DasiContext';
 
 export default function ExplorePage() {
-  const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot'>('all');
+  const { savedSpotIds, toggleSaveSpot } = useDasi();
+  const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'saved'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
 
   const filteredItems = filterType === 'all'
     ? mockEventsAndHotSpots
+    : filterType === 'saved'
+    ? mockEventsAndHotSpots.filter((item) => savedSpotIds.includes(item.id))
     : mockEventsAndHotSpots.filter((item) => item.type === filterType);
 
   return (
@@ -43,16 +48,17 @@ export default function ExplorePage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-vintage-200 pb-4">
+      <div className="flex items-center gap-2 border-b border-vintage-200 pb-4 overflow-x-auto">
         {[
           { id: 'all', label: '전체 둘러보기' },
-          { id: 'festival', label: '🎉 서울 시즌별 축제 &amp; 행사' },
-          { id: 'hotspot', label: '📸 골목길 출사 Hot Spot' },
+          { id: 'festival', label: '🎉 서울 시즌별 축제' },
+          { id: 'hotspot', label: '📸 골목길 출사지' },
+          { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setFilterType(tab.id as 'all' | 'festival' | 'hotspot')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            onClick={() => setFilterType(tab.id as any)}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               filterType === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
                 : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
@@ -82,6 +88,22 @@ export default function ExplorePage() {
                   <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
                     {item.type === 'festival' ? '시즌 축제' : '출사 명소'}
                   </span>
+                </div>
+                <div className="absolute top-3 right-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSaveSpot(item.id);
+                    }}
+                    className={`p-2 rounded-full backdrop-blur-md transition-all ${
+                      savedSpotIds.includes(item.id)
+                        ? 'bg-terracotta text-white shadow-md'
+                        : 'bg-black/50 text-white/80 hover:text-white hover:bg-black/70'
+                    }`}
+                    title={savedSpotIds.includes(item.id) ? '위시리스트 해제' : '출사 위시리스트 저장'}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${savedSpotIds.includes(item.id) ? 'fill-current' : ''}`} />
+                  </button>
                 </div>
                 <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[11px] flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-terracotta-light" />
@@ -150,15 +172,51 @@ export default function ExplorePage() {
         ))}
       </div>
 
+      {/* EMPTY STATE */}
+      {filteredItems.length === 0 && (
+        <div className="text-center py-16 bg-white rounded-3xl border border-vintage-200 p-8 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center mx-auto">
+            <Heart className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-serif text-lg font-bold text-vintage-900">
+              아직 찜한 출사 스팟이 없습니다
+            </h3>
+            <p className="text-xs text-vintage-500 max-w-sm mx-auto">
+              서울 축제 및 골목길 출사지 카드의 하트 버튼을 눌러 이번 주말 가고 싶은 장소를 저장해 보세요.
+            </p>
+          </div>
+          <button
+            onClick={() => setFilterType('all')}
+            className="px-5 py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
+          >
+            전체 스팟 둘러보기
+          </button>
+        </div>
+      )}
+
       {/* DETAIL MODAL */}
       {selectedSpot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
               <div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-terracotta/10 text-terracotta">
-                  {selectedSpot.type === 'festival' ? '서울 축제' : '출사 핫스팟'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-terracotta/10 text-terracotta">
+                    {selectedSpot.type === 'festival' ? '서울 축제' : '출사 핫스팟'}
+                  </span>
+                  <button
+                    onClick={() => toggleSaveSpot(selectedSpot.id)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all ${
+                      savedSpotIds.includes(selectedSpot.id)
+                        ? 'bg-terracotta text-white'
+                        : 'bg-vintage-100 text-vintage-600 hover:bg-vintage-200'
+                    }`}
+                  >
+                    <Heart className={`w-3 h-3 ${savedSpotIds.includes(selectedSpot.id) ? 'fill-current' : ''}`} />
+                    <span>{savedSpotIds.includes(selectedSpot.id) ? '위시리스트 저장됨' : '위시 담기'}</span>
+                  </button>
+                </div>
                 <h3 className="font-serif text-xl font-bold text-vintage-900 mt-1">
                   {selectedSpot.title}
                 </h3>

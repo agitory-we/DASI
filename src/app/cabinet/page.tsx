@@ -32,9 +32,10 @@ export default function CabinetPage() {
     bookedGigs,
     bookedExperiences,
     repairEstimates,
+    proConsultations,
     showToast
   } = useDasi();
-  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro'>('camera');
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
@@ -91,12 +92,13 @@ export default function CabinetPage() {
         </p>
       </div>
 
-      {/* 3-Tab Navigator */}
-      <div className="flex border-b border-vintage-200 gap-2 pb-2">
+      {/* 4-Tab Navigator */}
+      <div className="flex border-b border-vintage-200 gap-2 pb-2 overflow-x-auto">
         {[
           { id: 'camera', label: '📷 카메라 렌탈 & 소장 컬렉션', count: rentingItems.filter(r => !r.isConvertedToOwn).length + ownedItems.length },
           { id: 'tickets', label: '🎟️ 스냅 & 출사 클래스 티켓', count: bookedGigs.length + bookedExperiences.length },
           { id: 'repairs', label: '🔧 명장 수리 & 필름 보관함', count: repairEstimates.length + mockFilmRolls.length },
+          { id: 'pro', label: '🏆 PRO 스튜디오 VIP 상담', count: proConsultations.length },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -607,6 +609,98 @@ export default function CabinetPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 4: PRO STUDIO VIP CONSULTATIONS                      */}
+      {/* ======================================================== */}
+      {activeTab === 'pro' && (
+        <div className="space-y-8 animate-fadeIn">
+          <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs">
+            <div className="p-6 border-b border-vintage-100 flex items-center justify-between bg-vintage-50/50">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <h2 className="font-serif text-lg font-bold text-vintage-900">
+                  DASI Pro 하이엔드 스튜디오 VIP 상담 이력 ({proConsultations.length})
+                </h2>
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-4">
+              {proConsultations.length === 0 ? (
+                <div className="text-center py-10 space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                  <p className="text-xs text-vintage-500">접수된 VIP 상담이 없습니다.</p>
+                  <a
+                    href="/pro"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-vintage-950 text-xs font-bold hover:bg-amber-400 transition-colors"
+                  >
+                    <span>하이엔드 Pro 스튜디오 갤러리 보기</span>
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {proConsultations.map((cons) => (
+                    <div
+                      key={cons.id}
+                      className="p-5 rounded-2xl bg-[#FAF6EE] border border-vintage-200 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[10px] font-mono text-amber-700 font-bold">{cons.vipCode}</div>
+                          <h3 className="font-serif text-base font-bold text-vintage-900 mt-0.5">{cons.studioName}</h3>
+                          <div className="text-xs text-vintage-500">{cons.artistName} · {cons.category}</div>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          cons.status === 'confirmed'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {cons.status === 'confirmed' ? '✓ 일정 확정' : '매니저 연락 중'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs text-vintage-700">
+                        <div className="p-2.5 bg-white rounded-xl border border-vintage-100">
+                          <div className="text-[10px] text-vintage-400">촬영 희망일</div>
+                          <div className="font-bold text-vintage-900 mt-0.5">{cons.targetDate}</div>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-vintage-100">
+                          <div className="text-[10px] text-vintage-400">베뉴 / 장소</div>
+                          <div className="font-bold text-vintage-900 mt-0.5 truncate">{cons.location}</div>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-vintage-100">
+                          <div className="text-[10px] text-vintage-400">기준 견적</div>
+                          <div className="font-bold text-terracotta mt-0.5">{cons.pricing}</div>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-vintage-100">
+                          <div className="text-[10px] text-vintage-400">접수일</div>
+                          <div className="font-bold text-vintage-900 mt-0.5">{cons.requestedAt}</div>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-vintage-500 flex items-center gap-1.5">
+                        <span>📞 상담 연락처:</span>
+                        <span className="font-semibold text-vintage-700">{cons.contact}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 pt-0 border-t border-vintage-100">
+              <a
+                href="/pro"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <span>DASI Pro 스튜디오 추가 예약</span>
+              </a>
             </div>
           </div>
         </div>

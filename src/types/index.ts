@@ -149,3 +149,18 @@ export interface Experience {
   imageUrl: string;
   included: string[];
 }
+
+export interface ProConsultationItem {
+  id: string;
+  vipCode: string;
+  studioName: string;
+  artistName: string;
+  category: string;
+  pricing: string;
+  targetDate: string;
+  location: string;
+  contact: string;
+  requestedAt: string;
+  status: 'manager_contacting' | 'confirmed';
+}
+

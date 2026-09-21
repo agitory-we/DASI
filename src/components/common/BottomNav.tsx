@@ -8,14 +8,15 @@ import { useDasi } from '@/context/DasiContext';
 
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
-  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates } = useDasi();
+  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations } = useDasi();
 
   const totalCabinetCount =
     rentingItems.filter((r) => !r.isConvertedToOwn).length +
     ownedItems.length +
     bookedGigs.length +
     bookedExperiences.length +
-    repairEstimates.length;
+    repairEstimates.length +
+    proConsultations.length;
 
   const navItems = [
     { href: '/', label: '홈', icon: Home },

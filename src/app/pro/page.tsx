@@ -17,11 +17,17 @@ import {
   Phone
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { useDasi } from '@/context/DasiContext';
 
 export default function ProStudioPage() {
+  const { bookProConsultation, showToast } = useDasi();
   const [selectedProArtist, setSelectedProArtist] = useState<any | null>(null);
   const [activeLightboxImg, setActiveLightboxImg] = useState<string | null>(null);
   const [isConsultSubmitted, setIsConsultSubmitted] = useState<boolean>(false);
+  const [dateInput, setDateInput] = useState<string>('2026-10-17');
+  const [locationInput, setLocationInput] = useState<string>('서울 신라호텔 영빈관');
+  const [phoneInput, setPhoneInput] = useState<string>('010-8291-7721');
+  const [generatedVipCode, setGeneratedVipCode] = useState<string>('');
 
   const proArtists = [
     {
@@ -227,22 +233,33 @@ export default function ProStudioPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs text-left max-w-sm mx-auto space-y-1.5">
+                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs text-left max-w-sm mx-auto space-y-2">
                   <div className="flex justify-between font-bold text-vintage-900">
-                    <span>VIP 상담 번호</span>
-                    <span className="text-terracotta font-mono">PRO-VIP-{Math.floor(100000 + Math.random() * 900000)}</span>
+                    <span>VIP 상담 일련번호</span>
+                    <span className="text-terracotta font-mono">{generatedVipCode || 'PRO-VIP-881920'}</span>
+                  </div>
+                  <div className="text-[11px] text-vintage-600">
+                    촬영 희망일: <strong>{dateInput}</strong> ({locationInput})
                   </div>
                   <div className="text-[11px] text-vintage-500">
-                    스튜디오 위치: 서울 강남구 도산대로 본원 라운지
+                    스튜디오 라운지: 서울 강남구 도산대로 본원 라운지
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setSelectedProArtist(null)}
-                  className="px-8 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs"
-                >
-                  확인 및 닫기
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedProArtist(null)}
+                    className="flex-1 py-3 rounded-xl border border-vintage-300 text-vintage-700 font-semibold text-xs hover:bg-vintage-50 transition-colors"
+                  >
+                    닫기
+                  </button>
+                  <Link
+                    href="/cabinet"
+                    className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold text-center transition-colors shadow-xs"
+                  >
+                    내 캐비닛에서 확인
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-4 text-xs">
@@ -256,7 +273,9 @@ export default function ProStudioPage() {
                   <label className="font-bold text-vintage-800">예식 또는 촬영 희망 일자</label>
                   <input
                     type="date"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    value={dateInput}
+                    onChange={(e) => setDateInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -264,8 +283,10 @@ export default function ProStudioPage() {
                   <label className="font-bold text-vintage-800">촬영 장소 / 베뉴 (예: 신라호텔 영빈관, 성수 브랜드 팝업 등)</label>
                   <input
                     type="text"
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
                     placeholder="예식장 또는 촬영 로케이션"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -273,8 +294,10 @@ export default function ProStudioPage() {
                   <label className="font-bold text-vintage-800">연락처 (매니저 1:1 유선 상담용)</label>
                   <input
                     type="tel"
+                    value={phoneInput}
+                    onChange={(e) => setPhoneInput(e.target.value)}
                     placeholder="010-0000-0000"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta text-vintage-900"
                   />
                 </div>
 
@@ -288,7 +311,18 @@ export default function ProStudioPage() {
                   <button
                     onClick={() => {
                       playShutterSound('slr');
+                      const code = bookProConsultation({
+                        studioName: selectedProArtist.studioName,
+                        artistName: selectedProArtist.artistName,
+                        category: selectedProArtist.category,
+                        pricing: selectedProArtist.pricing,
+                        targetDate: dateInput || '2026-10-17',
+                        location: locationInput || '서울 신라호텔 영빈관',
+                        contact: phoneInput || '010-8291-7721',
+                      });
+                      setGeneratedVipCode(code);
                       setIsConsultSubmitted(true);
+                      showToast(`${selectedProArtist.studioName} VIP 상담이 접수되었습니다. 마이 캐비닛에서 일정을 확인하세요.`, 'success');
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-vintage-950 font-bold transition-colors shadow-xs"
                   >

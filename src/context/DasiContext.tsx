@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserCoupon } from '@/types';
+import { UserCoupon, ProConsultationItem } from '@/types';
 import { mockUserCoupons } from '@/data/mockData';
 import { CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
@@ -72,6 +72,8 @@ interface DasiContextType {
   bookedGigs: BookedGigItem[];
   bookedExperiences: BookedExperienceItem[];
   repairEstimates: RepairEstimateItem[];
+  proConsultations: ProConsultationItem[];
+  savedSpotIds: string[];
   bookCameraRental: (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => void;
   convertToOwn: (rentingId: string) => void;
   addOwnedCamera: (item: Omit<OwnedCameraItem, 'id'>) => string;
@@ -81,6 +83,8 @@ interface DasiContextType {
   bookGig: (item: Omit<BookedGigItem, 'id' | 'bookedAt' | 'status'>) => void;
   bookExperience: (item: Omit<BookedExperienceItem, 'id' | 'ticketCode' | 'bookedAt' | 'status'>) => string;
   submitRepairEstimate: (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => string;
+  bookProConsultation: (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => string;
+  toggleSaveSpot: (spotId: string) => void;
   toast: { message: string; type: 'info' | 'success' | 'warning' } | null;
   showToast: (message: string, type?: 'info' | 'success' | 'warning') => void;
 }
@@ -94,6 +98,8 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [bookedGigs, setBookedGigs] = useState<BookedGigItem[]>([]);
   const [bookedExperiences, setBookedExperiences] = useState<BookedExperienceItem[]>([]);
   const [repairEstimates, setRepairEstimates] = useState<RepairEstimateItem[]>([]);
+  const [proConsultations, setProConsultations] = useState<ProConsultationItem[]>([]);
+  const [savedSpotIds, setSavedSpotIds] = useState<string[]>(['spot-1', 'spot-3']);
   const [isWelcomeClaimed, setIsWelcomeClaimed] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
@@ -197,6 +203,32 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setRepairEstimates(JSON.parse(savedRepairs));
       }
 
+      const savedPros = localStorage.getItem('dasi_pro_consultations');
+      if (savedPros) {
+        setProConsultations(JSON.parse(savedPros));
+      } else {
+        setProConsultations([
+          {
+            id: 'pro-init-1',
+            vipCode: 'PRO-VIP-881920',
+            studioName: 'ATELIER DE NOIR (아틀리에 드 누아)',
+            artistName: '최서우 수석 실장',
+            category: '본식 하이엔드 웨딩 & 리허설 스냅',
+            pricing: '본식 2인 촬영 1,800,000원부터',
+            targetDate: '2026.10.17',
+            location: '신라호텔 영빈관',
+            contact: '010-8291-7721',
+            requestedAt: '2026.09.21',
+            status: 'manager_contacting',
+          },
+        ]);
+      }
+
+      const savedSpots = localStorage.getItem('dasi_saved_spot_ids');
+      if (savedSpots) {
+        setSavedSpotIds(JSON.parse(savedSpots));
+      }
+
       if (savedWelcome) {
         setIsWelcomeClaimed(JSON.parse(savedWelcome));
       }
@@ -216,11 +248,13 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('dasi_booked_gigs', JSON.stringify(bookedGigs));
       localStorage.setItem('dasi_booked_exps', JSON.stringify(bookedExperiences));
       localStorage.setItem('dasi_repair_estimates', JSON.stringify(repairEstimates));
+      localStorage.setItem('dasi_pro_consultations', JSON.stringify(proConsultations));
+      localStorage.setItem('dasi_saved_spot_ids', JSON.stringify(savedSpotIds));
       localStorage.setItem('dasi_welcome_claimed', JSON.stringify(isWelcomeClaimed));
     } catch (e) {
       console.error('Failed to save dasi storage', e);
     }
-  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, isWelcomeClaimed, isHydrated]);
+  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, proConsultations, savedSpotIds, isWelcomeClaimed, isHydrated]);
 
   const bookCameraRental = (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => {
     const newItem: RentingCameraItem = {
@@ -308,6 +342,32 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return estimateCode;
   };
 
+  const bookProConsultation = (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => {
+    const vipCode = `PRO-VIP-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newConsult: ProConsultationItem = {
+      ...item,
+      id: `pro-cons-${Date.now()}`,
+      vipCode,
+      requestedAt: new Date().toISOString().slice(0, 10),
+      status: 'manager_contacting',
+    };
+    setProConsultations((prev) => [newConsult, ...prev]);
+    return vipCode;
+  };
+
+  const toggleSaveSpot = (spotId: string) => {
+    setSavedSpotIds((prev) => {
+      const exists = prev.includes(spotId);
+      if (exists) {
+        showToast('출사 위시리스트에서 제외되었습니다.', 'info');
+        return prev.filter((id) => id !== spotId);
+      } else {
+        showToast('출사 위시리스트에 저장되었습니다.', 'success');
+        return [...prev, spotId];
+      }
+    });
+  };
+
   return (
     <DasiContext.Provider
       value={{
@@ -317,6 +377,8 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bookedGigs,
         bookedExperiences,
         repairEstimates,
+        proConsultations,
+        savedSpotIds,
         bookCameraRental,
         convertToOwn,
         addOwnedCamera,
@@ -326,6 +388,8 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bookGig,
         bookExperience,
         submitRepairEstimate,
+        bookProConsultation,
+        toggleSaveSpot,
         toast,
         showToast,
       }}

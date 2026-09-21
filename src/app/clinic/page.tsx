@@ -23,7 +23,7 @@ import {
 import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ClinicPage() {
-  const { coupons, useCoupon, submitRepairEstimate } = useDasi();
+  const { coupons, useCoupon, submitRepairEstimate, showToast } = useDasi();
   const [selectedMaster, setSelectedMaster] = useState<RepairMaster | null>(null);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState<boolean>(false);
   const [activeCoupon, setActiveCoupon] = useState<UserCoupon | null>(null);
@@ -43,6 +43,7 @@ export default function ClinicPage() {
   const handleUseCoupon = (couponId: string) => {
     playShutterSound('slr');
     useCoupon(couponId);
+    showToast('쿠폰이 성공적으로 사용되었습니다. 혜택이 즉시 적용됩니다.', 'success');
     setActiveCoupon(null);
   };
 
@@ -377,13 +378,14 @@ export default function ClinicPage() {
                   <button
                     onClick={() => {
                       playShutterSound('slr');
-                      submitRepairEstimate({
+                      const code = submitRepairEstimate({
                         cameraModel: cameraModelInput || 'Nikon FM2',
                         symptoms: selectedSymptoms.length > 0 ? selectedSymptoms : ['전체 종합 점검 (오버홀)'],
                         details: detailsInput || '종합 기능 점검 희망',
                         masterName: selectedMaster ? `${selectedMaster.name} (${selectedMaster.shopName})` : '충무로·을지로 명장 협회 공방',
                       });
                       setEstimateSubmitted(true);
+                      showToast(`명장 수리 사전 견적 [${code}]이 접수되었습니다. 마이 캐비닛에서 진단 상태를 확인하실 수 있습니다.`, 'success');
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                   >

@@ -23,7 +23,7 @@ import { useDasi } from '@/context/DasiContext';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates } = useDasi();
+  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations } = useDasi();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
@@ -33,7 +33,8 @@ export const Header: React.FC = () => {
     ownedItems.length +
     bookedGigs.length +
     bookedExperiences.length +
-    repairEstimates.length;
+    repairEstimates.length +
+    proConsultations.length;
 
   // Bind Ctrl+K or Cmd+K
   useEffect(() => {
