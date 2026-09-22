@@ -67,6 +67,8 @@ export interface AnalogSpot {
     toneDescription: string;
   }[];
   promoNotice?: string; // 프로모션 문구
+  isGovVerified?: boolean; // 서울시 공공데이터 인허가 인증 매장 여부
+  subTags?: string[]; // 서브 필터 태그 (예: '당일스캔', '노리츠', '후지', '24시자판기', '오버홀')
   rating: number;
   reviewsCount: number;
 }

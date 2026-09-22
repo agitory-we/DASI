@@ -152,7 +152,7 @@ export default function HomePage() {
                     </span>
                   </div>
                   <p className="text-xs text-vintage-300 line-clamp-2">
-                    배터리 없이 72장 촬영 가능한 하프 카메라. 정인수 명장의 10분 오버홀 검수 완료.
+                    배터리 없이 72장 촬영 가능한 하프 카메라. 강태훈 명장의 10분 오버홀 검수 완료.
                   </p>
 
                   <div className="pt-2 border-t border-vintage-800 flex items-center justify-between text-xs">
@@ -655,11 +655,11 @@ export default function HomePage() {
               <div className="flex items-center gap-3 pt-2 border-t border-white/10">
                 <img
                   src={repairMasters[0]?.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80'}
-                  alt={repairMasters[0]?.name || '정인수'}
+                  alt={repairMasters[0]?.name || '강태훈'}
                   className="w-10 h-10 rounded-full object-cover border border-white/30"
                 />
                 <div>
-                  <div className="text-xs font-bold text-white">{repairMasters[0]?.name || '정인수'} (경력 {repairMasters[0]?.experienceYears || 42}년)</div>
+                  <div className="text-xs font-bold text-white">{repairMasters[0]?.name || '강태훈'} (경력 {repairMasters[0]?.experienceYears || 42}년)</div>
                   <div className="text-[11px] text-vintage-300">{repairMasters[0]?.shopName || '을지로 신성카메라'}</div>
                 </div>
               </div>

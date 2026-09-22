@@ -115,11 +115,13 @@ export async function getAnalogSpots(): Promise<AnalogSpot[]> {
       openHours: item.open_hours,
       todayScanCutoff: item.today_scan_cutoff || undefined,
       filmStockStatus: item.film_stock_status || undefined,
-      scannerTypes: (item.scanner_types as string[]) || [],
-      sampleColorToneImages: (item.sample_color_tone_images as any[]) || [],
-      promoNotice: item.promo_notice || undefined,
-      rating: Number(item.rating),
-      reviewsCount: item.reviews_count
+      scannerTypes: ((item as any).scanner_types as string[]) || [],
+      sampleColorToneImages: ((item as any).sample_color_tone_images as any[]) || [],
+      promoNotice: (item as any).promo_notice || undefined,
+      isGovVerified: (item as any).is_gov_verified ?? true,
+      subTags: ((item as any).sub_tags as string[]) || [],
+      rating: Number((item as any).rating),
+      reviewsCount: (item as any).reviews_count
     }));
   } catch (err) {
     console.error('Error in getAnalogSpots:', err);

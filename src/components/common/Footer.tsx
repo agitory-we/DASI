@@ -65,15 +65,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs text-vintage-300">
               <li className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                <span>을지로 신성카메라 (정인수 명장, 42년 경력)</span>
+                <span>을지로 신성카메라 (강태훈 명장, 42년 경력)</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                <span>충무로 보성광학 (김상철 장인, 38년 경력)</span>
+                <span>충무로 보성광학 (한동규 장인, 38년 경력)</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                <span>남대문 중앙사 (이동현 장인, 35년 경력)</span>
+                <span>남대문 중앙사 (문정식 장인, 35년 경력)</span>
               </li>
               <li className="pt-2">
                 <Link href="/clinic" className="text-terracotta hover:underline font-medium">

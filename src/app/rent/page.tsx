@@ -44,6 +44,7 @@ export default function RentPage() {
   const [selectedShopId, setSelectedShopId] = useState<string>('shop-1');
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
+  const [includeDamageCare, setIncludeDamageCare] = useState<boolean>(true);
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [bookedTicketCode, setBookedTicketCode] = useState<string>('');
 
@@ -65,6 +66,7 @@ export default function RentPage() {
     setSelectedShopId(camera.shopId || pickupShops[0]?.id || 'shop-1');
     setIncludeFilm(false);
     setIncludeCleaningKit(false);
+    setIncludeDamageCare(true);
     setIsBooked(false);
     setBookedTicketCode('');
   };
@@ -87,6 +89,38 @@ export default function RentPage() {
           충무로·을지로 장인 매장에서 직접 픽업하고 <strong>10분 온보딩 강습</strong>을 받을 수 있으며, 
           써보고 마음에 들면 <strong>이미 결제한 대여료를 전액 공제하고 잔금만으로 소장</strong>할 수 있습니다.
         </p>
+      </div>
+
+      {/* FRIDAY LIMITED RENTAL DROP BANNER */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-vintage-900 via-vintage-800 to-terracotta text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-terracotta/30">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-terracotta text-white text-[10px] font-extrabold uppercase tracking-widest animate-pulse">
+              LIMITED DROP
+            </span>
+            <span className="text-xs text-vintage-300 font-mono">매주 금요일 20:00 한정 수량 오픈</span>
+          </div>
+          <h2 className="text-lg sm:text-xl font-serif font-bold text-white flex items-center gap-2">
+            <Flame className="w-5 h-5 text-amber-400" />
+            후지필름 X100VI &amp; 리코 GR IIIx 한정 렌탈 드롭
+          </h2>
+          <p className="text-xs text-vintage-200">
+            품절 대란 하이엔드 기종을 주말 3일간 특별가에 대여할 수 있는 기회 (기종별 선착순 2대)
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+          <div className="px-4 py-2 rounded-2xl bg-black/40 border border-white/10 text-center font-mono">
+            <div className="text-[9px] text-vintage-300 uppercase tracking-wider">NEXT DROP IN</div>
+            <div className="text-sm sm:text-base font-bold text-amber-400">D-2 11:42:09</div>
+          </div>
+          <button
+            onClick={() => showToast('금요일 20:00 한정 기종 렌탈 드롭 알림 예약이 완료되었습니다!', 'success')}
+            className="px-4 py-2.5 rounded-2xl bg-white text-vintage-900 text-xs font-bold hover:bg-vintage-100 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+          >
+            <span>🔔 오픈 알림 받기</span>
+          </button>
+        </div>
       </div>
 
       {/* Value Assurance Bar */}
@@ -455,6 +489,35 @@ export default function RentPage() {
                         </div>
                         <span className="text-terracotta font-bold">+3,000원</span>
                       </label>
+
+                      <label
+                        onClick={() => setIncludeDamageCare(!includeDamageCare)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all sm:col-span-2 flex items-center justify-between ${
+                          includeDamageCare
+                            ? 'border-emerald-600 bg-emerald-50/60 font-semibold text-vintage-900'
+                            : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={includeDamageCare}
+                            onChange={() => {}}
+                            className="rounded text-emerald-600 focus:ring-emerald-600"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5 font-bold text-vintage-900">
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                              <span>DASI 안심 케어 (마이크로 파손 보험)</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold">강력 추천</span>
+                            </div>
+                            <div className="text-[11px] text-vintage-500 font-normal">
+                              자기부담금 3만 원으로 최대 30만 원까지 수리비 전액 지원 (낙하·침수 안심)
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-emerald-700 font-bold text-sm shrink-0">+3,000원</span>
+                      </label>
                     </div>
                   </div>
 
@@ -542,7 +605,8 @@ export default function RentPage() {
                     {(
                       selectedCamera.rentalPricePerDay * rentalDays +
                       (includeFilm ? 14000 : 0) +
-                      (includeCleaningKit ? 3000 : 0)
+                      (includeCleaningKit ? 3000 : 0) +
+                      (includeDamageCare ? 3000 : 0)
                     ).toLocaleString()}원
                   </div>
                 </div>
@@ -557,7 +621,11 @@ export default function RentPage() {
                   <button
                     onClick={() => {
                       playShutterSound(selectedCamera.category === 'film' ? 'slr' : 'compact');
-                      const totalPaid = selectedCamera.rentalPricePerDay * rentalDays;
+                      const totalPaid =
+                        selectedCamera.rentalPricePerDay * rentalDays +
+                        (includeFilm ? 14000 : 0) +
+                        (includeCleaningKit ? 3000 : 0) +
+                        (includeDamageCare ? 3000 : 0);
                       const bookingId = `rent-${Date.now()}`;
                       const code = `DASI-${Math.floor(100000 + Math.random() * 900000)}`;
                       setBookedTicketCode(code);

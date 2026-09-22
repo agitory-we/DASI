@@ -229,7 +229,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             serial: 'N7482910',
             acquiredDate: '2026.08.15 (Rent-to-Own 전환 소장)',
             condition: 'Excellent',
-            masterInspection: '충무로 보성광학 김상철 장인 오버홀 완료',
+            masterInspection: '충무로 보성광학 한동규 장인 오버홀 완료',
             imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
           },
         ]);

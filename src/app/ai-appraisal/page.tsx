@@ -27,11 +27,22 @@ import type { AppraisalResponse } from '@/app/api/ai-appraisal/route';
 
 export default function AIAppraisalPage() {
   const { addOwnedCamera, showToast } = useDasi();
-  const [step, setStep] = useState<'upload' | 'analyzing' | 'result'>('upload');
+  const [step, setStep] = useState<'upload' | 'self_check' | 'analyzing' | 'result'>('upload');
   const [analyzingProgress, setAnalyzingProgress] = useState(0);
   const [analyzingText, setAnalyzingText] = useState('시리얼 넘버 데이터베이스 대조 중...');
   const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
   const [isCabinetRegistered, setIsCabinetRegistered] = useState(false);
+
+  // 3-point Hybrid Self-Check state (Google Architect Fact-Grounded Principle)
+  const [selfCheck, setSelfCheck] = useState<{
+    shutter: 'normal' | 'sluggish' | 'broken';
+    battery: 'clean' | 'leaked' | 'no_battery';
+    lens: 'clear' | 'fungus' | 'dust';
+  }>({
+    shutter: 'normal',
+    battery: 'clean',
+    lens: 'clear',
+  });
 
   // Uploaded photo state (Data URLs)
   const [photoData, setPhotoData] = useState<{
@@ -297,7 +308,7 @@ export default function AIAppraisalPage() {
 
           <div className="text-center pt-2">
             <button
-              onClick={handleStartAnalysis}
+              onClick={() => setStep('self_check')}
               disabled={!isAllUploaded}
               className={`px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-md flex items-center gap-2 mx-auto ${
                 isAllUploaded
@@ -306,7 +317,130 @@ export default function AIAppraisalPage() {
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>DASI Vision AI 정밀 감정 시작하기</span>
+              <span>다음: 기기 구동계 3문항 자가진단 (10초 소요) →</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP: HYBRID SELF-CHECK */}
+      {step === 'self_check' && (
+        <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-10 space-y-8 shadow-xs animate-fadeIn max-w-2xl mx-auto">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>하이브리드 데이터 무결성 검증 (Google Architect Charter)</span>
+            </div>
+            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
+              3대 핵심 구동계 자가진단
+            </h3>
+            <p className="text-xs sm:text-sm text-vintage-600">
+              사진 3장만으로는 알 수 없는 내부 기계적 상태를 체크하여 감정 신뢰도를 200% 높입니다.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Question 1: Shutter sound */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                <span>1. 셔터 장전 및 격발 상태</span>
+                <span className="text-[10px] text-vintage-400 font-normal">(와인딩 레버를 감고 셔터를 눌렀을 때)</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                {[
+                  { id: 'normal', label: '✓ 경쾌하게 찰칵 동작', desc: '고속/저속 정상 작동' },
+                  { id: 'sluggish', label: '⚠️ 저속 늘어짐/끊김', desc: '1초 등 저속 지연' },
+                  { id: 'broken', label: '✕ 셔터 먹통/안 눌림', desc: '레버 걸림 또는 고장' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelfCheck((prev) => ({ ...prev, shutter: opt.id as any }))}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      selfCheck.shutter === opt.id
+                        ? 'border-terracotta bg-terracotta/5 font-bold text-vintage-900 shadow-2xs'
+                        : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs">{opt.label}</div>
+                    <div className="text-[10px] text-vintage-400 mt-0.5">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Question 2: Battery compartment */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                <span>2. 배터리실 누액 및 부식 여부</span>
+                <span className="text-[10px] text-vintage-400 font-normal">(바닥면 배터리 커버를 열었을 때)</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                {[
+                  { id: 'clean', label: '✓ 누액 없이 깨끗함', desc: '접점 상태 우수' },
+                  { id: 'leaked', label: '⚠️ 녹색 부식 가루 있음', desc: '세척 및 접점 복원 필요' },
+                  { id: 'no_battery', label: '⚪ 기계식 (배터리 불요)', desc: '배터리 없는 완전수동' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelfCheck((prev) => ({ ...prev, battery: opt.id as any }))}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      selfCheck.battery === opt.id
+                        ? 'border-terracotta bg-terracotta/5 font-bold text-vintage-900 shadow-2xs'
+                        : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs">{opt.label}</div>
+                    <div className="text-[10px] text-vintage-400 mt-0.5">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Question 3: Lens clarity */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                <span>3. 렌즈 투과율 및 곰팡이/먼지</span>
+                <span className="text-[10px] text-vintage-400 font-normal">(스마트폰 플래시로 비추었을 때)</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                {[
+                  { id: 'clear', label: '✓ 투명하고 맑음', desc: '경미한 미세먼지 수준' },
+                  { id: 'fungus', label: '⚠️ 거미줄/뿌연 곰팡이', desc: '발삼 분리 또는 세척 필요' },
+                  { id: 'dust', label: '⚪ 바디 단품 (렌즈 제외)', desc: '카메라 바디만 감정' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelfCheck((prev) => ({ ...prev, lens: opt.id as any }))}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      selfCheck.lens === opt.id
+                        ? 'border-terracotta bg-terracotta/5 font-bold text-vintage-900 shadow-2xs'
+                        : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs">{opt.label}</div>
+                    <div className="text-[10px] text-vintage-400 mt-0.5">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-vintage-200">
+            <button
+              onClick={() => setStep('upload')}
+              className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 text-xs font-semibold hover:bg-vintage-50"
+            >
+              ← 사진 다시 확인
+            </button>
+            <button
+              onClick={handleStartAnalysis}
+              className="px-6 py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95 flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>AI 하이브리드 정밀 감정 시작하기 →</span>
             </button>
           </div>
         </div>
@@ -438,6 +572,19 @@ export default function AIAppraisalPage() {
                   <div>✨ <strong>외관 소견:</strong> {appraisalResult.cosmeticCondition}</div>
                   <div className="pt-2 border-t border-white/10 text-amber-300 italic">
                     "{appraisalResult.expertComment}"
+                  </div>
+                </div>
+
+                {/* Hybrid Self-Check Verification Badge */}
+                <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Google 아키텍트 3대 구동계 하이브리드 검증 결과</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[11px] text-vintage-300 pt-0.5">
+                    <div>• 셔터: <strong className="text-white">{selfCheck.shutter === 'normal' ? '정상 작동' : selfCheck.shutter === 'sluggish' ? '지연 있음' : '수리 필요'}</strong></div>
+                    <div>• 배터리실: <strong className="text-white">{selfCheck.battery === 'clean' ? '깨끗함' : selfCheck.battery === 'leaked' ? '부식 흔적' : '기계식'}</strong></div>
+                    <div>• 렌즈: <strong className="text-white">{selfCheck.lens === 'clear' ? '투명/양호' : selfCheck.lens === 'fungus' ? '곰팡이 있음' : '단품'}</strong></div>
                   </div>
                 </div>
               </div>

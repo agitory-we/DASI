@@ -411,6 +411,30 @@ export default function MapPage() {
         </div>
       </div>
 
+      {/* B2B MICRO-ADS PROMOTION BANNER (Turn 5 Charter) */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-vintage-900 to-vintage-800 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-vintage-700">
+        <div className="space-y-1.5 max-w-2xl">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+            <Flame className="w-3 h-3" />
+            <span>월 14,900원 로컬 상점 소액 홍보 (Micro-Ads)</span>
+          </div>
+          <h2 className="text-xl font-serif font-bold text-white">
+            현상소·필름샵·수리실 사장님이신가요? DASI 지도에 황금 핀을 꽂으세요
+          </h2>
+          <p className="text-xs text-vintage-300 leading-relaxed">
+            비싼 인스타 광고 대신, 주말마다 출사 나가는 100% 진성 필름 유저들에게 '오늘 당일 스캔 가능', '실시간 필름 재고 현황', '색감 갤러리'를 직접 알릴 수 있습니다.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsPartnerModalOpen(true)}
+          className="px-5 py-3 rounded-2xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-md active:scale-95 shrink-0 flex items-center gap-2"
+        >
+          <Store className="w-4 h-4" />
+          <span>월 14,900원 파트너 핀 신청 →</span>
+        </button>
+      </div>
+
       {/* PARTNER REGISTRATION MODAL */}
       {isPartnerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">

@@ -42,6 +42,8 @@ export default function CabinetPage() {
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
+  const [selectedEscrowReviewGig, setSelectedEscrowReviewGig] = useState<any | null>(null);
+  const [confirmedEscrowIds, setConfirmedEscrowIds] = useState<string[]>([]);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [selectedConvertingItem, setSelectedConvertingItem] = useState<any | null>(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -412,13 +414,27 @@ export default function CabinetPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setSelectedTicket({ type: 'gig', data: gig })}
-                      className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                    >
-                      <Ticket className="w-3.5 h-3.5" />
-                      <span>에스크로 보증 바우처 확인</span>
-                    </button>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => setSelectedTicket({ type: 'gig', data: gig })}
+                        className="py-2.5 px-3 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <Ticket className="w-3.5 h-3.5" />
+                        <span>보증 바우처</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedEscrowReviewGig(gig)}
+                        className={`py-2.5 px-3 rounded-xl text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+                          confirmedEscrowIds.includes(gig.id)
+                            ? 'bg-emerald-700 hover:bg-emerald-800'
+                            : 'bg-terracotta hover:bg-terracotta-light'
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{confirmedEscrowIds.includes(gig.id) ? '정산 완료 (원본)' : '검수 & 구매 확정'}</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1366,6 +1382,99 @@ export default function CabinetPage() {
               >
                 닫기
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ESCROW WATERMARK REVIEW & RELEASE MODAL (CTO Charter) */}
+      {selectedEscrowReviewGig && (
+        <div
+          onClick={() => setSelectedEscrowReviewGig(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fadeIn cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6 text-left cursor-default max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between border-b border-vintage-200 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>DASI SAFE ESCROW 정산 검수</span>
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 mt-1">
+                  {selectedEscrowReviewGig.title}
+                </h3>
+                <p className="text-xs text-vintage-500">
+                  작가: <strong>{selectedEscrowReviewGig.creatorName}</strong> · 촬영지: {selectedEscrowReviewGig.location} · 예치금: {selectedEscrowReviewGig.price?.toLocaleString()}원
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedEscrowReviewGig(null)}
+                className="p-2 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+              💡 <strong>에스크로 안심 검수 원칙:</strong> 작가님이 업로드한 사진 4장을 미리 확인하세요. [최종 구매 확정]을 누르시면 예치금이 작가님께 전달되며, 워터마크가 제거된 무손실 고화질 원본 다운로드가 즉시 열립니다.
+            </div>
+
+            {/* 4 WATERMARK SAMPLE PHOTOS */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?w=800&auto=format&fit=crop&q=80',
+              ].map((imgUrl, idx) => (
+                <div key={idx} className="relative aspect-4/3 rounded-2xl overflow-hidden bg-vintage-100 border border-vintage-200 group">
+                  <img src={imgUrl} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                  {!confirmedEscrowIds.includes(selectedEscrowReviewGig.id) ? (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-3 pointer-events-none">
+                      <div className="border-2 border-white/80 px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-mono font-bold text-white tracking-wider uppercase rotate-[-12deg] text-center shadow-lg bg-black/30 backdrop-blur-2xs">
+                        DASI ESCROW PREVIEW
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-emerald-700/90 text-white text-[9px] font-bold">
+                      ✓ 워터마크 해제됨
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="pt-2 border-t border-vintage-200 flex flex-col sm:flex-row gap-2 justify-end">
+              <button
+                onClick={() => setSelectedEscrowReviewGig(null)}
+                className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 text-xs font-semibold hover:bg-vintage-100 text-center"
+              >
+                닫기
+              </button>
+
+              {confirmedEscrowIds.includes(selectedEscrowReviewGig.id) ? (
+                <button
+                  onClick={() => showToast('4K 무손실 원본 ZIP 파일 다운로드를 시작합니다.', 'success')}
+                  className="px-6 py-2.5 rounded-xl bg-emerald-700 text-white text-xs sm:text-sm font-bold hover:bg-emerald-800 shadow-md flex items-center justify-center gap-1.5"
+                >
+                  <span>✓ 4K 무손실 원본 다운로드 (.ZIP)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setConfirmedEscrowIds((prev) => [...prev, selectedEscrowReviewGig.id]);
+                    showToast('에스크로 대금이 작가님께 정상 정산되었으며 원본 다운로드가 해금되었습니다!', 'success');
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>최종 구매 확정 및 에스크로 대금 지급</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
