@@ -23,6 +23,8 @@ import {
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
 import { isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
+import { UserAvatar } from '@/components/auth/UserAvatar';
+
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -211,13 +213,8 @@ export const Header: React.FC = () => {
               )}
             </Link>
 
-            {/* Primary CTA */}
-            <Link
-              href="/rent"
-              className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light active:scale-95 text-white text-xs font-bold transition-all shadow-xs"
-            >
-              카메라 대여
-            </Link>
+            {/* 사용자 아바타 (로그인 시) / 로그인 버튼 (비로그인 시) */}
+            <UserAvatar />
 
             {/* Mobile Hamburger Toggle */}
             <button

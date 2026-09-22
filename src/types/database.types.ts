@@ -604,6 +604,159 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          nickname: string | null
+          phone: string | null
+          tier: 'filmmer' | 'photowalker' | 'legend'
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          nickname?: string | null
+          phone?: string | null
+          tier?: 'filmmer' | 'photowalker' | 'legend'
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          nickname?: string | null
+          phone?: string | null
+          tier?: 'filmmer' | 'photowalker' | 'legend'
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      point_transactions: {
+        Row: {
+          action: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          ref_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          ref_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          ref_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      spot_reports: {
+        Row: {
+          best_time: string | null
+          created_at: string
+          film_tips: string | null
+          golden_hour: string | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          location: string
+          points_awarded: boolean
+          reporter_id: string
+          status: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          best_time?: string | null
+          created_at?: string
+          film_tips?: string | null
+          golden_hour?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          location: string
+          points_awarded?: boolean
+          reporter_id: string
+          status?: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          best_time?: string | null
+          created_at?: string
+          film_tips?: string | null
+          golden_hour?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string
+          points_awarded?: boolean
+          reporter_id?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
+      user_reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          film_used: string | null
+          id: string
+          image_urls: string[] | null
+          points_awarded: boolean
+          rating: number
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          film_used?: string | null
+          id?: string
+          image_urls?: string[] | null
+          points_awarded?: boolean
+          rating: number
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          film_used?: string | null
+          id?: string
+          image_urls?: string[] | null
+          points_awarded?: boolean
+          rating?: number
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

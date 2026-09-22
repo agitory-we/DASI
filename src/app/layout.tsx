@@ -4,6 +4,8 @@ import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { BottomNav } from '@/components/common/BottomNav';
 import { DasiProvider } from '@/context/DasiContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { LoginModal } from '@/components/auth/LoginModal';
 
 export const metadata: Metadata = {
   title: '다시 DASI | 그때 그 취미, 다시 - 아날로그 카메라 렌탈 & 라이프스타일',
@@ -53,13 +55,19 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="min-h-screen flex flex-col bg-vintage-50 text-vintage-900 font-sans antialiased selection:bg-terracotta selection:text-white">
-        <DasiProvider>
-          <Header />
-          <main className="flex-1 pb-16 md:pb-0">{children}</main>
-          <Footer />
-          <BottomNav />
-        </DasiProvider>
+        <AuthProvider>
+          <DasiProvider>
+            <Header />
+            <main className="flex-1 pb-16 md:pb-0">{children}</main>
+            <Footer />
+            <BottomNav />
+            {/* 전역 로그인 모달 — useAuth().openLoginModal()로 어디서나 호출 가능 */}
+            <LoginModal />
+          </DasiProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+
+
