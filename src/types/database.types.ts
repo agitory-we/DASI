@@ -475,6 +475,135 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          area: string | null
+          created_at: string | null
+          end_date: string
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          location: string
+          source: string
+          source_id: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string | null
+          end_date: string
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          location: string
+          source?: string
+          source_id: string
+          start_date: string
+          title: string
+        }
+        Update: {
+          area?: string | null
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string
+          source?: string
+          source_id?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      daily_golden_hour: {
+        Row: {
+          created_at: string | null
+          date: string
+          evening_golden_end: string
+          evening_golden_start: string
+          id: string
+          location: string
+          morning_golden_end: string
+          morning_golden_start: string
+          sunrise: string
+          sunset: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          evening_golden_end: string
+          evening_golden_start: string
+          id?: string
+          location?: string
+          morning_golden_end: string
+          morning_golden_start: string
+          sunrise: string
+          sunset: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          evening_golden_end?: string
+          evening_golden_start?: string
+          id?: string
+          location?: string
+          morning_golden_end?: string
+          morning_golden_start?: string
+          sunrise?: string
+          sunset?: string
+        }
+        Relationships: []
+      }
+      photo_spots: {
+        Row: {
+          address: string
+          area: string
+          created_at: string | null
+          description: string | null
+          golden_hour_tips: string | null
+          id: string
+          image_url: string | null
+          is_verified: boolean
+          lat: number
+          lng: number
+          name: string
+          recommended_lenses: string | null
+        }
+        Insert: {
+          address: string
+          area: string
+          created_at?: string | null
+          description?: string | null
+          golden_hour_tips?: string | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          lat: number
+          lng: number
+          name: string
+          recommended_lenses?: string | null
+        }
+        Update: {
+          address?: string
+          area?: string
+          created_at?: string | null
+          description?: string | null
+          golden_hour_tips?: string | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          recommended_lenses?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

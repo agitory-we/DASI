@@ -301,3 +301,48 @@ export async function saveRepairEstimateInquiry(inquiry: {
     console.error('saveRepairEstimateInquiry exception:', err);
   }
 }
+
+// ─── 10. Explore Content — 축제/출사 이벤트 ──────────────────────────────────
+
+/** Supabase `events` 테이블에서 현재 진행 중 + 예정 행사를 조회합니다. */
+export async function getUpcomingEvents() {
+  try {
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .gte('end_date', todayStr)
+      .order('start_date', { ascending: true })
+      .limit(20);
+
+    if (error || !data || data.length === 0) {
+      console.warn('events 테이블 fallback:', error?.message);
+      return null; // null 반환 시 UI에서 mockData 폴백
+    }
+    return data;
+  } catch (err) {
+    console.error('getUpcomingEvents 에러:', err);
+    return null;
+  }
+}
+
+/** Supabase `photo_spots` 테이블에서 검증된 출사 명소를 조회합니다. */
+export async function getPhotoSpots() {
+  try {
+    const { data, error } = await supabase
+      .from('photo_spots')
+      .select('*')
+      .eq('is_verified', true)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error || !data || data.length === 0) {
+      console.warn('photo_spots 테이블 fallback:', error?.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('getPhotoSpots 에러:', err);
+    return null;
+  }
+}

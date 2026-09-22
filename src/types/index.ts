@@ -123,15 +123,23 @@ export interface UserCoupon {
 
 export interface EventOrHotSpot {
   id: string;
-  type: 'festival' | 'hotspot';
+  type: 'festival' | 'hotspot' | 'seasonal' | 'golden_hour_alert' | 'film_pairing' | 'photo_walk';
   title: string;
   location: string;
+  area?: string;                 // 지역 (을지로/홍대/성수/한강 등)
   periodOrTime: string;
+  startDate?: string;            // YYYYMMDD (TourAPI 형식)
+  endDate?: string;              // YYYYMMDD
   goldenHour: string;
   recommendedLenses: string;
   tips: string;
   imageUrl: string;
   tags: string[];
+  season?: '봄' | '여름' | '가을' | '겨울';  // 계절 자동 분류
+  sourceId?: string;             // TourAPI contentid
+  source?: 'manual' | 'tourapi' | 'seoul_api'; // 데이터 출처
+  lat?: number;
+  lng?: number;
 }
 
 export interface Experience {

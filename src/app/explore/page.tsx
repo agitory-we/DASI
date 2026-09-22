@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import * as SunCalc from 'suncalc';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { EventOrHotSpot } from '@/types';
 import {
@@ -15,20 +16,125 @@ import {
   Sun,
   Flame,
   X,
-  Heart
+  Heart,
+  RefreshCw,
+  Leaf,
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 헬퍼: suncalc 기반 골든아워 계산 (서울 위경도 고정)
+// ──────────────────────────────────────────────────────────────────────────────
+const SEOUL_LAT = 37.5665;
+const SEOUL_LNG = 126.9780;
+
+function toHHMM(date: Date | null | undefined): string {
+  if (!date || isNaN(date.getTime())) return '--:--';
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function addMinutes(date: Date | null | undefined, mins: number): Date | null {
+  if (!date || isNaN(date.getTime())) return null;
+  return new Date(date.getTime() + mins * 60 * 1000);
+}
+
+function getSeoulSunData() {
+  const now = new Date();
+  const times = SunCalc.getTimes(now, SEOUL_LAT, SEOUL_LNG);
+  const sunriseStr = toHHMM(times.sunrise);
+  const sunsetStr = toHHMM(times.sunset);
+  const goldenStart = toHHMM(addMinutes(times.sunset, -60));
+  const goldenEnd = sunsetStr;
+  return { sunriseStr, sunsetStr, goldenStart, goldenEnd };
+}
+
+// 계절 자동 분류
+function getCurrentSeason(): '봄' | '여름' | '가을' | '겨울' {
+  const m = new Date().getMonth() + 1;
+  if (m >= 3 && m <= 5) return '봄';
+  if (m >= 6 && m <= 8) return '여름';
+  if (m >= 9 && m <= 11) return '가을';
+  return '겨울';
+}
+
+// 콘텐츠 타입 레이블 매핑
+const TYPE_LABELS: Record<EventOrHotSpot['type'], string> = {
+  festival: '시즌 축제',
+  hotspot: '출사 명소',
+  seasonal: '계절 특집',
+  golden_hour_alert: '골든아워 알림',
+  film_pairing: '필름 페어링',
+  photo_walk: '출사 투어',
+};
+
+const TYPE_COLORS: Record<EventOrHotSpot['type'], string> = {
+  festival: 'bg-terracotta/80',
+  hotspot: 'bg-emerald-600/80',
+  seasonal: 'bg-amber-600/80',
+  golden_hour_alert: 'bg-orange-500/80',
+  film_pairing: 'bg-violet-600/80',
+  photo_walk: 'bg-blue-600/80',
+};
+
+// 만료 여부 체크 (periodOrTime에서 날짜 추출)
+function isExpired(item: EventOrHotSpot): boolean {
+  if (item.endDate) {
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    return item.endDate < today;
+  }
+  return false;
+}
 
 export default function ExplorePage() {
   const { savedSpotIds, toggleSaveSpot } = useDasi();
   const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'saved'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
+  const [allItems, setAllItems] = useState<EventOrHotSpot[]>(mockEventsAndHotSpots);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sunData, setSunData] = useState(() => getSeoulSunData());
+  const currentSeason = useMemo(() => getCurrentSeason(), []);
 
-  const filteredItems = filterType === 'all'
-    ? mockEventsAndHotSpots
-    : filterType === 'saved'
-    ? mockEventsAndHotSpots.filter((item) => savedSpotIds.includes(item.id))
-    : mockEventsAndHotSpots.filter((item) => item.type === filterType);
+  // TourAPI 데이터 fetch (API 키 없으면 mockData 그대로)
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/explore');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.events && json.events.length > 0) {
+            // TourAPI 데이터 + 기존 hotspot mock 병합
+            const mockHotspots = mockEventsAndHotSpots.filter(i => i.type === 'hotspot');
+            setAllItems([...json.events, ...mockHotspots]);
+          }
+        }
+      } catch {
+        // 실패 시 mockData 그대로 사용
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // suncalc 매 분 갱신
+  useEffect(() => {
+    const interval = setInterval(() => setSunData(getSeoulSunData()), 60_000);
+    setSunData(getSeoulSunData());
+    setIsLoading(false);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredItems = useMemo(() => {
+    const active = allItems.filter(item => !isExpired(item));
+    if (filterType === 'all') return active;
+    if (filterType === 'saved') return active.filter(i => savedSpotIds.includes(i.id));
+    return active.filter(i => i.type === filterType);
+  }, [allItems, filterType, savedSpotIds]);
+
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -55,7 +161,7 @@ export default function ExplorePage() {
           </div>
           <div>
             <div className="text-[10px] text-vintage-500 font-medium">오늘 서울 일몰 (Sunset)</div>
-            <div className="font-serif text-base font-bold text-vintage-900">18:24 PM</div>
+            <div className="font-serif text-base font-bold text-vintage-900">{sunData.sunsetStr} PM</div>
           </div>
         </div>
 
@@ -65,7 +171,7 @@ export default function ExplorePage() {
           </div>
           <div>
             <div className="text-[10px] text-vintage-500 font-medium">매직 골든아워 (Golden Hour)</div>
-            <div className="font-serif text-base font-bold text-terracotta">17:45 ~ 18:35</div>
+            <div className="font-serif text-base font-bold text-terracotta">{sunData.goldenStart} ~ {sunData.goldenEnd}</div>
           </div>
         </div>
 
@@ -75,17 +181,21 @@ export default function ExplorePage() {
           </div>
           <div>
             <div className="text-[10px] text-vintage-500 font-medium">오늘의 추천 필름 감도</div>
-            <div className="font-serif text-base font-bold text-emerald-800">ISO 200 · 400</div>
+            <div className="font-serif text-base font-bold text-emerald-800">
+              {currentSeason === '여름' ? 'ISO 100 · 200' : currentSeason === '겨울' ? 'ISO 800 · 1600' : 'ISO 200 · 400'}
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-700 flex items-center justify-center shrink-0">
-            <Compass className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-2xl bg-amber-200/60 text-amber-800 flex items-center justify-center shrink-0">
+            <Leaf className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[10px] text-vintage-500 font-medium">출사 가시거리 지수</div>
-            <div className="font-serif text-base font-bold text-blue-900">쾌청 25km (최상급)</div>
+            <div className="text-[10px] text-vintage-500 font-medium">현재 출사 시즌</div>
+            <div className="font-serif text-base font-bold text-amber-900">
+              {currentSeason === '봄' ? '🌸 봄 벚꽃 시즌' : currentSeason === '여름' ? '🌊 여름 야경 시즌' : currentSeason === '가을' ? '🍁 가을 단풍 시즌' : '❄️ 겨울 설경 시즌'}
+            </div>
           </div>
         </div>
       </div>
@@ -100,7 +210,7 @@ export default function ExplorePage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setFilterType(tab.id as any)}
+            onClick={() => setFilterType(tab.id as 'all' | 'festival' | 'hotspot' | 'saved')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               filterType === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
@@ -112,7 +222,24 @@ export default function ExplorePage() {
         ))}
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="rounded-3xl bg-white border border-vintage-200 overflow-hidden animate-pulse">
+              <div className="aspect-[16/9] bg-vintage-100" />
+              <div className="p-6 space-y-3">
+                <div className="h-4 bg-vintage-100 rounded-lg w-1/3" />
+                <div className="h-6 bg-vintage-100 rounded-lg w-3/4" />
+                <div className="h-16 bg-vintage-50 rounded-2xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Cards Grid */}
+      {!isLoading && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredItems.map((item) => (
           <div
@@ -128,9 +255,14 @@ export default function ExplorePage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-3 left-3 flex gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
-                    {item.type === 'festival' ? '시즌 축제' : '출사 명소'}
+                  <span className={`px-2.5 py-1 rounded-full backdrop-blur-md text-white text-[10px] font-medium ${TYPE_COLORS[item.type]}`}>
+                    {TYPE_LABELS[item.type]}
                   </span>
+                  {item.source === 'tourapi' && (
+                    <span className="px-2 py-1 rounded-full bg-blue-600/70 backdrop-blur-md text-white text-[10px] font-medium">
+                      공식 행사
+                    </span>
+                  )}
                 </div>
                 <div className="absolute top-3 right-3">
                   <button
@@ -198,6 +330,7 @@ export default function ExplorePage() {
                     </span>
                   ))}
                 </div>
+
               </div>
             </div>
 
@@ -214,9 +347,10 @@ export default function ExplorePage() {
           </div>
         ))}
       </div>
+      )} {/* !isLoading 카드 그리드 종료 */}
 
       {/* EMPTY STATE */}
-      {filteredItems.length === 0 && (
+      {!isLoading && filteredItems.length === 0 && (
         <div className="text-center py-16 bg-white rounded-3xl border border-vintage-200 p-8 space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center mx-auto">
             <Heart className="w-7 h-7" />
