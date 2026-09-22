@@ -19,11 +19,17 @@ import {
   Check,
   X,
   TrendingUp,
-  Wrench
+  Wrench,
+  Coins,
+  Award,
+  Send,
+  Plus
 } from 'lucide-react';
 import { UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { useAuth, TIER_INFO, POINT_ACTIONS } from '@/context/AuthContext';
+import { SpotReportModal } from '@/components/explore/SpotReportModal';
 
 export default function CabinetPage() {
   const {
@@ -38,11 +44,14 @@ export default function CabinetPage() {
     useCoupon,
     showToast
   } = useDasi();
-  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons'>('camera');
+  const { user, profile, openLoginModal, awardPoints } = useAuth();
+  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points'>('camera');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
   const [selectedEscrowReviewGig, setSelectedEscrowReviewGig] = useState<any | null>(null);
+
   const [confirmedEscrowIds, setConfirmedEscrowIds] = useState<string[]>([]);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [selectedConvertingItem, setSelectedConvertingItem] = useState<any | null>(null);
@@ -121,21 +130,51 @@ export default function CabinetPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>My Digital Heritage Cabinet</span>
+      {/* Header & User Ecosystem Profile Banner */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-vintage-900 via-[#2D241E] to-vintage-800 text-white shadow-md">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>DASI 생태계 멤버십 &amp; 디지털 캐비닛</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">
+            {profile ? `${profile.nickname || '익명 필름러'}님의 캐비닛` : '마이 캐비닛 (통합 예약 &amp; 소장 센터)'}
+          </h1>
+          <p className="text-xs text-vintage-300">
+            {profile
+              ? '출사 명소 제보, 리뷰 등 자발적 기여로 모은 포인트를 확인하고 렌탈·현상 쿠폰으로 교환하세요.'
+              : '로그인하시면 찜한 스팟, 대여 내역, 기여 포인트가 영구 보존됩니다.'}
+          </p>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-          마이 캐비닛 (내 기기 &amp; 통합 예약 센터)
-        </h1>
-        <p className="text-xs sm:text-sm text-vintage-600">
-          대여 중인 기기 소장 전환(Rent-to-Own), 디지털 정품 보증서, 스냅 및 클래스 모바일 티켓을 모두 관리합니다.
-        </p>
+
+        {/* 포인트 & 티어 요약 위젯 */}
+        <div className="flex items-center gap-3 shrink-0">
+          {user && profile ? (
+            <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
+              <div className="space-y-0.5 text-right">
+                <div className="text-[10px] text-vintage-300 font-medium">보유 DASI 포인트</div>
+                <div className="font-serif text-xl font-bold text-amber-300">{profile.total_points.toLocaleString()}P</div>
+              </div>
+              <div className="h-8 w-px bg-white/20" />
+              <div className="text-left">
+                <div className="text-[10px] text-vintage-300 font-medium">멤버십 등급</div>
+                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${TIER_INFO[profile.tier].bg} ${TIER_INFO[profile.tier].color}`}>
+                  {TIER_INFO[profile.tier].label}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={openLoginModal}
+              className="px-5 py-3 rounded-2xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-2"
+            >
+              <span>1초 간편 로그인하고 +500P 받기</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* 4-Tab Navigator */}
+      {/* 6-Tab Navigator */}
       <div className="flex border-b border-vintage-200 gap-2 pb-2 overflow-x-auto">
         {[
           { id: 'camera', label: '📷 카메라 렌탈 & 소장 컬렉션', count: rentingItems.filter(r => !r.isConvertedToOwn).length + ownedItems.length },
@@ -143,11 +182,12 @@ export default function CabinetPage() {
           { id: 'repairs', label: '🔧 명장 수리 & 필름 보관함', count: repairEstimates.length + mockFilmRolls.length },
           { id: 'pro', label: '🏆 PRO 스튜디오 VIP 상담', count: proConsultations.length },
           { id: 'coupons', label: '🎫 멤버십 & 쿠폰팩', count: coupons.length },
+          { id: 'points', label: '⭐ 기여 & 포인트 리워드', count: profile ? `${profile.total_points}P` : '500P' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shrink-0 ${
               activeTab === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
                 : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
@@ -162,6 +202,7 @@ export default function CabinetPage() {
           </button>
         ))}
       </div>
+
 
       {/* ======================================================== */}
       {/* TAB 1: CAMERA RENTAL & OWNED COLLECTION                  */}
@@ -872,7 +913,248 @@ export default function CabinetPage() {
         </div>
       )}
 
-      {/* RTO CONVERT CONFIRMATION MODAL */}
+      {/* ======================================================== */}
+      {/* TAB 6: ECOSYSTEM POINTS & UGC CONTRIBUTION               */}
+      {/* ======================================================== */}
+      {activeTab === 'points' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* 1. Points & Tier Dashboard Header */}
+          <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-vintage-100 pb-6">
+              <div className="space-y-1">
+                <span className="text-[11px] font-bold text-vintage-400 uppercase tracking-wider">
+                  DASI CONTRIBUTE-TO-EARN ECOSYSTEM
+                </span>
+                <h2 className="font-serif text-2xl font-bold text-vintage-900">
+                  내 DASI 포인트 &amp; 생태계 기여 리워드
+                </h2>
+                <p className="text-xs text-vintage-600">
+                  내가 올린 출사지 팁과 솔직한 리뷰는 다른 필름러들에게 큰 영감이 되며, 모인 포인트는 렌탈비와 현상 쿠폰으로 돌려받습니다.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>출사 명소 제보 (+500P)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Current Balance & Tier Progress */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+                <div className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-amber-600" />
+                  <span>사용 가능 포인트</span>
+                </div>
+                <div className="font-serif text-3xl font-extrabold text-amber-900">
+                  {(profile?.total_points || 500).toLocaleString()}<span className="text-base font-normal ml-1">P</span>
+                </div>
+                <div className="text-[11px] text-amber-700">
+                  1,000P = 1,000원 상당 렌탈·현상 할인 가능
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-slate-600" />
+                  <span>현재 멤버십 티어</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-2xl font-bold text-slate-900">
+                    {TIER_INFO[profile?.tier || 'filmmer'].label}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {profile?.tier === 'legend'
+                    ? '최고 등급! 금요일 밤 DROP 5분 우선 예약권 보유'
+                    : profile?.tier === 'photowalker'
+                    ? '매월 제휴 현상소 1회 무료 스캔 쿠폰 자동 지급'
+                    : '가입 즉시 첫 렌탈 5% 할인 혜택 적용'}
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+                <div className="text-xs font-bold text-vintage-800 flex items-center justify-between">
+                  <span>다음 등급까지</span>
+                  <span className="text-terracotta font-mono font-bold">
+                    {profile?.tier === 'legend' ? 'MAX' : profile?.tier === 'photowalker' ? `${Math.max(0, 3000 - (profile?.total_points || 500))}P 남음` : `${Math.max(0, 500 - (profile?.total_points || 0))}P 남음`}
+                  </span>
+                </div>
+                <div className="w-full bg-vintage-200 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-terracotta h-full rounded-full transition-all"
+                    style={{
+                      width: profile?.tier === 'legend' ? '100%' : profile?.tier === 'photowalker' ? `${Math.min(100, (((profile?.total_points || 500) - 500) / 2500) * 100)}%` : `${Math.min(100, ((profile?.total_points || 0) / 500) * 100)}%`
+                    }}
+                  />
+                </div>
+                <div className="text-[10px] text-vintage-500 leading-tight">
+                  {profile?.tier === 'filmmer'
+                    ? '출사 명소 1곳만 제보해도 바로 [포토워커] 승급!'
+                    : profile?.tier === 'photowalker'
+                    ? '누적 3,000P 달성 시 전설의 [DASI 레전드] 등극'
+                    : 'DASI 최상위 마스터 컬렉터 멤버십'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Ways to Earn Points (Win-Win Loop Guide) */}
+          <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs p-6 sm:p-8 space-y-4">
+            <h3 className="font-serif text-lg font-bold text-vintage-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-terracotta" />
+              <span>포인트 적립 미션 (자발적 데이터 기여 루프)</span>
+            </h3>
+            <p className="text-xs text-vintage-500">
+              아래 활동에 참여하시면 시스템이 기여 데이터를 검증하여 포인트를 즉시 적립해 드립니다.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+              {[
+                {
+                  icon: '📍',
+                  title: '출사 Hot Spot 제보',
+                  points: '+500P',
+                  desc: '나만 아는 골든아워 명소와 필름 꿀팁 제보 (검증 완료 시)',
+                  action: () => setIsReportModalOpen(true),
+                  btnLabel: '명소 제보하기'
+                },
+                {
+                  icon: '✍️',
+                  title: '실사용 기기/스팟 리뷰',
+                  points: '+100P',
+                  desc: '렌탈 이용 후 솔직한 사진 1장과 한줄 조작감 공유',
+                  action: () => showToast('렌탈 이용 완료 내역에서 [리뷰 작성]을 누르시면 +100P가 지급됩니다.', 'info'),
+                  btnLabel: '리뷰 가이드'
+                },
+                {
+                  icon: '🎞️',
+                  title: '스캔 롤 웹 갤러리 공유',
+                  points: '+150P',
+                  desc: '현상소에서 스캔받은 롤에 태그 달고 아날로그 맵 연동',
+                  action: () => showToast('상단 [명장 수리 & 필름 보관함]에서 현상본을 공유할 수 있습니다.', 'info'),
+                  btnLabel: '필름롤 확인'
+                },
+                {
+                  icon: '🤝',
+                  title: '친구 초대 (첫 렌탈)',
+                  points: '+1,000P',
+                  desc: '초대 링크로 친구가 첫 주말 렌탈 완료 시 즉시 지급',
+                  action: () => {
+                    navigator.clipboard?.writeText?.(window.location.origin);
+                    showToast('초대 링크가 복사되었습니다! 친구에게 공유해 보세요.', 'success');
+                  },
+                  btnLabel: '초대 링크 복사'
+                },
+                {
+                  icon: '🔧',
+                  title: '수리/오버홀 후기 등록',
+                  points: '+300P',
+                  desc: '명장 클리닉 견적 수리 후 비포/애프터 상태 기록',
+                  action: () => showToast('명장 수리 완료 후 캐비닛에서 등록 가능합니다.', 'info'),
+                  btnLabel: '수리 내역 보기'
+                },
+                {
+                  icon: '🎉',
+                  title: '신규 가입 웰컴 팩',
+                  points: '+500P',
+                  desc: 'DASI 계정 연동 및 프로필 설정 시 즉시 자동 지급',
+                  action: () => openLoginModal(),
+                  btnLabel: user ? '지급 완료' : '로그인하고 받기'
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-vintage-50/70 border border-vintage-200 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold font-mono">
+                        {item.points}
+                      </span>
+                    </div>
+                    <h4 className="font-serif text-sm font-bold text-vintage-900">{item.title}</h4>
+                    <p className="text-[11px] text-vintage-600 leading-relaxed">{item.desc}</p>
+                  </div>
+                  <button
+                    onClick={item.action}
+                    className="w-full py-2 rounded-xl bg-white hover:bg-vintage-100 border border-vintage-200 text-vintage-800 text-xs font-semibold transition-colors"
+                  >
+                    {item.btnLabel}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Point Redemption Center */}
+          <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs p-6 sm:p-8 space-y-4">
+            <h3 className="font-serif text-lg font-bold text-vintage-900 flex items-center gap-2">
+              <Ticket className="w-4 h-4 text-terracotta" />
+              <span>포인트 리워드 교환소 (Redeem Store)</span>
+            </h3>
+            <p className="text-xs text-vintage-500">
+              차곡차곡 모은 포인트는 아래 전용 바우처로 언제든 즉시 교환하여 실결제 시 사용할 수 있습니다.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              {[
+                {
+                  title: '카메라 렌탈 1,000원 즉시 할인권',
+                  cost: 1000,
+                  desc: '주말 렌탈 결제 시 즉시 차감 적용',
+                  badge: '렌탈 전용'
+                },
+                {
+                  title: '을지로/충무로 현상소 고화질 무료 스캔권',
+                  cost: 2000,
+                  desc: '노리츠/후지 3000dpi 스캔 1롤 전액 지원',
+                  badge: '현상소 제휴'
+                },
+                {
+                  title: 'DASI 안심 케어(파손 보험) 1회 무료',
+                  cost: 3000,
+                  desc: '렌탈 시 3,000원 안심 보험료 전액 면제',
+                  badge: '케어 혜택'
+                }
+              ].map((voucher, idx) => (
+                <div key={idx} className="p-5 rounded-2xl border-2 border-dashed border-vintage-300 bg-[#FAF8F5] flex flex-col justify-between space-y-4 text-center">
+                  <div className="space-y-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-terracotta/10 text-terracotta">
+                      {voucher.badge}
+                    </span>
+                    <h4 className="font-serif text-sm font-bold text-vintage-900 leading-snug">{voucher.title}</h4>
+                    <p className="text-[11px] text-vintage-500">{voucher.desc}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-serif text-lg font-bold text-terracotta">{voucher.cost.toLocaleString()}P</div>
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          openLoginModal();
+                          return;
+                        }
+                        if ((profile?.total_points || 0) < voucher.cost) {
+                          showToast(`포인트가 부족합니다. (${voucher.cost}P 필요)`, 'warning');
+                          return;
+                        }
+                        showToast(`[${voucher.title}] 교환이 완료되었습니다! [멤버십 & 쿠폰팩] 탭에 보관되었습니다.`, 'success');
+                      }}
+                      className="w-full py-2 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-2xs"
+                    >
+                      교환하기
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {isConvertModalOpen && selectedConvertingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
@@ -1479,6 +1761,16 @@ export default function CabinetPage() {
           </div>
         </div>
       )}
+
+      {/* 출사 명소 제보 모달 (캐비닛 내 어디서든 호출 가능) */}
+      <SpotReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSuccess={() => {
+          awardPoints('spot_report');
+        }}
+      />
     </div>
   );
 }
+
