@@ -18,21 +18,34 @@ import {
   Compass,
   Calendar,
   Volume2,
-  VolumeX
+  VolumeX,
+  Bell,
+  Star
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
 import { isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
 import { UserAvatar } from '@/components/auth/UserAvatar';
+import { useAuth, TIER_INFO } from '@/context/AuthContext';
 
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
   const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast } = useDasi();
+  const { user, profile } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [muted, setMuted] = useState(false);
+
+  // 미읽음 알림 (UI 레벨 stub — 포인트 적립·체크인·수리 완료 시뮬레이션)
+  const notifications = profile ? [
+    { id: 'n1', icon: '⭐', text: `${profile.total_points.toLocaleString()}P 누적 달성!`, sub: '계속 기여하면 다음 티어가 가까워집니다', read: false },
+    { id: 'n2', icon: '📍', text: '출사 명소 체크인 완료', sub: '골든아워 스탬프 1개 획득', read: true },
+    { id: 'n3', icon: '🧪', text: '현상소 스캔 접수 완료', sub: '노리츠 스캐너 · 3~5 영업일 내 완료 예정', read: true },
+  ] : [];
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     setMuted(isAudioMuted());
@@ -172,6 +185,73 @@ export const Header: React.FC = () => {
 
           {/* Right Action Bar */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* 실시간 포인트 배지 (로그인 시) */}
+            {user && profile && (
+              <Link
+                href="/cabinet?tab=points"
+                className={[
+                  'hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold transition-all hover:scale-105 shadow-xs',
+                  TIER_INFO[profile.tier].bg,
+                  TIER_INFO[profile.tier].color,
+                  'border-transparent'
+                ].join(' ')}
+                title="포인트 잔액 및 티어 확인"
+              >
+                <Star className="w-3 h-3 fill-current" />
+                <span>{profile.total_points.toLocaleString()}P</span>
+                <span className="opacity-50">·</span>
+                <span>{TIER_INFO[profile.tier].label}</span>
+              </Link>
+            )}
+
+            {/* 알림 벨 (로그인 시) */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsNotifOpen(v => !v)}
+                  className="relative p-2 rounded-xl bg-white hover:bg-vintage-100/80 text-vintage-700 border border-vintage-200 transition-all shadow-xs"
+                  title="알림"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-terracotta text-white text-[9px] font-bold flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                {isNotifOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-white border border-vintage-200 shadow-xl p-2 z-50 animate-fadeIn"
+                    onMouseLeave={() => setIsNotifOpen(false)}
+                  >
+                    <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-2 py-1.5">최근 알림</div>
+                    <div className="space-y-0.5">
+                      {notifications.map(n => (
+                        <div
+                          key={n.id}
+                          className={['flex items-start gap-2.5 p-2.5 rounded-xl text-xs transition-colors', n.read ? 'text-vintage-500' : 'bg-amber-50 text-vintage-900'].join(' ')}
+                        >
+                          <span className="text-base shrink-0 mt-0.5">{n.icon}</span>
+                          <div>
+                            <div className="font-semibold leading-tight">{n.text}</div>
+                            <div className="text-vintage-400 text-[10px] mt-0.5">{n.sub}</div>
+                          </div>
+                          {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-terracotta shrink-0 mt-1.5 ml-auto" />}
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      href="/cabinet"
+                      className="mt-2 block text-center text-[10px] font-bold text-terracotta hover:text-terracotta/80 py-1.5 border-t border-vintage-100"
+                      onClick={() => setIsNotifOpen(false)}
+                    >
+                      전체 내역 보기 →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Shutter Sound Mute Toggle */}
             <button
               onClick={handleToggleSound}

@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Camera, MapPin, Film, Sun, Heart, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Camera, MapPin, Sun, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 
@@ -27,7 +27,7 @@ const SPOT_RECOMMENDATIONS: Record<string, { title: string; location: string; ti
 export default function OnboardingPage() {
   const router = useRouter();
   const { showToast } = useDasi();
-  const { user, openLoginModal } = useAuth();
+  const { user, openLoginModal, awardPoints } = useAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -41,8 +41,13 @@ export default function OnboardingPage() {
 
   const recommendedSpots = selectedGenres.flatMap((g) => SPOT_RECOMMENDATIONS[g] ?? []).slice(0, 3);
 
-  const handleIssueCoupon = () => {
+  const handleIssueCoupon = async () => {
     if (!user) { openLoginModal(); return; }
+    try {
+      await awardPoints('spot_report', 'onboarding_welcome');
+    } catch (e) {
+      console.error(e);
+    }
     setCouponIssued(true);
     showToast('🎁 첫 렌탈 500P 웰컴 쿠폰이 발급되었습니다! 마이 캐비닛에서 확인하세요.', 'success');
   };

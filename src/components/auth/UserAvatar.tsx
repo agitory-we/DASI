@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, User, ChevronDown } from 'lucide-react';
+import { LogOut, User, ChevronDown, Sparkles } from 'lucide-react';
 import { useAuth, TIER_INFO } from '@/context/AuthContext';
 
 export function UserAvatar() {
@@ -72,6 +72,9 @@ export function UserAvatar() {
             )}
           </div>
           <div className="space-y-1">
+            <a href="/onboarding" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-vintage-50 text-xs text-vintage-800 font-medium transition-colors" onClick={() => setIsOpen(false)}>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />출사 취향 가이드 (온보딩)
+            </a>
             <a href="/cabinet" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-vintage-50 text-xs text-vintage-800 font-medium transition-colors" onClick={() => setIsOpen(false)}>
               <User className="w-3.5 h-3.5 text-terracotta" />마이 캐비넷
             </a>

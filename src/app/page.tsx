@@ -111,6 +111,14 @@ export default function HomePage() {
                 </Link>
 
                 <Link
+                  href="/onboarding"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-50 text-amber-900 border border-amber-300/80 text-sm sm:text-base font-semibold hover:bg-amber-100 active:scale-98 transition-all shadow-2xs"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>내 취향 맞춤 출사지 &amp; 500P 받기</span>
+                </Link>
+
+                <Link
                   href="/map"
                   className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-white text-vintage-800 border border-vintage-300 text-sm sm:text-base font-semibold hover:bg-vintage-100 active:scale-98 transition-all shadow-2xs"
                 >
@@ -250,6 +258,126 @@ export default function HomePage() {
               </p>
             </div>
           </Link>
+        </div>
+      </section>
+
+      {/* DASI WIN-WIN FLYWHEEL ECOSYSTEM SECTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-gradient-to-br from-[#FAF8F5] to-vintage-100/70 border border-vintage-300/80 p-6 sm:p-10 shadow-sm relative overflow-hidden">
+          {/* Subtle watermark */}
+          <div className="absolute -right-8 -bottom-8 font-serif text-[120px] font-black text-vintage-900/5 select-none pointer-events-none">
+            DASI
+          </div>
+
+          <div className="max-w-3xl mb-8 space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>함께 성장하는 아날로그 데이터 플랫폼</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900 tracking-tight">
+              참여할수록 혜택이 커지는 <span className="text-terracotta underline decoration-amber-400 decoration-wavy underline-offset-6">선순환 플라이휠</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-vintage-600 leading-relaxed">
+              사용자가 출사지와 현상소 리뷰를 공유할수록 데이터베이스가 풍성해지고, 적립된 포인트는 대여료 할인과 무료 현상 바우처로 즉시 환원되는 자발적 상생 구조입니다.
+            </p>
+          </div>
+
+          {/* 4 Flywheel Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+            {/* Step 1 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-terracotta/40 transition-all">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-lg bg-vintage-100 text-vintage-800 text-xs font-bold flex items-center justify-center font-mono">01</span>
+                <span className="text-xs font-bold text-terracotta">대여 &amp; 소장</span>
+              </div>
+              <div className="text-2xl">🎞️</div>
+              <div>
+                <h3 className="text-sm font-bold text-vintage-900">명장 기기 주말 렌탈</h3>
+                <p className="text-xs text-vintage-500 mt-1 leading-snug">
+                  40년 명장의 100% 점검 카메라를 대여하고 마음에 들면 대여료 전액 공제 후 소장 전환
+                </p>
+              </div>
+              <div className="text-[11px] font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg">
+                🎁 첫 대여 500P 웰컴 할인
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-emerald-400/40 transition-all">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center font-mono">02</span>
+                <span className="text-xs font-bold text-emerald-600">자발적 기여</span>
+              </div>
+              <div className="text-2xl">📍</div>
+              <div>
+                <h3 className="text-sm font-bold text-vintage-900">현장 인증 &amp; 제보</h3>
+                <p className="text-xs text-vintage-500 mt-1 leading-snug">
+                  출사지 GPS 체크인, 골든아워 촬영 팁과 현상소 1초 접수 QR로 실시간 데이터 등록
+                </p>
+              </div>
+              <div className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                ⭐ 체크인 +200P · 제보 +500P
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-indigo-400/40 transition-all">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-bold flex items-center justify-center font-mono">03</span>
+                <span className="text-xs font-bold text-indigo-600">데이터 고도화</span>
+              </div>
+              <div className="text-2xl">🧪</div>
+              <div>
+                <h3 className="text-sm font-bold text-vintage-900">AI 추천 &amp; 지도 확장</h3>
+                <p className="text-xs text-vintage-500 mt-1 leading-snug">
+                  집단 지성으로 축적된 데이터로 한국관광공사 TourAPI와 일몰/일출 시각이 결합된 맞춤 코스 제공
+                </p>
+              </div>
+              <div className="text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                🗺️ 전국 52+ 아날로그 스팟
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-amber-400/40 transition-all">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-900 text-xs font-bold flex items-center justify-center font-mono">04</span>
+                <span className="text-xs font-bold text-amber-700">혜택 환원 &amp; 상생</span>
+              </div>
+              <div className="text-2xl">🤝</div>
+              <div>
+                <h3 className="text-sm font-bold text-vintage-900">포인트 재사용 &amp; 긱</h3>
+                <p className="text-xs text-vintage-500 mt-1 leading-snug">
+                  적립 포인트로 대여료·현상비 차감, 내 카메라로 주말 로컬 스냅 알바(+300P) 등록까지
+                </p>
+              </div>
+              <div className="text-[11px] font-medium text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg">
+                🎟️ 최대 3,000P 바우처 교환
+              </div>
+            </div>
+          </div>
+
+          {/* Quick link action bar */}
+          <div className="mt-6 pt-5 border-t border-vintage-200/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-vintage-600">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>오늘 등록된 출사 명소와 현상소 리뷰는 모든 회원에게 무료로 공개됩니다.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/onboarding"
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors shadow-2xs"
+              >
+                취향 가이드 시작 (+500P)
+              </Link>
+              <Link
+                href="/cabinet?tab=points"
+                className="px-3.5 py-1.5 rounded-xl bg-white border border-vintage-300 text-vintage-800 font-semibold hover:bg-vintage-50 transition-colors"
+              >
+                내 포인트 보관함 가기
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
