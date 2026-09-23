@@ -1,0 +1,648 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import {
+  Store,
+  QrCode,
+  Package,
+  Clock,
+  Wrench,
+  TrendingUp,
+  CheckCircle2,
+  AlertCircle,
+  Plus,
+  Minus,
+  Check,
+  Search,
+  ChevronRight,
+  ShieldCheck,
+  Coins,
+  Sparkles,
+  ArrowUpRight,
+  Eye,
+  Camera
+} from 'lucide-react';
+import { useDasi } from '@/context/DasiContext';
+import { useAuth } from '@/context/AuthContext';
+import { playShutterSound } from '@/utils/shutterAudio';
+
+// 현상소 파트너 초기 재고 데이터
+interface FilmStock {
+  id: string;
+  name: string;
+  brand: string;
+  iso: number;
+  count: number;
+  price: number;
+  isSoldOut: boolean;
+}
+
+const INITIAL_FILM_STOCKS: FilmStock[] = [
+  { id: 'f-1', name: 'Kodak Gold 200 (36exp)', brand: 'Kodak', iso: 200, count: 14, price: 16500, isSoldOut: false },
+  { id: 'f-2', name: 'Kodak UltraMax 400 (36exp)', brand: 'Kodak', iso: 400, count: 8, price: 17500, isSoldOut: false },
+  { id: 'f-3', name: 'Fujifilm 200 (36exp)', brand: 'Fujifilm', iso: 200, count: 5, price: 15500, isSoldOut: false },
+  { id: 'f-4', name: 'Kodak Portra 400 (36exp)', brand: 'Kodak', iso: 400, count: 0, price: 24000, isSoldOut: true },
+  { id: 'f-5', name: 'Ilford HP5 Plus 400 (흑백)', brand: 'Ilford', iso: 400, count: 6, price: 14000, isSoldOut: false },
+];
+
+export default function PartnerDashboardPage() {
+  const { showToast } = useDasi();
+  const { user, profile, awardPoints } = useAuth();
+
+  // 상점 선택
+  const [partnerType, setPartnerType] = useState<'lab' | 'repair'>('lab');
+  const [selectedPartnerId, setSelectedPartnerId] = useState('spot-1'); // 망우삼림 기본
+
+  // 1초 QR 접수 코드 검증
+  const [qrCodeInput, setQrCodeInput] = useState('');
+  const [verifiedDrop, setVerifiedDrop] = useState<{
+    code: string;
+    customerName: string;
+    scannerType: string;
+    rollCount: number;
+    filmType: string;
+    timestamp: string;
+    status: 'pending' | 'accepted' | 'completed';
+  } | null>(null);
+
+  // 실시간 필름 재고 상태
+  const [filmStocks, setFilmStocks] = useState<FilmStock[]>(INITIAL_FILM_STOCKS);
+
+  // 당일 스캔 마감 스위치
+  const [isScanAccepting, setIsScanAccepting] = useState(true);
+  const [cutoffTime, setCutoffTime] = useState('17:30');
+
+  // 수리 명장 케이스 등록 상태
+  const [repairCase, setRepairCase] = useState({
+    model: '',
+    symptom: '',
+    solution: '',
+    cost: '',
+    durationDays: '3',
+  });
+  const [repairCaseSuccess, setRepairCaseSuccess] = useState(false);
+
+  // QR 접수번호 검증 로직
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = qrCodeInput.trim().toUpperCase();
+    if (!trimmed) return;
+
+    playShutterSound('slr');
+    setVerifiedDrop({
+      code: trimmed.startsWith('DASI-') ? trimmed : `DASI-LAB-${trimmed}`,
+      customerName: '김민수 (필름러)',
+      scannerType: '후지 프론티어 SP3000 (따뜻한 인물톤)',
+      rollCount: 2,
+      filmType: 'Kodak Gold 200 · 컬러네거티브 (C-41)',
+      timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+      status: 'pending',
+    });
+    showToast('접수 티켓을 확인했습니다. 현물 수령 후 접수 확정을 진행하세요.', 'info');
+  };
+
+  // 접수 확정 처리
+  const handleAcceptDrop = async () => {
+    if (!verifiedDrop) return;
+    playShutterSound('slr');
+    setVerifiedDrop(prev => (prev ? { ...prev, status: 'accepted' } : null));
+    try {
+      await awardPoints('spot_report', verifiedDrop.code);
+    } catch (e) {
+      console.error(e);
+    }
+    showToast(`✅ [${verifiedDrop.code}] 1초 스캔 접수가 승인되었습니다. 고객에게 알림이 전송됩니다. (+150P)`, 'success');
+  };
+
+  // 재고 증감
+  const handleStockChange = (id: string, delta: number) => {
+    setFilmStocks(prev =>
+      prev.map(item => {
+        if (item.id === id) {
+          const nextCount = Math.max(0, item.count + delta);
+          return {
+            ...item,
+            count: nextCount,
+            isSoldOut: nextCount === 0,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  // 재고 품절 토글
+  const handleToggleSoldOut = (id: string) => {
+    setFilmStocks(prev =>
+      prev.map(item => {
+        if (item.id === id) {
+          const nextSoldOut = !item.isSoldOut;
+          return {
+            ...item,
+            isSoldOut: nextSoldOut,
+            count: nextSoldOut ? 0 : item.count || 5,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  // 수리 케이스 등록 제출
+  const handleSubmitRepairCase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!repairCase.model || !repairCase.symptom || !repairCase.cost) {
+      showToast('기종, 증상, 수리 비용을 모두 입력해 주세요.', 'warning');
+      return;
+    }
+    playShutterSound('slr');
+    setRepairCaseSuccess(true);
+    try {
+      await awardPoints('repair_case', repairCase.model);
+    } catch (err) {
+      console.error(err);
+    }
+    showToast(`🔧 [${repairCase.model}] 수리 케이스가 DASI 케어 DB에 등록되었습니다 (+300P 적립)`, 'success');
+    setTimeout(() => {
+      setRepairCase({ model: '', symptom: '', solution: '', cost: '', durationDays: '3' });
+      setRepairCaseSuccess(false);
+    }, 2500);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF7F0] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        
+        {/* 상단 파트너 헤더 */}
+        <div className="bg-gradient-to-r from-vintage-900 via-[#2D211A] to-vintage-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-vintage-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-terracotta/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
+                <Store className="w-3.5 h-3.5" />
+                <span>DASI 공식 인증 파트너 전용 콘솔</span>
+              </div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">
+                파트너 실시간 운영 대시보드
+              </h1>
+              <p className="text-xs sm:text-sm text-vintage-300 max-w-xl">
+                현장 1초 접수 QR 검증, 실시간 필름 재고 +/- 조정, 수리 케이스 등록을 한곳에서 즉시 처리합니다.
+              </p>
+            </div>
+
+            {/* Micro-Ads 구독 뱃지 & 실시간 지표 */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex items-center gap-4 shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-xl">
+                ⭐
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 text-xs text-vintage-300">
+                  <span>DASI Micro-Ads</span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">운영중</span>
+                </div>
+                <div className="text-base font-bold text-white mt-0.5">황금 핀 노출 활성</div>
+                <div className="text-[11px] text-amber-300 font-mono mt-0.5">이번 달 유입 148명 · QR 접수 52건</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 파트너 유형 탭 */}
+          <div className="flex items-center gap-2 mt-6 pt-6 border-t border-white/10">
+            <button
+              onClick={() => setPartnerType('lab')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                partnerType === 'lab'
+                  ? 'bg-terracotta text-white shadow-sm'
+                  : 'bg-white/10 text-vintage-300 hover:bg-white/20'
+              }`}
+            >
+              <Camera className="w-4 h-4" />
+              <span>현상소 &amp; 필름샵 모드 (을지로 망우삼림)</span>
+            </button>
+            <button
+              onClick={() => setPartnerType('repair')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                partnerType === 'repair'
+                  ? 'bg-terracotta text-white shadow-sm'
+                  : 'bg-white/10 text-vintage-300 hover:bg-white/20'
+              }`}
+            >
+              <Wrench className="w-4 h-4" />
+              <span>수리 명장 모드 (충무로 보성광학)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── LAB MODE: 현상소 파트너 대시보드 ── */}
+        {partnerType === 'lab' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            {/* 좌측: 1초 QR 접수 검증기 (8 Cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* 1. 현장 1초 QR 접수 코드 리더 */}
+              <div className="bg-white rounded-3xl p-6 border border-vintage-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                      <QrCode className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-vintage-900">현장 1초 스마트 스캔 QR 검증</h2>
+                      <p className="text-[11px] text-vintage-500">고객이 제시한 QR 코드 또는 4자리 접수코드를 확인하세요</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                    대기 접수 2건
+                  </span>
+                </div>
+
+                {/* 코드 입력 폼 */}
+                <form onSubmit={handleVerifyCode} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={qrCodeInput}
+                      onChange={(e) => setQrCodeInput(e.target.value)}
+                      placeholder="예: 7294 또는 DASI-LAB-7294"
+                      className="w-full px-4 py-3 rounded-2xl bg-vintage-50 border border-vintage-200 text-sm font-mono font-bold text-vintage-900 placeholder:text-vintage-400 focus:outline-none focus:border-terracotta"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-5 py-3 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs active:scale-95 shrink-0"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                    <span>조회</span>
+                  </button>
+                </form>
+
+                {/* 빠른 시뮬레이션 버튼 */}
+                <div className="flex items-center gap-2 text-[11px] text-vintage-500">
+                  <span>빠른 테스트:</span>
+                  <button
+                    type="button"
+                    onClick={() => { setQrCodeInput('DASI-LAB-7294'); }}
+                    className="px-2 py-0.5 rounded-md bg-vintage-100 hover:bg-vintage-200 font-mono text-vintage-700 font-semibold"
+                  >
+                    #7294 (노리츠 2롤)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setQrCodeInput('DASI-LAB-3180'); }}
+                    className="px-2 py-0.5 rounded-md bg-vintage-100 hover:bg-vintage-200 font-mono text-vintage-700 font-semibold"
+                  >
+                    #3180 (후지 1롤)
+                  </button>
+                </div>
+
+                {/* 검증 결과 카드 */}
+                {verifiedDrop && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] border-2 border-amber-300 space-y-3 animate-fadeIn">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-vintage-900 text-amber-300">
+                          {verifiedDrop.code}
+                        </span>
+                        <h3 className="text-base font-bold text-vintage-900 mt-1">
+                          {verifiedDrop.customerName} · 총 {verifiedDrop.rollCount}롤
+                        </h3>
+                        <p className="text-xs text-vintage-600 mt-0.5">{verifiedDrop.filmType}</p>
+                      </div>
+                      <span className="text-xs text-vintage-400 font-mono">{verifiedDrop.timestamp} 접수</span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-vintage-200 text-xs text-vintage-700 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">요청 스캐너:</span>
+                        <strong className="text-terracotta">{verifiedDrop.scannerType}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">수령 방식:</span>
+                        <span>카카오 알림톡 웹갤러리 링크 + 네거티브 필름 보관</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-vintage-500">고객 보상:</span>
+                        <span className="text-emerald-700 font-bold">+150P 자동 지급 예정</span>
+                      </div>
+                    </div>
+
+                    {verifiedDrop.status === 'pending' ? (
+                      <button
+                        onClick={handleAcceptDrop}
+                        className="w-full py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span>필름 수령 확인 및 접수 승인 (+150P 지급)</span>
+                      </button>
+                    ) : (
+                      <div className="py-2.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>접수 승인 완료됨 (스캔 작업 대기열 등록)</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. 당일 스캔 마감 시간 관리 */}
+              <div className="bg-white rounded-3xl p-6 border border-vintage-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-vintage-900">당일 스캔 마감 상태 관리</h2>
+                      <p className="text-[11px] text-vintage-500">DASI 지도 핀 및 스팟 상세 페이지에 실시간 반영됩니다</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold ${isScanAccepting ? 'text-emerald-700' : 'text-vintage-400'}`}>
+                      {isScanAccepting ? '당일 접수 중' : '당일 마감'}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const next = !isScanAccepting;
+                        setIsScanAccepting(next);
+                        showToast(next ? '당일 스캔 접수가 재개되었습니다.' : '오늘 당일 스캔이 마감 처리되었습니다.', 'info');
+                      }}
+                      className={`w-12 h-6 rounded-full transition-colors p-0.5 flex items-center ${
+                        isScanAccepting ? 'bg-emerald-500 justify-end' : 'bg-vintage-300 justify-start'
+                      }`}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-white shadow-xs" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs space-y-1">
+                    <span className="text-vintage-500">당일 스캔 마감 시간</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={cutoffTime}
+                        onChange={(e) => setCutoffTime(e.target.value)}
+                        className="font-mono font-bold text-vintage-900 bg-white px-2 py-1 rounded-lg border border-vintage-200"
+                      />
+                      <span className="text-[11px] text-vintage-500">이전 접수 건 당일 발송</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 text-xs space-y-1">
+                    <span className="text-vintage-500">웹 갤러리 예상 발송 시각</span>
+                    <div className="font-bold text-vintage-900 text-sm mt-1">오늘 밤 21:30 일괄 전송</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 우측: 실시간 필름 재고 원탭 관리기 (5 Cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-vintage-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                      <Package className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-vintage-900">실시간 필름 재고 관리</h2>
+                      <p className="text-[11px] text-vintage-500">클릭 즉시 지도 사용자에게 잔여 수량 노출</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {filmStocks.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`p-3.5 rounded-2xl border transition-all ${
+                        item.isSoldOut
+                          ? 'bg-vintage-50 border-vintage-200 opacity-60'
+                          : 'bg-white border-vintage-200 hover:border-terracotta/40'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-vintage-900">{item.name}</span>
+                            {item.isSoldOut && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-red-100 text-red-700 font-bold">
+                                품절
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-vintage-500 mt-0.5">
+                            ₩{item.price.toLocaleString()} · ISO {item.iso}
+                          </div>
+                        </div>
+
+                        {/* +/- 조정기 */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleStockChange(item.id, -1)}
+                            className="w-7 h-7 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 flex items-center justify-center font-bold active:scale-95"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center font-mono font-bold text-sm text-vintage-900">
+                            {item.count}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleStockChange(item.id, 1)}
+                            className="w-7 h-7 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 flex items-center justify-center font-bold active:scale-95"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-vintage-100/60 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSoldOut(item.id)}
+                          className="text-vintage-500 hover:text-terracotta font-medium"
+                        >
+                          {item.isSoldOut ? '재입고 처리' : '원터치 품절 설정'}
+                        </button>
+                        <span className="text-emerald-700 font-semibold font-mono">
+                          {item.count > 0 ? `잔여 ${item.count}롤 실시간 노출` : '지도 품절 표시'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-vintage-700 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="leading-snug">
+                    필름 재고 수량을 입력해두면 주변 3km 내 필름을 찾는 출사자에게 <strong>&apos;실시간 재고 보유 샵&apos;</strong>으로 우선 추천됩니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 월간 정산 요약 카드 */}
+              <div className="bg-gradient-to-br from-[#2D211A] to-vintage-900 rounded-3xl p-6 text-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between text-xs text-vintage-300">
+                  <span>2026년 9월 정산 예정액</span>
+                  <span className="text-emerald-400 font-bold">익월 10일 정산</span>
+                </div>
+                <div className="font-serif text-3xl font-bold text-amber-300">₩432,000</div>
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs text-vintage-300">
+                  <div>• QR 접수 대행료: ₩104,000</div>
+                  <div>• 렌탈 픽업 거점 마진: ₩328,000</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ── REPAIR MODE: 수리 명장 대시보드 ── */}
+        {partnerType === 'repair' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            {/* 수리 케이스 신속 등록기 (7 Cols) */}
+            <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-vintage-200 shadow-xs space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-vintage-100">
+                <div className="w-10 h-10 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center font-bold">
+                  <Wrench className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg font-bold text-vintage-900">수리 명장 완료 케이스 등록</h2>
+                  <p className="text-xs text-vintage-500">등록된 수리 내역은 동일 기종 고객의 예상 견적 DB로 자동 연동됩니다 (+300P)</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmitRepairCase} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-vintage-800 mb-1">수리 카메라 기종 *</label>
+                  <input
+                    type="text"
+                    required
+                    value={repairCase.model}
+                    onChange={(e) => setRepairCase({ ...repairCase, model: e.target.value })}
+                    placeholder="예: Nikon FM2, Canon AE-1, Olympus Pen EE-3"
+                    className="w-full px-4 py-2.5 rounded-xl bg-vintage-50 border border-vintage-200 text-xs text-vintage-900 focus:outline-none focus:border-terracotta"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-vintage-800 mb-1">고장 증상 *</label>
+                  <input
+                    type="text"
+                    required
+                    value={repairCase.symptom}
+                    onChange={(e) => setRepairCase({ ...repairCase, symptom: e.target.value })}
+                    placeholder="예: 셔터막 저속 끊김 및 뷰파인더 곰팡이 침투"
+                    className="w-full px-4 py-2.5 rounded-xl bg-vintage-50 border border-vintage-200 text-xs text-vintage-900 focus:outline-none focus:border-terracotta"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-vintage-800 mb-1">명장 조치 내역 (상세 솔루션)</label>
+                  <textarea
+                    rows={3}
+                    value={repairCase.solution}
+                    onChange={(e) => setRepairCase({ ...repairCase, solution: e.target.value })}
+                    placeholder="예: 셔터 모듈 분해소제(오버홀), 뷰파인더 프리즘 세척, 몰트 플레인 교체"
+                    className="w-full px-4 py-2.5 rounded-xl bg-vintage-50 border border-vintage-200 text-xs text-vintage-900 focus:outline-none focus:border-terracotta resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-vintage-800 mb-1">실제 수리 비용 (원) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={repairCase.cost}
+                      onChange={(e) => setRepairCase({ ...repairCase, cost: e.target.value })}
+                      placeholder="예: 85000"
+                      className="w-full px-4 py-2.5 rounded-xl bg-vintage-50 border border-vintage-200 text-xs text-vintage-900 focus:outline-none focus:border-terracotta font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-vintage-800 mb-1">소요 일수</label>
+                    <select
+                      value={repairCase.durationDays}
+                      onChange={(e) => setRepairCase({ ...repairCase, durationDays: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-vintage-50 border border-vintage-200 text-xs text-vintage-900 focus:outline-none focus:border-terracotta"
+                    >
+                      <option value="1">당일 수리 (1일)</option>
+                      <option value="2">2일 이내</option>
+                      <option value="3">3일 이내 (표준)</option>
+                      <option value="5">5일 (부품 수급)</option>
+                      <option value="7">7일 이상</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={repairCaseSuccess}
+                  className="w-full py-3.5 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Wrench className="w-4 h-4" />
+                  <span>{repairCaseSuccess ? '케이스 등록 완료! (+300P)' : '명장 케이스 데이터베이스 등록 (+300P)'}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* 수리 명장 통계 및 공개 DB 미리보기 (5 Cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-vintage-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+                  <h3 className="text-sm font-bold text-vintage-900">최근 명장 등록 케이스</h3>
+                  <span className="text-xs text-vintage-500 font-mono">누적 124건</span>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <strong className="text-vintage-900">Nikon FM2</strong>
+                      <span className="text-terracotta font-mono font-bold">₩85,000</span>
+                    </div>
+                    <p className="text-vintage-600 text-[11px]">셔터막 지연 및 렌즈 곰팡이 오버홀 · 3일</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <strong className="text-vintage-900">Olympus PEN EE-3</strong>
+                      <span className="text-terracotta font-mono font-bold">₩45,000</span>
+                    </div>
+                    <p className="text-vintage-600 text-[11px]">셀레늄 수광소자 접점 청소 및 적기 해제 · 당일</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <strong className="text-vintage-900">Canon AE-1</strong>
+                      <span className="text-terracotta font-mono font-bold">₩70,000</span>
+                    </div>
+                    <p className="text-vintage-600 text-[11px]">캐논 셔터 명음(소리) 오버홀 구리스 주입 · 2일</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/clinic"
+                    className="w-full py-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <span>소비자용 명장 케어관 둘러보기</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}

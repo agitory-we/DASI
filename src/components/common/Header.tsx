@@ -20,7 +20,8 @@ import {
   Volume2,
   VolumeX,
   Bell,
-  Star
+  Star,
+  Store
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
@@ -96,6 +97,7 @@ export const Header: React.FC = () => {
     { href: '/ai-appraisal', label: 'AI 카메라 감정', desc: '사진 3장 기반 외관 등급 및 시세 산출', icon: Sparkles },
     { href: '/frame', label: '필름 프레임 생성기', desc: '인스타 4:5 감성 워터마크 프레임 다운로드', icon: Share2 },
     { href: '/pro', label: 'DASI Pro 스튜디오', desc: '본식 웨딩 & 브랜드 룩북 전문 작가관', icon: Award },
+    { href: '/partner', label: 'B2B 파트너 콘솔', desc: '현상소 1초 접수 QR 검증 & 실시간 재고 관리', icon: Store },
   ];
 
   return (

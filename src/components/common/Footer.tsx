@@ -76,6 +76,11 @@ export const Footer: React.FC = () => {
                 <span>남대문 중앙사 (문정식 장인, 35년 경력)</span>
               </li>
               <li className="pt-2">
+                <Link href="/partner" className="text-amber-400 hover:underline font-bold flex items-center gap-1">
+                  <span>🏪 B2B 파트너 전용 운영 콘솔 →</span>
+                </Link>
+              </li>
+              <li className="pt-1">
                 <Link href="/clinic" className="text-terracotta hover:underline font-medium">
                   수리점 / 현상소 파트너 입점 문의 →
                 </Link>
