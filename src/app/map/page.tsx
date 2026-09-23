@@ -21,6 +21,7 @@ import {
   Compass
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
+import { ReviewModal } from '@/components/common/ReviewModal';
 
 export default function MapPage() {
   const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot } = useDasi();
@@ -28,10 +29,12 @@ export default function MapPage() {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpotId, setActiveSpotId] = useState<string>('');
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState<boolean>(false);
+  const [isSpotReviewModalOpen, setIsSpotReviewModalOpen] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [sortByNearest, setSortByNearest] = useState<boolean>(false);
   const [selectedToneScanner, setSelectedToneScanner] = useState<string>('');
+
 
   // Haversine Distance formula in meters/km
   const getDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -355,13 +358,23 @@ export default function MapPage() {
                     </div>
                   </div>
 
-                  <a
-                    href={`tel:${activeSpot.contact}`}
-                    className="px-4 py-2 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Phone className="w-3.5 h-3.5 text-vintage-600" />
-                    <span>{activeSpot.contact}</span>
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsSpotReviewModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
+                      title="방문 후기 작성하고 +100P 받기"
+                    >
+                      <span>✍️ 리뷰 (+100P)</span>
+                    </button>
+                    <a
+                      href={`tel:${activeSpot.contact}`}
+                      className="px-4 py-2 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-vintage-600" />
+                      <span>{activeSpot.contact}</span>
+                    </a>
+                  </div>
+
                 </div>
 
                 {/* Scanner Color Tone Showcase (현상소일 경우) */}
@@ -499,6 +512,20 @@ export default function MapPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* 아날로그 스팟 방문 리뷰 모달 */}
+      {isSpotReviewModalOpen && activeSpot && (
+        <ReviewModal
+          isOpen={isSpotReviewModalOpen}
+          onClose={() => setIsSpotReviewModalOpen(false)}
+          targetType={activeSpot.category === 'lab' ? 'lab' : 'spot'}
+          targetId={activeSpot.id}
+          targetName={activeSpot.name}
+          onSuccess={() => {
+            showToast(`${activeSpot.name} 방문 리뷰가 등록되었습니다! (+100P 적립)`, 'success');
+          }}
+        />
       )}
     </div>
   );

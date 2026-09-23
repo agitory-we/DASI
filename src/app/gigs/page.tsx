@@ -18,13 +18,16 @@ import {
   Globe,
   Plus,
   QrCode,
-  Check
+  Check,
+  Coins
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function GigsPage() {
   const { photoGigs, isLoadingData, bookGig, showToast } = useDasi();
+  const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<GigCategory | 'all'>('all');
   const [selectedGig, setSelectedGig] = useState<PhotoGig | null>(null);
   const [activePortfolioImg, setActivePortfolioImg] = useState<string | null>(null);
@@ -32,10 +35,22 @@ export default function GigsPage() {
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>('2026-09-27 14:00');
+  const [usedGigPoints, setUsedGigPoints] = useState<number>(0);
+  const [customGigs, setCustomGigs] = useState<PhotoGig[]>([]);
+  const [gigForm, setGigForm] = useState({
+    nickname: '',
+    camera: '',
+    location: '',
+    price: 45000,
+    portfolioUrl: ''
+  });
+
+  const allDisplayGigs = [...customGigs, ...photoGigs];
 
   const filteredGigs = selectedCategory === 'all'
-    ? photoGigs
-    : photoGigs.filter((g) => g.category === selectedCategory);
+    ? allDisplayGigs
+    : allDisplayGigs.filter((g) => g.category === selectedCategory);
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -381,11 +396,45 @@ export default function GigsPage() {
                   </p>
                 </div>
 
+                {/* DASI 포인트 할인 적용 */}
+                {user && profile && profile.total_points >= 1000 && (
+                  <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-center justify-between text-xs">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-amber-900 flex items-center gap-1">
+                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                        DASI 기여 포인트 할인
+                      </span>
+                      <span className="text-[10px] text-amber-700">보유: {profile.total_points.toLocaleString()}P</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const available = Math.min(profile.total_points, selectedGig.pricePerHour);
+                          setUsedGigPoints(usedGigPoints > 0 ? 0 : Math.floor(available / 1000) * 1000);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                          usedGigPoints > 0 ? 'bg-vintage-900 text-white' : 'bg-white border border-amber-300 text-amber-900'
+                        }`}
+                      >
+                        {usedGigPoints > 0 ? `-${usedGigPoints.toLocaleString()}P 취소` : '포인트 즉시 할인'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-2 flex items-center justify-between border-t border-vintage-100">
                   <div>
                     <span className="text-vintage-500">결제 예상 금액 (1시간)</span>
-                    <div className="text-base font-bold text-terracotta">
-                      {selectedGig.pricePerHour.toLocaleString()}원
+                    <div className="flex items-baseline gap-2">
+                      <div className="text-base font-bold text-terracotta">
+                        {Math.max(0, selectedGig.pricePerHour - usedGigPoints).toLocaleString()}원
+                      </div>
+                      {usedGigPoints > 0 && (
+                        <span className="text-xs text-vintage-400 line-through">
+                          {selectedGig.pricePerHour.toLocaleString()}원
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -397,17 +446,32 @@ export default function GigsPage() {
                       취소
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         playShutterSound('compact');
+                        const finalPrice = Math.max(0, selectedGig.pricePerHour - usedGigPoints);
                         bookGig({
                           gigId: selectedGig.id,
                           title: selectedGig.title,
                           creatorName: selectedGig.creatorName,
                           location: selectedGig.location,
-                          price: selectedGig.pricePerHour,
+                          price: finalPrice,
                           scheduledAt: scheduledAtInput,
                         });
-                        showToast(`${selectedGig.creatorName} 작가님 예약이 에스크로 보호 하에 접수되었습니다!`, 'success');
+
+                        if (usedGigPoints > 0) {
+                          try {
+                            await awardPoints('redeem', selectedGig.id);
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }
+
+                        showToast(
+                          usedGigPoints > 0
+                            ? `${selectedGig.creatorName} 작가님 예약 접수! (포인트 ${usedGigPoints.toLocaleString()}원 할인)`
+                            : `${selectedGig.creatorName} 작가님 예약이 에스크로 보호 하에 접수되었습니다!`,
+                          'success'
+                        );
                         setIsBooked(true);
                       }}
                       className="px-5 py-2.5 rounded-xl bg-terracotta text-white font-bold hover:bg-terracotta-light transition-colors shadow-xs"
@@ -416,6 +480,7 @@ export default function GigsPage() {
                     </button>
                   </div>
                 </div>
+
               </div>
             )}
           </div>
@@ -490,7 +555,9 @@ export default function GigsPage() {
                     <label className="font-bold text-vintage-800">작가 닉네임</label>
                     <input
                       type="text"
-                      placeholder="예: 필름무드 / 준서"
+                      value={gigForm.nickname}
+                      onChange={(e) => setGigForm(f => ({ ...f, nickname: e.target.value }))}
+                      placeholder={profile?.nickname || "예: 필름무드 / 준서"}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
                     />
                   </div>
@@ -499,6 +566,8 @@ export default function GigsPage() {
                     <label className="font-bold text-vintage-800">주 보유 카메라 &amp; 렌즈 기종</label>
                     <input
                       type="text"
+                      value={gigForm.camera}
+                      onChange={(e) => setGigForm(f => ({ ...f, camera: e.target.value }))}
                       placeholder="예: Fujifilm X100VI / Nikon FM2 (50mm F1.4)"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
                     />
@@ -509,6 +578,8 @@ export default function GigsPage() {
                       <label className="font-bold text-vintage-800">활동 희망 지역</label>
                       <input
                         type="text"
+                        value={gigForm.location}
+                        onChange={(e) => setGigForm(f => ({ ...f, location: e.target.value }))}
                         placeholder="예: 성수동 / 을지로 / 북촌"
                         className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
                       />
@@ -516,9 +587,12 @@ export default function GigsPage() {
                     <div className="space-y-1.5">
                       <label className="font-bold text-vintage-800">1시간당 희망 단가</label>
                       <input
-                        type="text"
-                        placeholder="예: 45,000원"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                        type="number"
+                        step="5000"
+                        value={gigForm.price}
+                        onChange={(e) => setGigForm(f => ({ ...f, price: Number(e.target.value) || 0 }))}
+                        placeholder="예: 45000"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -527,6 +601,8 @@ export default function GigsPage() {
                     <label className="font-bold text-vintage-800">인스타그램 또는 포트폴리오 링크</label>
                     <input
                       type="text"
+                      value={gigForm.portfolioUrl}
+                      onChange={(e) => setGigForm(f => ({ ...f, portfolioUrl: e.target.value }))}
                       placeholder="https://instagram.com/your_id"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
                     />
@@ -541,15 +617,56 @@ export default function GigsPage() {
                     닫기
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      if (!user) {
+                        setIsRegisterOpen(false);
+                        openLoginModal();
+                        return;
+                      }
+                      const nick = gigForm.nickname.trim() || profile?.nickname || '신규 작가';
+                      const cam = gigForm.camera.trim() || 'Nikon FM2 (50mm F1.4)';
+
                       playShutterSound('leaf');
+
+                      const newGig: PhotoGig = {
+                        id: `gig-custom-${Date.now()}`,
+                        creatorName: nick,
+                        creatorAvatar: profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                        title: `${gigForm.location || '성수·을지로'} 감성 ${cam.split('/')[0].trim()} 로컬 스냅`,
+                        category: 'daily_snap',
+                        location: gigForm.location || '서울 성수동',
+                        gearUsed: [cam],
+                        pricePerHour: Number(gigForm.price) || 45000,
+                        durationMinutes: 60,
+                        rating: 5.0,
+                        reviewsCount: 1,
+                        isVerified: true,
+                        tags: ['DASI인증', '로컬스냅', '필름감성'],
+                        description: `DASI 인증 파트너 작가 ${nick}님의 감성 스냅입니다. ${cam} 장비로 따뜻한 시선을 선물해 드립니다.`,
+                        portfolioImages: [
+                          'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80',
+                          'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+                          'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80'
+                        ],
+                        languages: ['한국어']
+                      };
+
+
+                      setCustomGigs(prev => [newGig, ...prev]);
+                      try {
+                        await awardPoints('repair_case'); // 파트너 등록 기여 보너스
+                      } catch (err) {
+                        console.error(err);
+                      }
                       setIsRegistered(true);
+                      showToast('파트너 작가 등록이 완료되었습니다! (+300P 보너스 적립)', 'success');
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                   >
-                    작가 등록 완료하기
+                    작가 등록 완료하기 (+300P)
                   </button>
                 </div>
+
               </>
             )}
           </div>

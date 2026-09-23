@@ -19,15 +19,22 @@ import {
   Receipt,
   Clock,
   CreditCard,
-  Camera as CameraIcon
+  Camera as CameraIcon,
+  Coins,
+  Star
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
+import { useAuth } from '@/context/AuthContext';
+import { ReviewModal } from '@/components/common/ReviewModal';
 
 export default function RentPage() {
   const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast } = useDasi();
+  const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
+  const [reviewTargetCamera, setReviewTargetCamera] = useState<Camera | null>(null);
+
 
   // Date picker state
   const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -45,8 +52,10 @@ export default function RentPage() {
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
   const [includeDamageCare, setIncludeDamageCare] = useState<boolean>(true);
+  const [usedPoints, setUsedPoints] = useState<number>(0);
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [bookedTicketCode, setBookedTicketCode] = useState<string>('');
+
 
   const rentalDays = useMemo(() => {
     const start = new Date(startDate);
@@ -67,9 +76,11 @@ export default function RentPage() {
     setIncludeFilm(false);
     setIncludeCleaningKit(false);
     setIncludeDamageCare(true);
+    setUsedPoints(0);
     setIsBooked(false);
     setBookedTicketCode('');
   };
+
 
   const currentShop = pickupShops.find((s) => s.id === selectedShopId) || pickupShops[0];
 
@@ -256,18 +267,23 @@ export default function RentPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-[11px] text-vintage-400 line-through">
-                      소장가 {camera.purchasePrice.toLocaleString()}원
-                    </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <button
+                      onClick={() => setReviewTargetCamera(camera)}
+                      className="mt-1 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition-colors"
+                      title="실제 사용 후기 및 사진 등록하고 +100P 받기"
+                    >
+                      <span>✍️ 리뷰 (+100P)</span>
+                    </button>
                     <button
                       onClick={() => handleOpenBooking(camera)}
-                      className="mt-1 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta transition-colors flex items-center gap-1.5 shadow-xs"
+                      className="mt-1 px-3.5 py-2 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta transition-colors flex items-center gap-1.5 shadow-xs"
                     >
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>날짜 예약하기</span>
+                      <span>대여 예약</span>
                     </button>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -336,14 +352,25 @@ export default function RentPage() {
                     </div>
                     <div className="flex justify-between py-1">
                       <span className="text-vintage-500">결제 금액</span>
-                      <span className="font-bold text-vintage-900">
-                        {(
-                          selectedCamera.rentalPricePerDay * rentalDays +
-                          (includeFilm ? 14000 : 0) +
-                          (includeCleaningKit ? 3000 : 0)
-                        ).toLocaleString()}원 (대여료 100% 소장 공제 보장)
-                      </span>
+                      <div className="text-right">
+                        <span className="font-bold text-vintage-900">
+                          {Math.max(
+                            0,
+                            selectedCamera.rentalPricePerDay * rentalDays +
+                            (includeFilm ? 14000 : 0) +
+                            (includeCleaningKit ? 3000 : 0) +
+                            (includeDamageCare ? 3000 : 0) -
+                            usedPoints
+                          ).toLocaleString()}원
+                        </span>
+                        {usedPoints > 0 && (
+                          <div className="text-[10px] text-emerald-700 font-bold">
+                            (DASI 기여 포인트 -{usedPoints.toLocaleString()}P 차감 적용)
+                          </div>
+                        )}
+                      </div>
                     </div>
+
                   </div>
 
                   <div className="flex justify-center gap-3 pt-4">
@@ -521,8 +548,81 @@ export default function RentPage() {
                     </div>
                   </div>
 
+                  {/* Step 3.5: DASI 기여 포인트 즉시 할인 적용 */}
+                  <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                        <Coins className="w-4 h-4 text-amber-600" />
+                        DASI 기여 포인트 할인 적용
+                      </span>
+                      {user && profile ? (
+                        <span className="text-xs font-bold text-amber-900">
+                          보유: <strong className="text-terracotta">{profile.total_points.toLocaleString()}P</strong>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={openLoginModal}
+                          className="text-[11px] font-bold text-terracotta hover:underline"
+                        >
+                          로그인하고 포인트 쓰기 →
+                        </button>
+                      )}
+                    </div>
+
+                    {user && profile && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max={Math.min(profile.total_points, (selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0)))}
+                            step="1000"
+                            value={usedPoints}
+                            onChange={(e) => {
+                              const val = Math.max(0, parseInt(e.target.value) || 0);
+                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
+                              setUsedPoints(Math.min(val, profile.total_points, maxAffordable));
+                            }}
+                            className="w-28 px-3 py-1.5 text-xs rounded-xl border border-amber-300 bg-white font-mono font-bold text-amber-900 focus:outline-none focus:border-terracotta"
+                            placeholder="0"
+                          />
+                          <span className="text-xs text-amber-800 font-semibold">P</span>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
+                              const available = Math.floor(Math.min(profile.total_points, maxAffordable) / 1000) * 1000;
+                              setUsedPoints(available);
+                            }}
+                            className="px-2.5 py-1.5 text-[10px] rounded-lg bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-bold transition-colors"
+                          >
+                            전액 사용
+                          </button>
+                          {usedPoints > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setUsedPoints(0)}
+                              className="px-2 py-1.5 text-[10px] text-vintage-500 hover:text-vintage-800"
+                            >
+                              취소
+                            </button>
+                          )}
+                        </div>
+                        {usedPoints > 0 && (
+                          <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                            <span>✓</span>
+                            <span>기여 포인트로 <strong>{usedPoints.toLocaleString()}원</strong> 즉시 할인이 적용되었습니다!</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Step 4: Rent-to-Own 실시간 시뮬레이션 계산기 */}
                   <div className="p-4 rounded-2xl bg-gradient-to-r from-vintage-100 to-vintage-50 border border-vintage-200 space-y-3">
+
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -598,20 +698,41 @@ export default function RentPage() {
 
             {/* Modal Footer */}
             {!isBooked && (
-              <div className="p-6 border-t border-vintage-200 bg-vintage-50 flex items-center justify-between">
+              <div className="p-6 border-t border-vintage-200 bg-vintage-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs text-vintage-500">결제 예정 총액 ({rentalDays}일간)</span>
-                  <div className="text-lg font-bold text-terracotta">
-                    {(
-                      selectedCamera.rentalPricePerDay * rentalDays +
-                      (includeFilm ? 14000 : 0) +
-                      (includeCleaningKit ? 3000 : 0) +
-                      (includeDamageCare ? 3000 : 0)
-                    ).toLocaleString()}원
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-vintage-500">최종 결제 예정 총액 ({rentalDays}일간)</span>
+                    {usedPoints > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                        포인트 -{usedPoints.toLocaleString()}원 할인
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-xl font-bold text-terracotta">
+                      {Math.max(
+                        0,
+                        selectedCamera.rentalPricePerDay * rentalDays +
+                        (includeFilm ? 14000 : 0) +
+                        (includeCleaningKit ? 3000 : 0) +
+                        (includeDamageCare ? 3000 : 0) -
+                        usedPoints
+                      ).toLocaleString()}원
+                    </div>
+                    {usedPoints > 0 && (
+                      <span className="text-xs text-vintage-400 line-through">
+                        {(
+                          selectedCamera.rentalPricePerDay * rentalDays +
+                          (includeFilm ? 14000 : 0) +
+                          (includeCleaningKit ? 3000 : 0) +
+                          (includeDamageCare ? 3000 : 0)
+                        ).toLocaleString()}원
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <button
                     onClick={() => setSelectedCamera(null)}
                     className="px-4 py-2.5 rounded-xl border border-vintage-300 text-xs font-semibold text-vintage-700 hover:bg-vintage-100"
@@ -619,13 +740,14 @@ export default function RentPage() {
                     취소
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       playShutterSound(selectedCamera.category === 'film' ? 'slr' : 'compact');
-                      const totalPaid =
+                      const rawTotal =
                         selectedCamera.rentalPricePerDay * rentalDays +
                         (includeFilm ? 14000 : 0) +
                         (includeCleaningKit ? 3000 : 0) +
                         (includeDamageCare ? 3000 : 0);
+                      const totalPaid = Math.max(0, rawTotal - usedPoints);
                       const bookingId = `rent-${Date.now()}`;
                       const code = `DASI-${Math.floor(100000 + Math.random() * 900000)}`;
                       setBookedTicketCode(code);
@@ -641,7 +763,20 @@ export default function RentPage() {
                         imageUrl: selectedCamera.imageUrl,
                       });
 
-                      showToast(`${selectedCamera.name} ${rentalDays}일 대여 예약 완료! (픽업: ${currentShop?.name})`, 'success');
+                      if (usedPoints > 0) {
+                        try {
+                          await awardPoints('redeem', bookingId);
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      }
+
+                      showToast(
+                        usedPoints > 0
+                          ? `${selectedCamera.name} 대여 완료! (포인트 ${usedPoints.toLocaleString()}원 할인 적용)`
+                          : `${selectedCamera.name} ${rentalDays}일 대여 예약 완료! (픽업: ${currentShop?.name})`,
+                        'success'
+                      );
                       setIsBooked(true);
                     }}
                     className="px-6 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-colors shadow-xs flex items-center gap-1.5"
@@ -652,8 +787,23 @@ export default function RentPage() {
                 </div>
               </div>
             )}
+
           </div>
         </div>
+      )}
+
+      {/* 카메라 실사용 리뷰 등록 모달 */}
+      {reviewTargetCamera && (
+        <ReviewModal
+          isOpen={!!reviewTargetCamera}
+          onClose={() => setReviewTargetCamera(null)}
+          targetType="camera"
+          targetId={reviewTargetCamera.id}
+          targetName={reviewTargetCamera.name}
+          onSuccess={() => {
+            showToast(`${reviewTargetCamera.name} 리뷰가 정상 등록되었습니다! (+100P 적립)`, 'success');
+          }}
+        />
       )}
     </div>
   );
