@@ -109,16 +109,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   };
 
-  // 포인트 적립 (서버사이드 Route Handler 경유 — RLS 우회)
+  // 포인트 적립 (서버사이드 Route Handler 경유 — RLS 우회, 어뷰징 방어 포함)
   const awardPoints = useCallback(async (action: keyof typeof POINT_ACTIONS, refId?: string) => {
     if (!user) return;
     const info = POINT_ACTIONS[action];
     try {
-      await fetch('/api/points/award', {
+      const res = await fetch('/api/points/award', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, refId, points: info.points, description: info.label }),
+        // CEO 요청: userId를 서버로 전달하여 서버사이드 검증 가능하게 함
+        body: JSON.stringify({ action, refId, points: info.points, description: info.label, userId: user.id }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({})) as { error?: string };
+        console.warn(`[awardPoints] 서버 거부: ${errData?.error ?? res.status}`);
+        return; // 한도 초과/중복 시 조용히 무시 (사용자 UX 방해 금지)
+      }
       await refreshProfile();
     } catch (err) {
       console.error('[awardPoints] 오류:', err);
