@@ -18,10 +18,13 @@ import {
   X,
   Heart,
   ExternalLink,
-  Compass
+  Compass,
+  QrCode
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
+import { LabQrDropModal } from '@/components/common/LabQrDropModal';
+import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 
 export default function MapPage() {
   const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot } = useDasi();
@@ -30,6 +33,8 @@ export default function MapPage() {
   const [activeSpotId, setActiveSpotId] = useState<string>('');
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState<boolean>(false);
   const [isSpotReviewModalOpen, setIsSpotReviewModalOpen] = useState<boolean>(false);
+  const [isLabQrModalOpen, setIsLabQrModalOpen] = useState<boolean>(false);
+  const [isSpotCheckInOpen, setIsSpotCheckInOpen] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [sortByNearest, setSortByNearest] = useState<boolean>(false);
@@ -359,6 +364,25 @@ export default function MapPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {activeSpot.category === 'lab' ? (
+                      <button
+                        onClick={() => setIsLabQrModalOpen(true)}
+                        className="px-3.5 py-2 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
+                        title="현상소 카운터 방문 1초 QR 접수 (+150P)"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>🧪 1초 스캔 접수 QR (+150P)</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setIsSpotCheckInOpen(true)}
+                        className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
+                        title="현장 방문 브라스 핀 체크인 (+200P)"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>📍 현장 체크인 QR (+200P)</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => setIsSpotReviewModalOpen(true)}
                       className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
@@ -524,6 +548,31 @@ export default function MapPage() {
           targetName={activeSpot.name}
           onSuccess={() => {
             showToast(`${activeSpot.name} 방문 리뷰가 등록되었습니다! (+100P 적립)`, 'success');
+          }}
+        />
+      )}
+
+      {/* 현상소 1초 스마트 스캔 접수 QR 모달 */}
+      {isLabQrModalOpen && activeSpot && (
+        <LabQrDropModal
+          isOpen={isLabQrModalOpen}
+          onClose={() => setIsLabQrModalOpen(false)}
+          defaultLabName={activeSpot.name}
+          onSuccess={() => {
+            showToast(`${activeSpot.name} 1초 스캔 접수가 완료되었습니다! (+150P 적립)`, 'success');
+          }}
+        />
+      )}
+
+      {/* 스팟 현장 브라스 핀 체크인 QR 모달 */}
+      {isSpotCheckInOpen && activeSpot && (
+        <SpotCheckInModal
+          isOpen={isSpotCheckInOpen}
+          onClose={() => setIsSpotCheckInOpen(false)}
+          spotTitle={activeSpot.name}
+          spotLocation={activeSpot.address}
+          onSuccess={() => {
+            showToast(`${activeSpot.name} 현장 체크인이 완료되었습니다! (+200P 적립)`, 'success');
           }}
         />
       )}

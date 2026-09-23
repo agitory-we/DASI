@@ -20,9 +20,11 @@ import {
   RefreshCw,
   Leaf,
   Plus,
+  QrCode
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
+import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { useAuth } from '@/context/AuthContext';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -95,6 +97,7 @@ export default function ExplorePage() {
   const { user, openLoginModal } = useAuth();
   const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'saved'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
+  const [checkInSpot, setCheckInSpot] = useState<EventOrHotSpot | null>(null);
   const [allItems, setAllItems] = useState<EventOrHotSpot[]>(mockEventsAndHotSpots);
   const [isLoading, setIsLoading] = useState(true);
   const [sunData, setSunData] = useState(() => getSeoulSunData());
@@ -350,13 +353,21 @@ export default function ExplorePage() {
             </div>
 
             {/* Footer Action */}
-            <div className="p-6 pt-0 border-t border-vintage-100 mt-2">
+            <div className="p-6 pt-0 border-t border-vintage-100 mt-2 flex items-center gap-2">
               <button
                 onClick={() => setSelectedSpot(item)}
-                className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
               >
-                <span>상세 구도 가이드 &amp; 주변 현상소 확인</span>
+                <span>상세 구도 가이드</span>
                 <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setCheckInSpot(item)}
+                className="px-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
+                title="현장 방문 브라스 핀 인증 (+200P)"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>체크인 (+200P)</span>
               </button>
             </div>
           </div>
@@ -484,12 +495,25 @@ export default function ExplorePage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedSpot(null)}
-              className="w-full py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
-            >
-              닫기
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const target = selectedSpot;
+                  setSelectedSpot(null);
+                  setCheckInSpot(target);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>현장 체크인 (+200P)</span>
+              </button>
+              <button
+                onClick={() => setSelectedSpot(null)}
+                className="px-5 py-2.5 rounded-xl bg-vintage-200 text-vintage-800 text-xs font-semibold hover:bg-vintage-300 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -499,6 +523,18 @@ export default function ExplorePage() {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
       />
+
+      {/* 출사 명소 현장 체크인 QR 모달 */}
+      {checkInSpot && (
+        <SpotCheckInModal
+          isOpen={!!checkInSpot}
+          onClose={() => setCheckInSpot(null)}
+          spotTitle={checkInSpot.title}
+          spotLocation={checkInSpot.location}
+          goldenHourTip={checkInSpot.goldenHour}
+          recommendedLens={checkInSpot.recommendedLenses}
+        />
+      )}
     </div>
   );
 }

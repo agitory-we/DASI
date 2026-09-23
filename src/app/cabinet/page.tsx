@@ -30,6 +30,7 @@ import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useAuth, TIER_INFO, POINT_ACTIONS } from '@/context/AuthContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
+import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 
 export default function CabinetPage() {
   const {
@@ -47,6 +48,7 @@ export default function CabinetPage() {
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points'>('camera');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
@@ -651,7 +653,7 @@ export default function CabinetPage() {
 
           {/* B. SCANNED FILM ROLLS */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-vintage-900 flex items-center gap-2">
                   <Film className="w-6 h-6 text-terracotta" />
@@ -661,6 +663,14 @@ export default function CabinetPage() {
                   제휴 현상소에서 스캔 완료된 원본 사진을 다운로드하거나 프레임 생성기로 바로 보낼 수 있습니다.
                 </p>
               </div>
+
+              <button
+                onClick={() => setIsLabQrModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center gap-2 transition-all shadow-xs active:scale-95 shrink-0"
+              >
+                <QrCode className="w-4 h-4 text-amber-300" />
+                <span>🧪 현상소 1초 접수 QR 패스 (+150P)</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1768,6 +1778,16 @@ export default function CabinetPage() {
         onClose={() => setIsReportModalOpen(false)}
         onSuccess={() => {
           awardPoints('spot_report');
+        }}
+      />
+
+      {/* 현상소 1초 스마트 스캔 접수 QR 모달 */}
+      <LabQrDropModal
+        isOpen={isLabQrModalOpen}
+        onClose={() => setIsLabQrModalOpen(false)}
+        defaultLabName="을지로 제휴 현상소"
+        onSuccess={() => {
+          showToast('현상소 스마트 스캔 접수가 완료되었습니다! (+150P 적립)', 'success');
         }}
       />
     </div>
