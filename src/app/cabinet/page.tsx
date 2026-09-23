@@ -23,7 +23,8 @@ import {
   Coins,
   Award,
   Send,
-  Plus
+  Plus,
+  MapPin
 } from 'lucide-react';
 import { UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
@@ -46,13 +47,42 @@ export default function CabinetPage() {
     showToast
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
-  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
   const [selectedEscrowReviewGig, setSelectedEscrowReviewGig] = useState<any | null>(null);
+
+  // 성지순례 패스포트 스탬프 상태
+  const [stampedSpots, setStampedSpots] = useState<string[]>([
+    '망우삼림',
+    '을지로 신성카메라',
+    '충무로 보성광학',
+    '성수 독립서점 거리',
+  ]);
+
+  const handleStampSpot = async (spotName: string) => {
+    if (stampedSpots.includes(spotName)) return;
+    playShutterSound('slr');
+    const nextStamped = [...stampedSpots, spotName];
+    setStampedSpots(nextStamped);
+    try {
+      await awardPoints('spot_report', `stamp_${spotName}`);
+    } catch (e) {
+      console.error(e);
+    }
+    showToast(`📜 [${spotName}] 성지순례 스탬프 획득! (+200P 적립)`, 'success');
+
+    const euljiroCourse = ['망우삼림', '을지로 신성카메라', '충무로 보성광학', '세운상가 옥상 일몰'];
+    const isEuljiroComplete = euljiroCourse.every(s => nextStamped.includes(s));
+    if (isEuljiroComplete && spotName === '세운상가 옥상 일몰') {
+      setTimeout(() => {
+        showToast('🎉 을지로·충무로 코스 완주! 1,000P 보너스와 한정판 스트랩 교환권이 발급되었습니다.', 'success');
+      }, 1500);
+    }
+  };
 
   const [confirmedEscrowIds, setConfirmedEscrowIds] = useState<string[]>([]);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
@@ -185,6 +215,7 @@ export default function CabinetPage() {
           { id: 'pro', label: '🏆 PRO 스튜디오 VIP 상담', count: proConsultations.length },
           { id: 'coupons', label: '🎫 멤버십 & 쿠폰팩', count: coupons.length },
           { id: 'points', label: '⭐ 기여 & 포인트 리워드', count: profile ? `${profile.total_points}P` : '500P' },
+          { id: 'passport', label: '📜 성지순례 패스포트', count: `${stampedSpots.length}/7 스탬프` },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -1569,6 +1600,188 @@ export default function CabinetPage() {
                   닫기
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 7: ANALOG HERITAGE PASSPORT (성지순례 패스포트)     */}
+      {/* ======================================================== */}
+      {activeTab === 'passport' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* PASSPORT COVER & STATUS HEADER */}
+          <div className="rounded-3xl bg-gradient-to-r from-[#20150F] via-[#2F2016] to-[#20150F] border-2 border-amber-500/40 p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
+            {/* Subtle vintage watermark */}
+            <div className="absolute -right-6 -bottom-8 font-serif text-[110px] font-black text-amber-400/5 select-none pointer-events-none">
+              DASI
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-bold font-mono tracking-wider">
+                  <span>REPUBLIC OF DASI · ANALOG PASSPORT</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-cream">
+                  서울 아날로그 성지순례 패스포트
+                </h2>
+                <p className="text-xs text-vintage-300 max-w-xl leading-relaxed">
+                  현상소, 40년 명장 수리 공방, 골든아워 출사지를 방문해 디지털 브라스 도장을 모으세요. 각 코스를 완주할 때마다 1,000P 바우처와 한정판 실물 굿즈가 지급됩니다.
+                </p>
+              </div>
+
+              {/* Passport User Stamp Card */}
+              <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-amber-400/20 shrink-0 text-right space-y-1">
+                <div className="text-[10px] text-amber-300 font-mono tracking-wider uppercase">PASSPORT HOLDER</div>
+                <div className="text-sm font-bold text-white">{profile?.nickname || '익명 필름러'}</div>
+                <div className="text-xs text-emerald-400 font-mono font-bold mt-1">
+                  스탬프 {stampedSpots.length} / 7 획득 ({Math.round((stampedSpots.length / 7) * 100)}%)
+                </div>
+                <div className="w-40 h-2 bg-white/10 rounded-full overflow-hidden mt-2 ml-auto">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-terracotta rounded-full transition-all duration-700"
+                    style={{ width: `${(stampedSpots.length / 7) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* COURSE 1: EULJIRO & CHUNGMURO HERITAGE COURSE */}
+          <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-vintage-100">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-terracotta/10 text-terracotta text-[10px] font-bold">
+                  코스 01 · 4개 스팟
+                </div>
+                <h3 className="font-serif text-lg font-bold text-vintage-900 mt-1">
+                  을지로·충무로 아날로그 헤리티지 코스
+                </h3>
+                <p className="text-xs text-vintage-500">
+                  40년 역사의 카메라 거리와 힙한 필름 현상소를 도보 2시간 동안 탐방하는 클래식 코스
+                </p>
+              </div>
+              <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 shrink-0">
+                🎁 완주 시: 1,000P + 현상 1롤 무료권
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { name: '망우삼림', role: '을지로 대표 현상소', desc: '노리츠/후지 고화질 스캔 & 빈티지 암실 감성' },
+                { name: '을지로 신성카메라', role: '강태훈 명장 (42년)', desc: '장롱 속 기계식 바디 정밀 점검 및 픽업처' },
+                { name: '충무로 보성광학', role: '한동규 장인 (38년)', desc: '1/4000초 셔터막 오차 오버홀 전문 공방' },
+                { name: '세운상가 옥상 일몰', role: '골든아워 핫스팟', desc: '종묘와 북한산 뷰가 펼쳐지는 노을 성지' },
+              ].map((spot, idx) => {
+                const isStamped = stampedSpots.includes(spot.name);
+                return (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                      isStamped
+                        ? 'bg-amber-50/50 border-amber-300/80 shadow-2xs'
+                        : 'bg-vintage-50 border-vintage-200'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold text-vintage-400">0{idx + 1}</span>
+                        <span className="text-[10px] font-bold text-terracotta">{spot.role}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
+                      <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+                    </div>
+
+                    {/* Stamp Mark or Action Button */}
+                    <div className="pt-2">
+                      {isStamped ? (
+                        <div className="p-2.5 rounded-xl bg-white border border-amber-300 text-center space-y-0.5 shadow-2xs">
+                          <div className="font-mono text-[10px] font-bold text-amber-700 tracking-wider">
+                            ✓ DASI STAMPED
+                          </div>
+                          <div className="text-[9px] text-vintage-400 font-mono">2026.09 · 인증완료</div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStampSpot(spot.name)}
+                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                          <span>스탬프 찍기 (+200P)</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* COURSE 2: SEONGSU & SEOUL FOREST COURSE */}
+          <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-vintage-100">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-600/10 text-emerald-700 text-[10px] font-bold">
+                  코스 02 · 3개 스팟
+                </div>
+                <h3 className="font-serif text-lg font-bold text-vintage-900 mt-1">
+                  성수·서울숲 레트로 감성 투어
+                </h3>
+                <p className="text-xs text-vintage-500">
+                  붉은 벽돌 팩토리 카페와 서울숲 자연광 아래서 감성 샷을 건지는 MZ 인기 출사 코스
+                </p>
+              </div>
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shrink-0">
+                🎁 완주 시: DASI 한정판 넥스트랩 바우처
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { name: '성수 독립서점 거리', role: '인문학 필름 스냅', desc: '골목길 사이 따스한 자연광과 종이 냄새' },
+                { name: '서울숲 억새밭 일몰', role: '자연광 골든아워', desc: '가을 억새와 부드러운 역광 인물 촬영지' },
+                { name: '연무장길 24시 필름 자판기', role: '심야 필름 스팟', desc: '야간 긴급 필름 보급 및 Y2K 인증샷' },
+              ].map((spot, idx) => {
+                const isStamped = stampedSpots.includes(spot.name);
+                return (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                      isStamped
+                        ? 'bg-emerald-50/50 border-emerald-300/80 shadow-2xs'
+                        : 'bg-vintage-50 border-vintage-200'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold text-vintage-400">0{idx + 1}</span>
+                        <span className="text-[10px] font-bold text-emerald-700">{spot.role}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
+                      <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+                    </div>
+
+                    <div className="pt-2">
+                      {isStamped ? (
+                        <div className="p-2.5 rounded-xl bg-white border border-emerald-300 text-center space-y-0.5 shadow-2xs">
+                          <div className="font-mono text-[10px] font-bold text-emerald-700 tracking-wider">
+                            ✓ DASI STAMPED
+                          </div>
+                          <div className="text-[9px] text-vintage-400 font-mono">2026.09 · 인증완료</div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStampSpot(spot.name)}
+                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>스탬프 찍기 (+200P)</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -20,11 +20,13 @@ import {
   RefreshCw,
   Leaf,
   Plus,
-  QrCode
+  QrCode,
+  UploadCloud
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
+import { PhotoUploadModal } from '@/components/common/PhotoUploadModal';
 import { useAuth } from '@/context/AuthContext';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -93,15 +95,16 @@ function isExpired(item: EventOrHotSpot): boolean {
 }
 
 export default function ExplorePage() {
-  const { savedSpotIds, toggleSaveSpot } = useDasi();
+  const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto } = useDasi();
   const { user, openLoginModal } = useAuth();
-  const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'saved'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'photos' | 'saved'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
   const [checkInSpot, setCheckInSpot] = useState<EventOrHotSpot | null>(null);
   const [allItems, setAllItems] = useState<EventOrHotSpot[]>(mockEventsAndHotSpots);
   const [isLoading, setIsLoading] = useState(true);
   const [sunData, setSunData] = useState(() => getSeoulSunData());
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
   const currentSeason = useMemo(() => getCurrentSeason(), []);
 
   // TourAPI 데이터 fetch (API 키 없으면 mockData 그대로)
@@ -161,14 +164,23 @@ export default function ExplorePage() {
             계절별 서울 축제 일정과 아날로그 카메라로 인생 사진을 건질 수 있는 추천 화각, 최적 골든아워, 현장 세팅 팁을 매주 업데이트합니다.
           </p>
         </div>
-        {/* UGC 제보 버튼 */}
-        <button
-          onClick={() => setIsReportModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs shrink-0"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          명소 제보 (+500P)
-        </button>
+        {/* UGC 버튼 그룹 */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsPhotoUploadModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs"
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>사진 올리기 (+150P)</span>
+          </button>
+          <button
+            onClick={() => setIsReportModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-vintage-800 text-white text-xs font-bold transition-all shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>명소 제보 (+500P)</span>
+          </button>
+        </div>
       </div>
 
       {/* Realtime Golden Hour & Weather Station Widget */}
@@ -222,13 +234,14 @@ export default function ExplorePage() {
       <div className="flex items-center gap-2 border-b border-vintage-200 pb-4 overflow-x-auto">
         {[
           { id: 'all', label: '전체 둘러보기' },
+          { id: 'photos', label: `🎞️ 출사 사진 피드 (${communityPhotos.length})` },
           { id: 'festival', label: '🎉 서울 시즌별 축제' },
           { id: 'hotspot', label: '📸 골목길 출사지' },
           { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setFilterType(tab.id as 'all' | 'festival' | 'hotspot' | 'saved')}
+            onClick={() => setFilterType(tab.id as 'all' | 'photos' | 'festival' | 'hotspot' | 'saved')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               filterType === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
@@ -256,8 +269,100 @@ export default function ExplorePage() {
         </div>
       )}
 
+      {/* ── Community Photos Feed (filterType === 'photos') ── */}
+      {!isLoading && filterType === 'photos' && (
+        <div className="space-y-6 animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-vintage-900">
+                필름러들의 실시간 출사 갤러리
+              </h2>
+              <p className="text-xs text-vintage-500 mt-0.5">
+                DASI 기기 대여 회원과 포토워커들이 직접 찍어 올린 무보정 실사용 사진입니다.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsPhotoUploadModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <UploadCloud className="w-3.5 h-3.5" />
+              <span>사진 등록 (+150P)</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {communityPhotos.map((photo) => (
+              <div
+                key={photo.id}
+                className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative aspect-[4/3] bg-vintage-900 overflow-hidden">
+                    <img
+                      src={photo.imageUrl}
+                      alt={photo.caption}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-bold">
+                        📷 {photo.cameraModel}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold">
+                        🎞️ {photo.filmType}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-3">
+                    <p className="text-xs text-vintage-800 leading-relaxed font-medium">
+                      &ldquo;{photo.caption}&rdquo;
+                    </p>
+
+                    <div className="space-y-1 text-[11px] text-vintage-500 pt-2 border-t border-vintage-100">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-terracotta shrink-0" />
+                        <span>{photo.location || '서울 도심'}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-vintage-400">🧪</span>
+                        <span className="text-vintage-700 font-semibold">{photo.labName}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 pt-0 flex items-center justify-between border-t border-vintage-100/60 mt-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-terracotta text-white flex items-center justify-center text-[10px] font-bold">
+                      {photo.photographerName[0]}
+                    </div>
+                    <span className="font-bold text-vintage-900 text-[11px]">{photo.photographerName}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => likeCommunityPhoto(photo.id)}
+                      className="flex items-center gap-1 text-xs text-vintage-500 hover:text-terracotta transition-colors"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-terracotta text-terracotta" />
+                      <span className="font-mono text-[11px]">{photo.likesCount}</span>
+                    </button>
+                    <a
+                      href="/rent"
+                      className="px-2.5 py-1 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-bold text-[10px] transition-colors"
+                    >
+                      기기 대여
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Cards Grid */}
-      {!isLoading && (
+      {!isLoading && filterType !== 'photos' && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredItems.map((item) => (
           <div
@@ -522,6 +627,12 @@ export default function ExplorePage() {
       <SpotReportModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
+      />
+
+      {/* 출사 사진 업로드 모달 (+150P) */}
+      <PhotoUploadModal
+        isOpen={isPhotoUploadModalOpen}
+        onClose={() => setIsPhotoUploadModalOpen(false)}
       />
 
       {/* 출사 명소 현장 체크인 QR 모달 */}

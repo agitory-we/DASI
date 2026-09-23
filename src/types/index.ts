@@ -174,3 +174,17 @@ export interface ProConsultationItem {
   status: 'manager_contacting' | 'confirmed';
 }
 
+export interface CommunityPhoto {
+  id: string;
+  imageUrl: string;
+  caption: string;
+  cameraModel: string;
+  filmType: string;
+  labName: string;
+  photographerName: string;
+  photographerTier: 'filmmer' | 'photowalker' | 'legend';
+  likesCount: number;
+  location?: string;
+  createdAt: string;
+}
+

@@ -1,4 +1,4 @@
-import { Camera, PickupShop, AnalogSpot, PhotoGig, RepairMaster, UserCoupon, EventOrHotSpot, Experience } from '@/types';
+import { Camera, PickupShop, AnalogSpot, PhotoGig, RepairMaster, UserCoupon, EventOrHotSpot, Experience, CommunityPhoto } from '@/types';
 
 export const mockPickupShops: PickupShop[] = [
   {
@@ -514,5 +514,86 @@ export const mockExperiences: Experience[] = [
     description: '공장 지대와 세련된 쇼룸이 공존하는 성수동 골목에서 필름 감성의 인물 샷과 텍스처를 포착하는 노하우를 나눕니다.',
     imageUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80',
     included: ['후지 C200 컬러 필름 1롤 제공', '성수 카페 음료 1잔 무료', '베스트 컷 인화권 2매'],
+  }
+];
+
+export const mockCommunityPhotos: CommunityPhoto[] = [
+  {
+    id: 'photo-1',
+    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
+    caption: '을지로 골목길 노을빛 역광. 하프 카메라라 부담 없이 72장 마음껏 연사했습니다.',
+    cameraModel: 'Olympus PEN EE-3',
+    filmType: 'Kodak Gold 200',
+    labName: '망우삼림 (망우포토)',
+    photographerName: '한여름',
+    photographerTier: 'photowalker',
+    likesCount: 42,
+    location: '을지로 세운상가 공중보행로',
+    createdAt: '2026.09.20',
+  },
+  {
+    id: 'photo-2',
+    imageUrl: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&auto=format&fit=crop&q=80',
+    caption: '충무로 보성광학에서 오버홀된 FM2의 칼같은 금속 셔터감. 선명도가 예술입니다.',
+    cameraModel: 'Nikon FM2',
+    filmType: 'Kodak UltraMax 400',
+    labName: '고래사진관 충무로점',
+    photographerName: '최진우',
+    photographerTier: 'legend',
+    likesCount: 89,
+    location: '남산골 한옥마을',
+    createdAt: '2026.09.21',
+  },
+  {
+    id: 'photo-3',
+    imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
+    caption: '노리츠 스캐너 특유의 맑고 푸른 바다 색감. C-41 현상 당일 받아 감동했습니다.',
+    cameraModel: 'Canon AE-1',
+    filmType: 'Fujifilm 200',
+    labName: '망우삼림 (망우포토)',
+    photographerName: '강소율',
+    photographerTier: 'filmmer',
+    likesCount: 35,
+    location: '마포 하늘공원',
+    createdAt: '2026.09.22',
+  },
+  {
+    id: 'photo-4',
+    imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80',
+    caption: '새벽 안개 낀 숲길의 정적. 흑백 필름 그레인과 하이라이트 디테일이 살아있어요.',
+    cameraModel: 'Nikon FM2',
+    filmType: 'Ilford HP5 Plus 400',
+    labName: '고래사진관 충무로점',
+    photographerName: '박서준',
+    photographerTier: 'photowalker',
+    likesCount: 61,
+    location: '서울숲 억새밭',
+    createdAt: '2026.09.22',
+  },
+  {
+    id: 'photo-5',
+    imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+    caption: 'DASI에서 렌탈 후 첫 롤! 필름 장착부터 현상 접수까지 앱으로 원스톱 해결했습니다.',
+    cameraModel: 'Olympus PEN EE-3',
+    filmType: 'Kodak Gold 200',
+    labName: '망우삼림 (망우포토)',
+    photographerName: '이지은',
+    photographerTier: 'filmmer',
+    likesCount: 28,
+    location: '익선동 한옥거리',
+    createdAt: '2026.09.23',
+  },
+  {
+    id: 'photo-6',
+    imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+    caption: '클래식 SLR로 담아낸 도심 속 야경. 조리개 1.4의 보케가 몽환적입니다.',
+    cameraModel: 'Canon AE-1',
+    filmType: 'Kodak UltraMax 400',
+    labName: '고래사진관 충무로점',
+    photographerName: '정동현',
+    photographerTier: 'photowalker',
+    likesCount: 53,
+    location: 'DDP 동대문디자인플라자',
+    createdAt: '2026.09.23',
   }
 ];

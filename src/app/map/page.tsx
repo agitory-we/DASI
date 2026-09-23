@@ -27,7 +27,7 @@ import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 
 export default function MapPage() {
-  const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot } = useDasi();
+  const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot, communityPhotos } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<SpotCategory | 'all'>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpotId, setActiveSpotId] = useState<string>('');
@@ -429,6 +429,35 @@ export default function MapPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 실제 유저 스캔 출사 사진 크로스 피딩 (Sprint 3-C) */}
+                {(() => {
+                  const matchedLabPhotos = communityPhotos.filter(p => p.labName === activeSpot.name);
+                  if (matchedLabPhotos.length === 0) return null;
+                  return (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          이 현상소에서 스캔된 실제 유저 출사 사진 ({matchedLabPhotos.length}장)
+                        </span>
+                        <span className="text-[10px] text-vintage-500">실시간 피드 연동</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {matchedLabPhotos.map((photo) => (
+                          <div key={photo.id} className="rounded-2xl border border-vintage-200 overflow-hidden bg-vintage-900 group relative aspect-[4/3]">
+                            <img src={photo.imageUrl} alt={photo.caption} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-2.5 text-white">
+                              <span className="text-[10px] font-bold truncate">📷 {photo.cameraModel}</span>
+                              <span className="text-[9px] text-amber-300 truncate">🎞️ {photo.filmType}</span>
+                              <span className="text-[8px] text-vintage-300 truncate mt-0.5">&ldquo;{photo.caption}&rdquo;</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Micro-Ad Promotion Box */}
                 {activeSpot.promoNotice && (

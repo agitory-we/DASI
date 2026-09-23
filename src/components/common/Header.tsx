@@ -28,6 +28,13 @@ import { useDasi } from '@/context/DasiContext';
 import { isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { useAuth, TIER_INFO } from '@/context/AuthContext';
+import {
+  registerServiceWorker,
+  sendLocalNotification,
+  PUSH_SCENARIOS,
+  requestNotificationPermission,
+  checkNotificationPermission,
+} from '@/utils/webPush';
 
 
 export const Header: React.FC = () => {
@@ -39,6 +46,29 @@ export const Header: React.FC = () => {
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [pushPerm, setPushPerm] = useState<string>('default');
+
+  // Service Worker 등록 및 푸시 권한 확인
+  useEffect(() => {
+    registerServiceWorker();
+    setPushPerm(checkNotificationPermission());
+  }, []);
+
+  const handleTogglePush = async () => {
+    const res = await requestNotificationPermission();
+    setPushPerm(res);
+    if (res === 'granted') {
+      showToast('🔔 브라우저 푸시 알림이 활성화되었습니다!', 'success');
+      sendLocalNotification('DASI 알림 설정 완료', '이제 골든아워와 현상 완료 소식을 가장 먼저 받아보실 수 있습니다.', '/explore');
+    } else {
+      showToast('브라우저 알림 권한이 허용되지 않았습니다.', 'warning');
+    }
+  };
+
+  const handleTestPush = (scenario: typeof PUSH_SCENARIOS[0]) => {
+    sendLocalNotification(scenario.title, scenario.body, scenario.url);
+    showToast(`🔔 [${scenario.label}] 푸시 알림을 전송했습니다.`, 'info');
+  };
 
   // 미읽음 알림 (UI 레벨 stub — 포인트 적립·체크인·수리 완료 시뮬레이션)
   const notifications = profile ? [
@@ -223,19 +253,61 @@ export const Header: React.FC = () => {
                 </button>
                 {isNotifOpen && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-white border border-vintage-200 shadow-xl p-2 z-50 animate-fadeIn"
+                    className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-white border border-vintage-200 shadow-xl p-3 z-50 animate-fadeIn space-y-2.5"
                     onMouseLeave={() => setIsNotifOpen(false)}
                   >
-                    <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-2 py-1.5">최근 알림</div>
-                    <div className="space-y-0.5">
+                    {/* Web Push Toggle Header (Sprint 5) */}
+                    <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-200/80 flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] font-bold text-vintage-900 flex items-center gap-1">
+                          <span>🔔 브라우저 푸시 알림</span>
+                          {pushPerm === 'granted' && (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">ON</span>
+                          )}
+                        </div>
+                        <div className="text-[9px] text-vintage-500">골든아워·현상완료 실시간 알림</div>
+                      </div>
+                      <button
+                        onClick={handleTogglePush}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                          pushPerm === 'granted'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-vintage-900 hover:bg-terracotta text-white'
+                        }`}
+                      >
+                        {pushPerm === 'granted' ? '활성화됨' : '알림 켜기'}
+                      </button>
+                    </div>
+
+                    {/* Quick Push Test Scenarios */}
+                    {pushPerm === 'granted' && (
+                      <div className="px-1 space-y-1">
+                        <div className="text-[9px] text-vintage-400 font-bold uppercase tracking-wider">푸시 알림 테스트 시뮬레이션</div>
+                        <div className="grid grid-cols-3 gap-1 text-[10px]">
+                          {PUSH_SCENARIOS.map((sc) => (
+                            <button
+                              key={sc.id}
+                              onClick={() => handleTestPush(sc)}
+                              className="p-1 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-medium truncate text-center transition-colors"
+                              title={sc.title}
+                            >
+                              {sc.label.split(' ')[0]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-1 pt-1">최근 알림</div>
+                    <div className="space-y-0.5 max-h-48 overflow-y-auto">
                       {notifications.map(n => (
                         <div
                           key={n.id}
-                          className={['flex items-start gap-2.5 p-2.5 rounded-xl text-xs transition-colors', n.read ? 'text-vintage-500' : 'bg-amber-50 text-vintage-900'].join(' ')}
+                          className={['flex items-start gap-2.5 p-2 rounded-xl text-xs transition-colors', n.read ? 'text-vintage-500' : 'bg-amber-50 text-vintage-900'].join(' ')}
                         >
                           <span className="text-base shrink-0 mt-0.5">{n.icon}</span>
                           <div>
-                            <div className="font-semibold leading-tight">{n.text}</div>
+                            <div className="font-semibold leading-tight text-xs">{n.text}</div>
                             <div className="text-vintage-400 text-[10px] mt-0.5">{n.sub}</div>
                           </div>
                           {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-terracotta shrink-0 mt-1.5 ml-auto" />}
@@ -244,10 +316,10 @@ export const Header: React.FC = () => {
                     </div>
                     <Link
                       href="/cabinet"
-                      className="mt-2 block text-center text-[10px] font-bold text-terracotta hover:text-terracotta/80 py-1.5 border-t border-vintage-100"
+                      className="block text-center text-[10px] font-bold text-terracotta hover:text-terracotta/80 py-1.5 border-t border-vintage-100"
                       onClick={() => setIsNotifOpen(false)}
                     >
-                      전체 내역 보기 →
+                      전체 내역 &amp; 성지순례 패스포트 보기 →
                     </Link>
                   </div>
                 )}

@@ -9,7 +9,8 @@ import {
   PhotoGig,
   Experience,
   UserCoupon,
-  ProConsultationItem
+  ProConsultationItem,
+  CommunityPhoto
 } from '@/types';
 import {
   mockUserCoupons,
@@ -18,7 +19,8 @@ import {
   mockAnalogSpots,
   mockMasters,
   mockPhotoGigs,
-  mockExperiences
+  mockExperiences,
+  mockCommunityPhotos
 } from '@/data/mockData';
 import {
   getCameras,
@@ -113,6 +115,9 @@ interface DasiContextType {
   repairEstimates: RepairEstimateItem[];
   proConsultations: ProConsultationItem[];
   savedSpotIds: string[];
+  communityPhotos: CommunityPhoto[];
+  uploadCommunityPhoto: (photo: Omit<CommunityPhoto, 'id' | 'likesCount' | 'createdAt'>) => string;
+  likeCommunityPhoto: (photoId: string) => void;
   bookCameraRental: (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => void;
   convertToOwn: (rentingId: string) => void;
   addOwnedCamera: (item: Omit<OwnedCameraItem, 'id'>) => string;
@@ -149,6 +154,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [repairEstimates, setRepairEstimates] = useState<RepairEstimateItem[]>([]);
   const [proConsultations, setProConsultations] = useState<ProConsultationItem[]>([]);
   const [savedSpotIds, setSavedSpotIds] = useState<string[]>(['spot-1', 'spot-3']);
+  const [communityPhotos, setCommunityPhotos] = useState<CommunityPhoto[]>(mockCommunityPhotos);
   const [isWelcomeClaimed, setIsWelcomeClaimed] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
@@ -473,6 +479,25 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const uploadCommunityPhoto = (photo: Omit<CommunityPhoto, 'id' | 'likesCount' | 'createdAt'>): string => {
+    const newId = `user-photo-${Date.now()}`;
+    const newPhoto: CommunityPhoto = {
+      ...photo,
+      id: newId,
+      likesCount: 0,
+      createdAt: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    };
+    setCommunityPhotos((prev) => [newPhoto, ...prev]);
+    showToast('📸 출사 사진이 커뮤니티에 등록되었습니다! (+150P)', 'success');
+    return newId;
+  };
+
+  const likeCommunityPhoto = (photoId: string) => {
+    setCommunityPhotos((prev) =>
+      prev.map((p) => (p.id === photoId ? { ...p, likesCount: p.likesCount + 1 } : p))
+    );
+  };
+
   return (
     <DasiContext.Provider
       value={{
@@ -492,6 +517,9 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         repairEstimates,
         proConsultations,
         savedSpotIds,
+        communityPhotos,
+        uploadCommunityPhoto,
+        likeCommunityPhoto,
         bookCameraRental,
         convertToOwn,
         addOwnedCamera,

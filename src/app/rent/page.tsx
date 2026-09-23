@@ -29,7 +29,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
 
 export default function RentPage() {
-  const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast } = useDasi();
+  const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
@@ -390,6 +390,34 @@ export default function RentPage() {
                 </div>
               ) : (
                 <>
+                  {/* 실사용 유저 출사 사진 갤러리 크로스 피딩 (Sprint 3-C) */}
+                  {(() => {
+                    const matchedPhotos = communityPhotos.filter(p => p.cameraModel === selectedCamera.name);
+                    if (matchedPhotos.length === 0) return null;
+                    return (
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-[#FAF8F5] to-vintage-100/70 border border-vintage-200 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-vintage-900">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <span>이 카메라로 찍은 실사용 커뮤니티 갤러리 ({matchedPhotos.length}장)</span>
+                          </div>
+                          <span className="text-[10px] text-vintage-500 font-medium">유저 무보정 컷</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {matchedPhotos.slice(0, 3).map((photo) => (
+                            <div key={photo.id} className="relative aspect-[4/3] rounded-xl overflow-hidden group bg-vintage-900 shadow-2xs">
+                              <img src={photo.imageUrl} alt={photo.caption} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2 text-white">
+                                <span className="text-[9px] font-bold truncate">🎞️ {photo.filmType}</span>
+                                <span className="text-[8px] text-vintage-300 truncate">by {photo.photographerName}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Step 1: 날짜 피커 캘린더 엔진 */}
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider flex items-center justify-between">
