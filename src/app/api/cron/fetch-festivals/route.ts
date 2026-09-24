@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchFestivals } from '@/lib/tourApi';
 
+export const dynamic = 'force-dynamic';
+
 // Vercel Cron 또는 Supabase pg_cron에서 호출되는 서버 핸들러
 // 보안: CRON_SECRET 환경변수로 인증
 export async function POST(req: NextRequest) {

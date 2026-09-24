@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Film,
   Moon,
@@ -11,7 +11,10 @@ import {
   X,
   Camera,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download,
+  Share2,
+  Check
 } from 'lucide-react';
 import { CommunityPhoto } from '@/types';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
@@ -27,6 +30,12 @@ export const FilmStripViewer: React.FC<FilmStripViewerProps> = ({ photos }) => {
   const [isNegativeInvert, setIsNegativeInvert] = useState(false); // 네거티브 필름 반전
   const [selectedPhoto, setSelectedPhoto] = useState<CommunityPhoto | null>(null);
 
+  // 35mm 밀착인화지 (Contact Sheet) 인스타 스토리 캔버스 상태
+  const contactCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
+  const [isGeneratingSheet, setIsGeneratingSheet] = useState(false);
+  const [sheetDownloadDone, setSheetDownloadDone] = useState(false);
+
   const handleToggleSafelight = () => {
     triggerHaptic('light');
     setIsSafelightMode(!isSafelightMode);
@@ -41,6 +50,176 @@ export const FilmStripViewer: React.FC<FilmStripViewerProps> = ({ photos }) => {
     triggerHaptic('selection');
     playShutterSound('compact');
     setSelectedPhoto(photo);
+  };
+
+  // 35mm 밀착인화지 캔버스 생성기 (1080 x 1920 Instagram Story 규격)
+  const drawContactSheet = async () => {
+    const canvas = contactCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsGeneratingSheet(true);
+
+    canvas.width = 1080;
+    canvas.height = 1920;
+
+    // 빈티지 암실 인화지 다크 베이스
+    ctx.fillStyle = '#0e0b09';
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // 상단 아카이브 타이포그래피
+    ctx.fillStyle = '#d4af37';
+    ctx.font = 'bold 26px monospace';
+    ctx.fillText('DASI DARKROOM CONTACT SHEET', 70, 110);
+
+    ctx.fillStyle = '#8c827a';
+    ctx.font = '18px monospace';
+    ctx.fillText('PROOF NO. 35-KR · 400 ISO · PROCESS C-41 · MASTER ARCHIVE', 70, 145);
+
+    ctx.strokeStyle = '#2b231f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(70, 170);
+    ctx.lineTo(1010, 170);
+    ctx.stroke();
+
+    // 3개 프레임 순차 렌더링
+    const samplePhotos = photos.slice(0, 3);
+    const startY = 210;
+    const frameHeight = 440;
+    const gap = 55;
+
+    for (let i = 0; i < samplePhotos.length; i++) {
+      const p = samplePhotos[i];
+      const y = startY + i * (frameHeight + gap);
+
+      // 필름 테두리 (슬리브)
+      ctx.fillStyle = '#060403';
+      ctx.fillRect(50, y, 980, frameHeight);
+
+      // 상/하단 스프로킷 구멍 (13개씩)
+      ctx.fillStyle = '#1c1511';
+      for (let s = 0; s < 13; s++) {
+        const sx = 80 + s * 68;
+        ctx.fillRect(sx, y + 10, 34, 22);
+        ctx.fillRect(sx, y + frameHeight - 32, 34, 22);
+      }
+
+      // 프레임 인덱스 및 필름 각인
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'bold 17px monospace';
+      ctx.fillText(`▶ 0${i + 1}A`, 75, y + frameHeight - 14);
+      ctx.fillText('KODAK SAFETY FILM 400', 380, y + 26);
+      ctx.fillText(`EXP 36`, 880, y + frameHeight - 14);
+
+      // 실제 이미지 로드 & 렌더링
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = p.imageUrl;
+        });
+
+        if (img.width > 0) {
+          const px = 160;
+          const py = y + 42;
+          const pw = 760;
+          const ph = 356;
+          ctx.drawImage(img, px, py, pw, ph);
+
+          // 하단 메타 반투명 바
+          ctx.fillStyle = 'rgba(0,0,0,0.65)';
+          ctx.fillRect(px, py + ph - 42, pw, 42);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 18px sans-serif';
+          ctx.fillText(`📷 ${p.cameraModel} · 🎞️ ${p.filmType} · 🧪 ${p.labName}`, px + 18, py + ph - 14);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // 하단 인증 푸터
+    const footerY = 1730;
+    ctx.strokeStyle = '#c2410c';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(70, footerY, 940, 120);
+
+    ctx.fillStyle = '#ea580c';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText('DASI CERTIFIED ANALOG CONTACT PROOF', 110, footerY + 50);
+
+    ctx.fillStyle = '#a8a29e';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('그때 그 취미, 다시 · 아날로그 필름 플랫폼 https://dasi.market', 110, footerY + 85);
+
+    // 우측 원형 레드 인화 도장
+    ctx.save();
+    ctx.translate(920, footerY + 60);
+    ctx.rotate(-0.12);
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 44, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 15px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('DARKROOM', 0, -6);
+    ctx.fillText('PASSED', 0, 14);
+    ctx.restore();
+
+    setIsGeneratingSheet(false);
+  };
+
+  const handleOpenContactSheet = () => {
+    triggerHaptic('medium');
+    playShutterSound('slr');
+    setIsContactSheetOpen(true);
+    setSheetDownloadDone(false);
+    setTimeout(() => {
+      drawContactSheet();
+    }, 150);
+  };
+
+  const handleDownloadSheet = () => {
+    const canvas = contactCanvasRef.current;
+    if (!canvas) return;
+    playShutterSound('slr');
+    triggerHaptic('selection');
+    const link = document.createElement('a');
+    link.download = `DASI_ContactSheet_${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    setSheetDownloadDone(true);
+  };
+
+  const handleShareSheet = async () => {
+    const canvas = contactCanvasRef.current;
+    if (!canvas) return;
+    triggerHaptic('medium');
+    playShutterSound('compact');
+
+    try {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'dasi-contact-sheet.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'DASI 아날로그 밀착인화지 (Contact Sheet)',
+            text: 'DASI 암실에서 가상 인화한 35mm 필름 스트립 밀착인화지입니다. #DASI #필름카메라',
+            files: [file],
+          });
+        } else {
+          handleDownloadSheet();
+        }
+      });
+    } catch {
+      handleDownloadSheet();
+    }
   };
 
   return (
@@ -99,6 +278,16 @@ export const FilmStripViewer: React.FC<FilmStripViewerProps> = ({ photos }) => {
           >
             <Eye className="w-3.5 h-3.5" />
             <span>네거티브 반전</span>
+          </button>
+
+          {/* 35mm 밀착인화지(Contact Sheet) 인스타 스토리 생성 */}
+          <button
+            type="button"
+            onClick={handleOpenContactSheet}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-terracotta text-white flex items-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>밀착인화지 스토리 생성</span>
           </button>
         </div>
       </div>
@@ -237,13 +426,89 @@ export const FilmStripViewer: React.FC<FilmStripViewerProps> = ({ photos }) => {
                 </div>
               </div>
 
-              {/* 프레임 생성기로 이동 버튼 */}
-              <a
-                href="/frame"
-                className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
+              {/* 액션 버튼 그룹 */}
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="/rent"
+                  className="px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>이 카메라 대여하기</span>
+                </a>
+                <a
+                  href="/frame"
+                  className="px-3.5 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <span>프레임 입히기 →</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. 🎞️ 35mm 밀착인화지 (Contact Sheet) 9:16 인스타 스토리 모달 */}
+      {isContactSheetOpen && (
+        <div
+          onClick={() => setIsContactSheetOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm sm:max-w-md bg-vintage-900 rounded-3xl p-5 sm:p-6 shadow-2xl text-white border border-amber-500/30 space-y-4 animate-slide-up cursor-default"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Film className="w-4 h-4 text-amber-400" />
+                <h3 className="font-serif font-bold text-sm text-amber-200">
+                  35mm 밀착인화지 인스타 스토리 (9:16)
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsContactSheetOpen(false)}
+                className="p-1 rounded-full text-vintage-400 hover:text-white"
               >
-                <span>이 사진에 프레임 입히기 →</span>
-              </a>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 캔버스 프리뷰 영역 */}
+            <div className="relative aspect-[9/16] w-full max-h-[58vh] rounded-2xl overflow-hidden bg-black border-2 border-stone-800 shadow-2xl flex items-center justify-center">
+              <canvas
+                ref={contactCanvasRef}
+                className="w-full h-full object-contain"
+              />
+              {isGeneratingSheet && (
+                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 text-xs text-amber-300">
+                  <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                  <span>암실 인화 렌더링 중...</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[11px] text-vintage-300 text-center">
+              실제 35mm 암실 감성의 스프로킷 타공과 마스터 아카이브 스탬프가 합성되었습니다.
+            </p>
+
+            {/* 다운로드 및 공유 액션 버튼 */}
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleDownloadSheet}
+                className="py-3 rounded-xl bg-white text-vintage-900 hover:bg-vintage-100 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+              >
+                {sheetDownloadDone ? <Check className="w-4 h-4 text-emerald-600" /> : <Download className="w-4 h-4" />}
+                <span>{sheetDownloadDone ? '다운로드 완료!' : '9:16 이미지 저장'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShareSheet}
+                className="py-3 rounded-xl bg-gradient-to-r from-amber-500 to-terracotta text-white hover:brightness-110 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>인스타/카카오 공유</span>
+              </button>
             </div>
           </div>
         </div>

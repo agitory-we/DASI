@@ -529,6 +529,28 @@ export default function RentPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* B2B 파트너 실시간 필름 재고 연동 배너 */}
+                    <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs text-vintage-800 space-y-1.5 mt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold flex items-center gap-1 text-amber-900 text-[11px]">
+                          <Sparkles className="w-3 h-3 text-amber-600" />
+                          <span>선택 매장 실시간 필름 재고 (현장 즉시 수령)</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-700 font-mono font-bold">1초 QR 수령 지원</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 text-[11px]">
+                        <span className="px-2 py-0.5 rounded-md bg-white border border-amber-200 font-mono text-vintage-800">
+                          Kodak Gold 200 (잔여 14롤)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-white border border-amber-200 font-mono text-vintage-800">
+                          UltraMax 400 (잔여 8롤)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-white border border-amber-200 font-mono text-vintage-800">
+                          Fujifilm 200 (잔여 5롤)
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Step 3: 부가 케어 옵션 선택 */}

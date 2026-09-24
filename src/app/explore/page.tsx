@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import * as SunCalc from 'suncalc';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { EventOrHotSpot, CommunityPhoto } from '@/types';
@@ -27,7 +28,9 @@ import {
   Share2,
   Plus,
   Leaf,
-  QrCode
+  QrCode,
+  Film,
+  ShoppingBag
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
@@ -38,6 +41,74 @@ import { useAuth } from '@/context/AuthContext';
 import { KOREA_TOP_100_SPOTS, KoreaTopSpot } from '@/data/koreaTop100Spots';
 import { OFFICIAL_GUIDEBOOKS, OFFICIAL_ARTICLES, TravelGuidebook, TravelArticle } from '@/data/travelGuides';
 import type { PhotoGalleryItem } from '@/lib/photoGalleryApi';
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Shot-to-Rent 스마트 패키지 매칭 인터페이스 & 헬퍼
+// ──────────────────────────────────────────────────────────────────────────────
+interface ShotToRentPackage {
+  title: string;
+  location: string;
+  imageUrl: string;
+  photographer?: string;
+  moodTag: string;
+  recommendedCamera: string;
+  recommendedFilm: string;
+  recommendedLab: string;
+  pricePerDay: number;
+  highlight: string;
+}
+
+function getShotToRentPackage(title: string, location: string, imageUrl: string, tags: string = ''): ShotToRentPackage {
+  const lower = (title + location + tags).toLowerCase();
+  if (lower.includes('궁') || lower.includes('한옥') || lower.includes('골목') || lower.includes('마을')) {
+    return {
+      title,
+      location,
+      imageUrl,
+      moodTag: '고즈넉한 빈티지 웜톤',
+      recommendedCamera: 'Olympus PEN EE-3',
+      recommendedFilm: 'Kodak Gold 200',
+      recommendedLab: '망우삼림 (을지로 본점)',
+      pricePerDay: 18000,
+      highlight: '하프 프레임 72컷 촬영으로 부담 없이 담아내는 골목길 일상 스냅',
+    };
+  } else if (lower.includes('바다') || lower.includes('산') || lower.includes('자연') || lower.includes('호수') || lower.includes('하늘')) {
+    return {
+      title,
+      location,
+      imageUrl,
+      moodTag: '청량하고 깊은 풍경 콘트라스트',
+      recommendedCamera: 'Nikon FM2',
+      recommendedFilm: 'Kodak Portra 400',
+      recommendedLab: '고래사진관 (충무로)',
+      pricePerDay: 35000,
+      highlight: '1/4000초 초고속 기계식 셔터로 대낮 야외 풍경과 피사체를 선명하게 포착',
+    };
+  } else if (lower.includes('축제') || lower.includes('거리') || lower.includes('야경') || lower.includes('빛')) {
+    return {
+      title,
+      location,
+      imageUrl,
+      moodTag: '화려한 색채와 부드러운 인물 보케',
+      recommendedCamera: 'Canon AE-1 Program',
+      recommendedFilm: 'Fujifilm 200',
+      recommendedLab: '팔레트사진관 (성수)',
+      pricePerDay: 28000,
+      highlight: 'F1.4 밝은 표준 단렌즈로 저녁 축제의 따뜻한 조명과 인물 인화 감성 재현',
+    };
+  }
+  return {
+    title,
+    location,
+    imageUrl,
+    moodTag: '필름 특유의 은염 입자감과 따뜻함',
+    recommendedCamera: 'Minolta X-700',
+    recommendedFilm: 'Kodak UltraMax 400',
+    recommendedLab: '망우삼림 (을지로 본점)',
+    pricePerDay: 25000,
+    highlight: '로쿠르(Rokkor) 명품 렌즈의 부드러운 묘사력으로 일상과 여행을 영화처럼 기록',
+  };
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // 헬퍼: suncalc 기반 골든아워 계산 (서울 위경도 고정)
@@ -119,6 +190,7 @@ export default function ExplorePage() {
   const [sunData, setSunData] = useState(() => getSeoulSunData());
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
+  const [selectedShotToRent, setSelectedShotToRent] = useState<ShotToRentPackage | null>(null);
   const currentSeason = useMemo(() => getCurrentSeason(), []);
 
   // TourAPI KorService2 축제 및 PhotoGalleryService1 데이터 fetch
@@ -417,12 +489,21 @@ export default function ExplorePage() {
                       <Heart className="w-3.5 h-3.5 fill-terracotta text-terracotta" />
                       <span className="font-mono text-[11px]">{photo.likesCount}</span>
                     </button>
-                    <a
-                      href="/rent"
-                      className="px-2.5 py-1 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-bold text-[10px] transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const pkg = getShotToRentPackage(photo.caption, photo.location || '', photo.imageUrl, photo.filmType);
+                        pkg.photographer = photo.photographerName;
+                        pkg.recommendedCamera = photo.cameraModel;
+                        pkg.recommendedFilm = photo.filmType;
+                        pkg.recommendedLab = photo.labName;
+                        setSelectedShotToRent(pkg);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-vintage-900 hover:bg-terracotta text-white font-bold text-[10px] flex items-center gap-1 transition-colors shadow-2xs"
                     >
-                      기기 대여
-                    </a>
+                      <Sparkles className="w-3 h-3 text-amber-300" />
+                      <span>이 기기 대여</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -606,12 +687,24 @@ export default function ExplorePage() {
                   </div>
                 </div>
 
-                <div className="p-4 pt-0">
+                <div className="p-4 pt-0 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pkg = getShotToRentPackage(photo.galTitle, photo.galPhotographyLocation, photo.galWebImageUrl, photo.galSearchKeyword);
+                      pkg.photographer = photo.galPhotographer;
+                      setSelectedShotToRent(pkg);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>이 감성 그대로 대여하기</span>
+                  </button>
                   <a
                     href={photo.galWebImageUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full py-2 rounded-xl bg-vintage-100 hover:bg-terracotta hover:text-white text-vintage-700 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                    className="w-full py-1.5 rounded-xl bg-vintage-50 hover:bg-vintage-100 text-vintage-600 text-[10px] font-medium flex items-center justify-center gap-1 transition-colors"
                   >
                     <span>고화질 원본 감상</span>
                     <ExternalLink className="w-3 h-3" />
@@ -1126,6 +1219,121 @@ export default function ExplorePage() {
           goldenHourTip={checkInSpot.goldenHour}
           recommendedLens={checkInSpot.recommendedLenses}
         />
+      )}
+
+      {/* 🎨 [제안 1] Shot-to-Rent 스마트 패키지 매칭 모달 */}
+      {selectedShotToRent && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={() => setSelectedShotToRent(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-[#FAF8F5] rounded-3xl p-6 sm:p-7 shadow-2xl border-4 border-vintage-300 text-vintage-900 animate-slide-up space-y-5 cursor-default max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedShotToRent(null)}
+              className="absolute top-4 right-4 p-2 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* 헤더 & 감성 무드 태그 */}
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Shot-to-Rent 감성 재현 매칭</span>
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900">
+                &ldquo;이 사진 감성 그대로 주말 대여&rdquo;
+              </h3>
+              <p className="text-xs text-vintage-600">
+                선택하신 사진의 색감과 피사체에 가장 최적화된 클래식 명기 바디와 필름 패키지입니다.
+              </p>
+            </div>
+
+            {/* 선택 사진 프리뷰 카드 */}
+            <div className="relative aspect-16/9 rounded-2xl overflow-hidden bg-vintage-900 border border-vintage-200 shadow-inner">
+              <img
+                src={selectedShotToRent.imageUrl}
+                alt={selectedShotToRent.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-white">
+                <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
+                  {selectedShotToRent.moodTag}
+                </span>
+                <h4 className="font-serif text-base font-bold line-clamp-1">{selectedShotToRent.title}</h4>
+                <p className="text-xs text-vintage-300">{selectedShotToRent.location} {selectedShotToRent.photographer ? `· 📸 ${selectedShotToRent.photographer}` : ''}</p>
+              </div>
+            </div>
+
+            {/* 추천 패키지 3종 상세 */}
+            <div className="p-4 rounded-2xl bg-white border border-vintage-200 space-y-3">
+              <div className="text-xs font-bold text-vintage-900 border-b border-vintage-100 pb-2 flex items-center justify-between">
+                <span>🎯 스마트 매칭 번들 구성</span>
+                <span className="text-terracotta text-[11px] font-normal">Rent-to-Own 100% 공제 대상</span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center font-bold">
+                      <Camera className="w-3.5 h-3.5" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedCamera}</div>
+                      <div className="text-[10px] text-vintage-500">40년 명장 정밀 오버홀 완료 바디</div>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold text-vintage-800">₩{selectedShotToRent.pricePerDay.toLocaleString()}/일</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+                      <Film className="w-3.5 h-3.5" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedFilm} (36exp)</div>
+                      <div className="text-[10px] text-vintage-500">풍부한 계조의 감성 필름</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-emerald-700 font-semibold">픽업 현장 보유</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-700 flex items-center justify-center font-bold">
+                      🧪
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedLab}</div>
+                      <div className="text-[10px] text-vintage-500">1초 QR 접수 및 당일 고화질 스캔</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-vintage-600 font-medium">+150P 적립</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-100 text-[11px] text-vintage-600 leading-snug">
+                💡 <strong>명장 추천 팁</strong>: {selectedShotToRent.highlight}
+              </div>
+            </div>
+
+            {/* 하단 CTA 버튼 */}
+            <div className="flex gap-2 pt-1">
+              <Link
+                href="/rent"
+                onClick={() => setSelectedShotToRent(null)}
+                className="flex-1 py-3.5 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 text-center"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>주말 렌탈 바로 예약하기 (대여료 100% 소장 공제)</span>
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

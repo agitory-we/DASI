@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
+export const dynamic = 'force-dynamic';
+
 // 한국천문연구원 API 연동: 오늘의 서울 일출/일몰 시각 동기화
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('Authorization');

@@ -35,6 +35,21 @@ import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { AnalogMasterCertificateModal } from '@/components/cabinet/AnalogMasterCertificateModal';
 
+// 아날로그 성지순례 스팟별 공식 실측 인증 컷 프리뷰 (스탬프 날인 시 자동 박제 아카이빙)
+const SPOT_PREVIEWS: Record<string, string> = {
+  '망우삼림': 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600&auto=format&fit=crop&q=80',
+  '을지로 신성카메라': 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80',
+  '충무로 보성광학': 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&auto=format&fit=crop&q=80',
+  '세운상가 옥상 일몰': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80',
+  '성수 독립서점 거리': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=80',
+  '서울숲 메타세콰이어길': 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop&q=80',
+  '성수 로컬 현상소': 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=80',
+  '경복궁 & 근정전': 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=600&auto=format&fit=crop&q=80',
+  '북촌 한옥마을 & 계동길': 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=600&auto=format&fit=crop&q=80',
+  '순천만 습지 & 갈대밭': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+  '경주 불국사 & 토함산': 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80',
+};
+
 export default function CabinetPage() {
   const {
     rentingItems,
@@ -1304,6 +1319,25 @@ export default function CabinetPage() {
                         <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
                       </div>
 
+                      {/* 순례 인증 사진 박제 슬롯 */}
+                      {isStamped ? (
+                        <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden bg-vintage-900 border-2 border-white shadow-xs">
+                          <img
+                            src={SPOT_PREVIEWS[spot.name] || 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600&auto=format&fit=crop&q=80'}
+                            alt={spot.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[9px] text-amber-300 font-mono">
+                            PROOF ARCHIVED
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-14 rounded-xl border border-dashed border-vintage-300 flex flex-col items-center justify-center text-vintage-400 text-[10px] bg-white/40">
+                          <Camera className="w-3.5 h-3.5 mb-0.5 opacity-60" />
+                          <span>스탬프 날인 시 사진 보관</span>
+                        </div>
+                      )}
+
                       {isStamped ? (
                         <div className="w-full py-2.5 rounded-xl border border-red-600 bg-red-100/60 text-red-700 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[-2deg] shadow-2xs">
                           <span>✓ 40년 명장 공인 날인 (+200P)</span>
@@ -1367,6 +1401,25 @@ export default function CabinetPage() {
                         <h4 className="font-serif text-base font-bold text-vintage-900">{spot.name}</h4>
                         <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
                       </div>
+
+                      {/* 순례 인증 사진 박제 슬롯 */}
+                      {isStamped ? (
+                        <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden bg-vintage-900 border-2 border-white shadow-xs">
+                          <img
+                            src={SPOT_PREVIEWS[spot.name] || 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=80'}
+                            alt={spot.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[9px] text-emerald-300 font-mono">
+                            PROOF ARCHIVED
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-14 rounded-xl border border-dashed border-vintage-300 flex flex-col items-center justify-center text-vintage-400 text-[10px] bg-white/40">
+                          <Camera className="w-3.5 h-3.5 mb-0.5 opacity-60" />
+                          <span>스탬프 날인 시 사진 보관</span>
+                        </div>
+                      )}
 
                       {isStamped ? (
                         <div className="w-full py-2.5 rounded-xl border border-emerald-600 bg-emerald-100/60 text-emerald-800 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[1deg] shadow-2xs">
@@ -1432,6 +1485,25 @@ export default function CabinetPage() {
                         <h4 className="font-serif text-base font-bold text-vintage-900">{spot.name}</h4>
                         <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
                       </div>
+
+                      {/* 순례 인증 사진 박제 슬롯 */}
+                      {isStamped ? (
+                        <div className="relative aspect-[3/2] w-full rounded-xl overflow-hidden bg-vintage-900 border-2 border-white shadow-xs">
+                          <img
+                            src={SPOT_PREVIEWS[spot.name] || 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=600&auto=format&fit=crop&q=80'}
+                            alt={spot.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[9px] text-amber-300 font-mono">
+                            PROOF ARCHIVED
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-14 rounded-xl border border-dashed border-vintage-300 flex flex-col items-center justify-center text-vintage-400 text-[10px] bg-white/40">
+                          <Camera className="w-3.5 h-3.5 mb-0.5 opacity-60" />
+                          <span>스탬프 날인 시 사진 보관</span>
+                        </div>
+                      )}
 
                       {isStamped ? (
                         <div className="w-full py-2.5 rounded-xl border border-amber-600 bg-amber-100/60 text-amber-900 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[-1deg] shadow-2xs">

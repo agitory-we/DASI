@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 // ── 보안: Service Role Key 필수 분리 적용 ──────────────────────────────────
 // SUPABASE_SERVICE_ROLE_KEY가 없으면 anon key로 폴백 (개발 환경 허용)
 // 프로덕션에서는 반드시 환경변수 SUPABASE_SERVICE_ROLE_KEY 설정 필요
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mqqkbudvnrlpexkonlyp.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'sb_publishable_QaJbxq7lKASow7lpdZUzfw_D2QFuPxS';
+
 const adminSupabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  supabaseUrl,
+  supabaseKey,
   { auth: { persistSession: false } }
 );
 
