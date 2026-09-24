@@ -28,6 +28,7 @@ import { useDasi } from '@/context/DasiContext';
 import { isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { useAuth, TIER_INFO } from '@/context/AuthContext';
+import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import {
   registerServiceWorker,
   sendLocalNotification,
@@ -39,6 +40,7 @@ import {
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const { triggerHaptic } = useDevicePlatform();
   const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast } = useDasi();
   const { user, profile } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -131,7 +133,10 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-vintage-200/80 bg-[#FAF8F5]/95 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-vintage-200/80 bg-[#FAF8F5]/95 backdrop-blur-md pt-safe"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Micro Top Announcement */}
       <div className="bg-[#2D241E] text-white px-4 py-1 text-center text-[11px] font-medium tracking-tight">
         <span>전 기기 40년 명장 정밀 오버홀 완료 · <strong>Rent-to-Own</strong> 대여료 100% 공제 후 소장</span>

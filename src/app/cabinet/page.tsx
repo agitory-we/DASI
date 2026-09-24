@@ -32,6 +32,7 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useAuth, TIER_INFO, POINT_ACTIONS } from '@/context/AuthContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
+import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 
 export default function CabinetPage() {
   const {
@@ -47,6 +48,7 @@ export default function CabinetPage() {
     showToast
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
+  const { triggerHaptic } = useDevicePlatform();
   const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
@@ -65,6 +67,7 @@ export default function CabinetPage() {
 
   const handleStampSpot = async (spotName: string) => {
     if (stampedSpots.includes(spotName)) return;
+    triggerHaptic('success');
     playShutterSound('slr');
     const nextStamped = [...stampedSpots, spotName];
     setStampedSpots(nextStamped);
