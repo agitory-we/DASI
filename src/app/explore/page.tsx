@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as SunCalc from 'suncalc';
 import { mockEventsAndHotSpots } from '@/data/mockData';
-import { EventOrHotSpot } from '@/types';
+import { EventOrHotSpot, CommunityPhoto } from '@/types';
 import {
   Calendar,
   MapPin,
@@ -17,11 +17,17 @@ import {
   Flame,
   X,
   Heart,
-  RefreshCw,
-  Leaf,
+  UploadCloud,
+  BookOpen,
+  Award,
+  Download,
+  ExternalLink,
+  FileText,
+  CheckCircle,
+  Share2,
   Plus,
-  QrCode,
-  UploadCloud
+  Leaf,
+  QrCode
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
@@ -29,6 +35,9 @@ import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { PhotoUploadModal } from '@/components/common/PhotoUploadModal';
 import { FilmStripViewer } from '@/components/explore/FilmStripViewer';
 import { useAuth } from '@/context/AuthContext';
+import { KOREA_TOP_100_SPOTS, KoreaTopSpot } from '@/data/koreaTop100Spots';
+import { OFFICIAL_GUIDEBOOKS, OFFICIAL_ARTICLES, TravelGuidebook, TravelArticle } from '@/data/travelGuides';
+import type { PhotoGalleryItem } from '@/lib/photoGalleryApi';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // 헬퍼: suncalc 기반 골든아워 계산 (서울 위경도 고정)
@@ -98,9 +107,13 @@ function isExpired(item: EventOrHotSpot): boolean {
 export default function ExplorePage() {
   const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto } = useDasi();
   const { user, openLoginModal } = useAuth();
-  const [filterType, setFilterType] = useState<'all' | 'festival' | 'hotspot' | 'photos' | 'saved'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'top100' | 'knto_gallery' | 'festival' | 'hotspot' | 'guidebooks' | 'saved' | 'photos'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
   const [checkInSpot, setCheckInSpot] = useState<EventOrHotSpot | null>(null);
+  const [selectedTopSpot, setSelectedTopSpot] = useState<KoreaTopSpot | null>(null);
+  const [selectedGuidebook, setSelectedGuidebook] = useState<TravelGuidebook | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<TravelArticle | null>(null);
+  const [kntoGalleryPhotos, setKntoGalleryPhotos] = useState<PhotoGalleryItem[]>([]);
   const [allItems, setAllItems] = useState<EventOrHotSpot[]>(mockEventsAndHotSpots);
   const [isLoading, setIsLoading] = useState(true);
   const [sunData, setSunData] = useState(() => getSeoulSunData());
@@ -108,28 +121,59 @@ export default function ExplorePage() {
   const [isPhotoUploadModalOpen, setIsPhotoUploadModalOpen] = useState(false);
   const currentSeason = useMemo(() => getCurrentSeason(), []);
 
-  // TourAPI 데이터 fetch (API 키 없으면 mockData 그대로)
+  // TourAPI KorService2 축제 및 PhotoGalleryService1 데이터 fetch
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/explore');
-        if (res.ok) {
-          const json = await res.json();
+        const [resExplore, resGallery] = await Promise.all([
+          fetch('/api/explore').catch(() => null),
+          fetch('/api/gallery?numOfRows=16').catch(() => null),
+        ]);
+
+        if (resExplore && resExplore.ok) {
+          const json = await resExplore.json();
           if (json.events && json.events.length > 0) {
-            // TourAPI 데이터 + 기존 hotspot mock 병합
             const mockHotspots = mockEventsAndHotSpots.filter(i => i.type === 'hotspot');
             setAllItems([...json.events, ...mockHotspots]);
           }
         }
+
+        if (resGallery && resGallery.ok) {
+          const galleryJson = await resGallery.json();
+          if (galleryJson.items && galleryJson.items.length > 0) {
+            setKntoGalleryPhotos(galleryJson.items);
+          }
+        }
       } catch {
-        // 실패 시 mockData 그대로 사용
+        // graceful fallback to mock
       } finally {
         setIsLoading(false);
       }
     };
     load();
   }, []);
+
+  // 35mm 필름 스트립용 사진 데이터: 관광공사 전문 작가 사진과 유저 커뮤니티 사진 합성
+  const filmStripPhotos: CommunityPhoto[] = useMemo(() => {
+    if (kntoGalleryPhotos.length > 0) {
+      const kntoMapped: CommunityPhoto[] = kntoGalleryPhotos.slice(0, 8).map((item, idx) => ({
+        id: `knto-gal-${item.galContentId || idx}`,
+        imageUrl: item.galWebImageUrl,
+        caption: `${item.galTitle} (한국관광공사 전문 사진작가 공인 실사진)`,
+        cameraModel: 'Leica M6 / Hasselblad 500C',
+        filmType: 'Kodak Portra 400',
+        labName: '한국관광공사 공식 갤러리',
+        photographerName: item.galPhotographer ? `${item.galPhotographer} 작가` : '한국관광공사 사진작가',
+        photographerTier: 'legend' as const,
+        likesCount: 128 + idx * 17,
+        location: item.galPhotographyLocation || item.galTitle,
+        createdAt: item.galPhotographyMonth ? `${item.galPhotographyMonth.slice(0, 4)}.${item.galPhotographyMonth.slice(4, 6)}` : '2025.09',
+      }));
+      return [...kntoMapped, ...communityPhotos];
+    }
+    return communityPhotos;
+  }, [kntoGalleryPhotos, communityPhotos]);
 
   // suncalc 매 분 갱신
   useEffect(() => {
@@ -231,19 +275,35 @@ export default function ExplorePage() {
         </div>
       </div>
 
+      {/* 35mm Darkroom Film Strip Showcase (한국관광공사 전문 사진작가 & 커뮤니티 특별전) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
+            <h2 className="font-serif font-bold text-sm sm:text-base text-vintage-900">
+              🎞️ 35mm 네거티브 필름 스트립 & 암실 모드 (한국관광공사 전문 작가 실사진 컬렉션)
+            </h2>
+          </div>
+          <span className="text-[11px] text-vintage-500 hidden sm:inline">암실 붉은 조명(Safelight)과 네거티브 반전을 켜보세요</span>
+        </div>
+        <FilmStripViewer photos={filmStripPhotos} />
+      </div>
+
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-vintage-200 pb-4 overflow-x-auto">
         {[
-          { id: 'all', label: '전체 둘러보기' },
-          { id: 'photos', label: `🎞️ 출사 사진 피드 (${communityPhotos.length})` },
-          { id: 'festival', label: '🎉 서울 시즌별 축제' },
-          { id: 'hotspot', label: '📸 골목길 출사지' },
+          { id: 'all', label: '🌐 전체 둘러보기' },
+          { id: 'top100', label: '🏅 한국관광 100선 명품 출사지' },
+          { id: 'knto_gallery', label: `📸 관광공사 사진작가 갤러리 (${kntoGalleryPhotos.length || 16})` },
+          { id: 'festival', label: '🎉 서울·전국 실시간 축제' },
+          { id: 'hotspot', label: '📷 골목길 출사 핫스팟' },
+          { id: 'guidebooks', label: '📚 공식 여행 가이드북 & 매거진' },
           { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setFilterType(tab.id as 'all' | 'photos' | 'festival' | 'hotspot' | 'saved')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+            onClick={() => setFilterType(tab.id as any)}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               filterType === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
                 : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
@@ -371,8 +431,317 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Cards Grid */}
-      {!isLoading && filterType !== 'photos' && (
+      {/* TAB 1: KOREA TOP 100 SPOTS (한국관광 100선 & 캐치프레이즈 & 150P 인증) */}
+      {!isLoading && filterType === 'top100' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-100/30 to-amber-600/10 border border-amber-300/80 flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-600 text-white text-[11px] font-bold">
+                <Award className="w-3.5 h-3.5" />
+                <span>한국관광공사 공인 2025~2026 한국관광 100선</span>
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900">
+                대한민국 100대 명품 필름 출사지 컬렉션
+              </h3>
+              <p className="text-xs text-vintage-600">
+                대한민국 구석구석 공식 캐치프레이즈와 함께 엄선된 최고 권위의 출사 명소입니다. 방문 인증 시 150P를 지급합니다.
+              </p>
+            </div>
+            <div className="px-4 py-2 rounded-2xl bg-white border border-amber-200 shadow-2xs text-center">
+              <div className="text-[10px] text-vintage-400 font-bold">인증 리워드</div>
+              <div className="font-serif text-lg font-bold text-terracotta">+150 포인트</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {KOREA_TOP_100_SPOTS.map((spot) => (
+              <div
+                key={spot.id}
+                className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-xl transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative aspect-4/3 bg-vintage-100 overflow-hidden">
+                    <img
+                      src={spot.imageUrl}
+                      alt={spot.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-md flex items-center gap-1">
+                        <Award className="w-3 h-3" />
+                        <span>100선 공인</span>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px]">
+                        {spot.region} · {spot.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-3">
+                    {/* 대한민국구석구석 공식 캐치프레이즈 */}
+                    <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200/60 text-vintage-800 text-xs italic font-serif leading-relaxed">
+                      "{spot.catchphrase}"
+                    </div>
+
+                    <div>
+                      <h4 className="font-serif text-lg font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                        {spot.name}
+                      </h4>
+                      <p className="text-[11px] text-vintage-500 flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3 h-3 text-terracotta" />
+                        <span>{spot.address}</span>
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5 text-[11px] text-vintage-700 bg-vintage-50 p-3 rounded-xl border border-vintage-100">
+                      <div>📷 <strong>추천 화각:</strong> {spot.recommendedLens}</div>
+                      <div>🎞️ <strong>추천 필름:</strong> {spot.filmRecommendation}</div>
+                      <div>🌅 <strong>골든아워:</strong> {spot.goldenHour}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0 border-t border-vintage-100 mt-2 flex gap-2">
+                  <button
+                    onClick={() => {
+                      setCheckInSpot({
+                        id: spot.id,
+                        type: 'hotspot',
+                        title: spot.name,
+                        location: spot.address,
+                        periodOrTime: '상시 개방',
+                        goldenHour: spot.goldenHour,
+                        recommendedLenses: spot.recommendedLens,
+                        tips: spot.filmRecommendation,
+                        imageUrl: spot.imageUrl,
+                        tags: ['한국관광100선', spot.region],
+                        source: 'manual',
+                        sourceId: spot.id,
+                        lat: spot.lat,
+                        lng: spot.lng,
+                      });
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>출사 인증 (+150P)</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedTopSpot(spot)}
+                    className="px-3.5 py-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-semibold transition-colors"
+                  >
+                    연관 코스
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: KNTO PHOTO GALLERY (한국관광공사 전문 사진작가 갤러리) */}
+      {!isLoading && filterType === 'knto_gallery' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-vintage-900 via-vintage-950 to-stone-900 text-white flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-terracotta text-white text-[11px] font-bold">
+                <Camera className="w-3.5 h-3.5" />
+                <span>PhotoGalleryService1 공공데이터 연동</span>
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold">
+                한국관광공사 전문 사진작가 출사 갤러리
+              </h3>
+              <p className="text-xs text-vintage-300">
+                대한민국 구석구석 전문 사진기자단이 직접 촬영한 계절별 고화질 공식 사진과 촬영작가, 촬영월 메타데이터입니다.
+              </p>
+            </div>
+            <div className="text-right text-xs text-vintage-400 font-mono">
+              수집 건수: <strong className="text-white">{kntoGalleryPhotos.length}</strong>건 실시간 로딩
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {kntoGalleryPhotos.map((photo, idx) => (
+              <div
+                key={photo.galContentId || idx}
+                className="rounded-2xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative aspect-4/3 bg-vintage-100 overflow-hidden">
+                    <img
+                      src={photo.galWebImageUrl}
+                      alt={photo.galTitle}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px]">
+                      {photo.galPhotographyMonth ? `${photo.galPhotographyMonth.slice(0, 4)}년 ${photo.galPhotographyMonth.slice(4, 6)}월` : '촬영'}
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-2">
+                    <div>
+                      <h4 className="font-serif text-sm font-bold text-vintage-900 group-hover:text-terracotta transition-colors line-clamp-1">
+                        {photo.galTitle}
+                      </h4>
+                      <p className="text-[11px] text-vintage-500 flex items-center gap-1 mt-0.5 line-clamp-1">
+                        <MapPin className="w-3 h-3 text-terracotta shrink-0" />
+                        <span>{photo.galPhotographyLocation || '대한민국'}</span>
+                      </p>
+                    </div>
+
+                    <div className="text-[11px] text-vintage-600 bg-vintage-50 p-2.5 rounded-xl border border-vintage-100 flex items-center justify-between">
+                      <span>📸 작가: <strong>{photo.galPhotographer || '관광공사 사진작가'}</strong></span>
+                      <span className="text-[10px] text-vintage-400 font-mono">공인 실측치</span>
+                    </div>
+
+                    {photo.galSearchKeyword && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {photo.galSearchKeyword.split(',').slice(0, 2).map((tag, tIdx) => (
+                          <span key={tIdx} className="px-2 py-0.5 rounded bg-vintage-100 text-vintage-600 text-[10px]">
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 pt-0">
+                  <a
+                    href={photo.galWebImageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-2 rounded-xl bg-vintage-100 hover:bg-terracotta hover:text-white text-vintage-700 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                  >
+                    <span>고화질 원본 감상</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: OFFICIAL GUIDEBOOKS & ARTICLES (가이드북 & 매거진) */}
+      {!isLoading && filterType === 'guidebooks' && (
+        <div className="space-y-10">
+          {/* Guidebooks Section */}
+          <div className="space-y-5">
+            <div className="flex items-center justify-between border-b border-vintage-200 pb-3">
+              <div>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-terracotta" />
+                  <span>한국관광공사 공식 테마 여행 가이드북</span>
+                </h3>
+                <p className="text-xs text-vintage-500 mt-1">
+                  골목 재생, 유네스코 문화유산, 생태 웰니스 등 테마별 공식 가이드북을 무료로 열람 및 다운로드하세요.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {OFFICIAL_GUIDEBOOKS.map((book) => (
+                <div
+                  key={book.id}
+                  className="rounded-3xl bg-white border border-vintage-200 p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4"
+                >
+                  <div className="flex gap-4 items-start">
+                    <div className="w-24 h-32 rounded-2xl overflow-hidden bg-vintage-100 shrink-0 shadow-sm border border-vintage-200">
+                      <img src={book.coverImageUrl} alt={book.title} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <span className="px-2 py-0.5 rounded-full bg-terracotta/10 text-terracotta text-[10px] font-bold">
+                        {book.theme}
+                      </span>
+                      <h4 className="font-serif text-base font-bold text-vintage-900 leading-snug">
+                        {book.title}
+                      </h4>
+                      <p className="text-xs text-vintage-600 line-clamp-2 leading-relaxed">
+                        {book.summary}
+                      </p>
+                      <div className="text-[11px] text-vintage-400 font-mono">
+                        발행: {book.publisher} · {book.publishedYear}년 ({book.pageCount}p)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2 border-t border-vintage-100">
+                    <a
+                      href={book.downloadUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>공식 가이드북 열람</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Articles Section */}
+          <div className="space-y-5">
+            <div className="flex items-center justify-between border-b border-vintage-200 pb-3">
+              <div>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 flex items-center gap-2">
+                  <FileText className="w-6 h-6 text-amber-600" />
+                  <span>대한민국 구석구석 추천 출사 리포트 &amp; 기사</span>
+                </h3>
+                <p className="text-xs text-vintage-500 mt-1">
+                  사광과 일몰이 아름다운 대한민국 대표 출사지를 집중 취재한 공식 여행 기사입니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {OFFICIAL_ARTICLES.map((art) => (
+                <div
+                  key={art.id}
+                  className="rounded-2xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="relative aspect-16/10 bg-vintage-100 overflow-hidden">
+                      <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px]">
+                        {art.category}
+                      </span>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <h4 className="font-serif text-sm font-bold text-vintage-900 group-hover:text-terracotta transition-colors line-clamp-2">
+                        {art.title}
+                      </h4>
+                      <p className="text-xs text-vintage-500 line-clamp-2">
+                        {art.subtitle}
+                      </p>
+                      <div className="text-[10px] text-vintage-400 font-mono">
+                        {art.region} · 읽는 시간 {art.readTimeMin}분
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-0">
+                    <a
+                      href={art.contentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full py-2 rounded-xl bg-vintage-50 hover:bg-vintage-100 text-vintage-800 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                    >
+                      <span>기사 전문 읽기</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cards Grid (기존 축제 및 출사지 목록: all, festival, hotspot, saved일 때) */}
+      {!isLoading && (filterType === 'all' || filterType === 'festival' || filterType === 'hotspot' || filterType === 'saved') && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredItems.map((item) => (
           <div
@@ -624,6 +993,108 @@ export default function ExplorePage() {
               </button>
               <button
                 onClick={() => setSelectedSpot(null)}
+                className="px-5 py-2.5 rounded-xl bg-vintage-200 text-vintage-800 text-xs font-semibold hover:bg-vintage-300 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOP 100 & RELATED COURSE MODAL (한국관광 데이터랩 연관 코스) */}
+      {selectedTopSpot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-white flex items-center gap-1 w-fit">
+                  <Award className="w-3 h-3" />
+                  <span>한국관광 100선 공인 명소</span>
+                </span>
+                <h3 className="font-serif text-xl font-bold text-vintage-900 mt-1">
+                  {selectedTopSpot.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedTopSpot(null)}
+                className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative aspect-16/10 rounded-2xl overflow-hidden">
+              <img src={selectedTopSpot.imageUrl} alt={selectedTopSpot.name} className="w-full h-full object-cover" />
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs italic font-serif text-vintage-800">
+              "{selectedTopSpot.catchphrase}"
+            </div>
+
+            {/* 연관 관광지 추천 코스 (TarRlteTarService1 연계) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-terracotta" />
+                  <span>한국관광 데이터랩 빅데이터 연관 출사 코스</span>
+                </h4>
+                <span className="text-[10px] text-vintage-400">도보 1일 추천 동선</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {selectedTopSpot.relatedCourseIds.length > 0 ? (
+                  selectedTopSpot.relatedCourseIds.map((rId) => {
+                    const rSpot = KOREA_TOP_100_SPOTS.find((s) => s.id === rId);
+                    if (!rSpot) return null;
+                    return (
+                      <div
+                        key={rSpot.id}
+                        onClick={() => setSelectedTopSpot(rSpot)}
+                        className="p-3 rounded-xl border border-vintage-200 bg-vintage-50 hover:bg-white hover:border-terracotta cursor-pointer transition-all space-y-1"
+                      >
+                        <div className="font-bold text-vintage-900 text-xs line-clamp-1">{rSpot.name}</div>
+                        <div className="text-[10px] text-vintage-500 line-clamp-1">{rSpot.catchphrase}</div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 p-3 rounded-xl bg-vintage-50 text-[11px] text-vintage-500 text-center">
+                    반경 내 단독 명소 코스 (인근 로컬 카페와 함께 출사하기 좋습니다)
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => {
+                  const target = selectedTopSpot;
+                  setSelectedTopSpot(null);
+                  setCheckInSpot({
+                    id: target.id,
+                    type: 'hotspot',
+                    title: target.name,
+                    location: target.address,
+                    periodOrTime: '상시 개방',
+                    goldenHour: target.goldenHour,
+                    recommendedLenses: target.recommendedLens,
+                    tips: target.filmRecommendation,
+                    imageUrl: target.imageUrl,
+                    tags: ['한국관광100선', target.region],
+                    source: 'manual',
+                    sourceId: target.id,
+                    lat: target.lat,
+                    lng: target.lng,
+                  });
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>현장 출사 인증 (+150P)</span>
+              </button>
+              <button
+                onClick={() => setSelectedTopSpot(null)}
                 className="px-5 py-2.5 rounded-xl bg-vintage-200 text-vintage-800 text-xs font-semibold hover:bg-vintage-300 transition-colors"
               >
                 닫기

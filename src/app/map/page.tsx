@@ -19,12 +19,14 @@ import {
   Heart,
   ExternalLink,
   Compass,
-  QrCode
+  QrCode,
+  Award
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
+import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 
 export default function MapPage() {
   const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot, communityPhotos } = useDasi();
@@ -83,8 +85,82 @@ export default function MapPage() {
     );
   };
 
+  const [tourApiNearbySpots, setTourApiNearbySpots] = useState<AnalogSpot[]>([]);
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+
+  // 한국관광 100선 및 공식 캐치프레이즈를 AnalogSpot 형태로 매핑
+  const top100AnalogSpots: AnalogSpot[] = useMemo(() => {
+    return KOREA_TOP_100_SPOTS.map((s) => ({
+      id: s.id,
+      name: s.name,
+      category: 'pickup' as SpotCategory, // 출사 포인트/인증 거점
+      isMicroAdPartner: false,
+      partnerBadgeText: '한국관광 100선',
+      address: s.address,
+      area: s.region,
+      lat: s.lat,
+      lng: s.lng,
+      contact: '한국관광공사 1330',
+      openHours: '연중무휴 (일출~일몰 권장)',
+      rating: 4.9,
+      reviewsCount: 38,
+      services: ['한국관광100선', '공식캐치프레이즈', '출사인증', s.recommendedLens],
+      scanners: [s.filmRecommendation],
+      description: `"${s.catchphrase}" — ${s.goldenHour}`,
+      imageUrl: s.imageUrl,
+      isPartner: true,
+      dropBox: false,
+    }));
+  }, []);
+
+  const handleFetchTourApiNearby = async () => {
+    setIsLoadingNearby(true);
+    const targetLat = userLocation?.lat || 37.5665;
+    const targetLng = userLocation?.lng || 126.9780;
+    try {
+      const res = await fetch(`/api/spots/nearby?lat=${targetLat}&lng=${targetLng}&radius=3000&numOfRows=15`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.spots && json.spots.length > 0) {
+          const mapped: AnalogSpot[] = json.spots.map((item: any) => ({
+            id: `tourapi-nearby-${item.contentid}`,
+            name: item.title,
+            category: 'pickup' as SpotCategory,
+            isMicroAdPartner: false,
+            address: item.addr1 + (item.addr2 ? ` ${item.addr2}` : ''),
+            area: '서울',
+            lat: parseFloat(item.mapy) || targetLat,
+            lng: parseFloat(item.mapx) || targetLng,
+            contact: item.tel || '1330',
+            openHours: '상시 관람',
+            rating: 4.8,
+            reviewsCount: 15,
+            services: ['한국관광공사공인', '실시간위치기반'],
+            scanners: ['자연광 표준 렌즈 권장'],
+            description: `한국관광공사 실시간 위치기반 공공데이터 (현재 위치 기준 약 ${Math.round(parseFloat(item.dist || '0'))}m 거리)`,
+            imageUrl: item.firstimage || 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&auto=format&fit=crop&q=80',
+            isPartner: false,
+            dropBox: false,
+          }));
+          setTourApiNearbySpots(mapped);
+          showToast(`내 주변 3km 내 한국관광공사 출사지 ${mapped.length}곳을 실시간 불러왔습니다!`, 'success');
+        } else {
+          showToast('주변 3km 내 관광공사 등록 스팟이 없습니다.', 'info');
+        }
+      }
+    } catch {
+      showToast('주변 스팟 로딩에 실패했습니다.', 'warning');
+    } finally {
+      setIsLoadingNearby(false);
+    }
+  };
+
+  const combinedSpots = useMemo(() => {
+    return [...analogSpots, ...top100AnalogSpots, ...tourApiNearbySpots];
+  }, [analogSpots, top100AnalogSpots, tourApiNearbySpots]);
+
   const sortedSpots = useMemo(() => {
-    return [...analogSpots].filter((spot) => {
+    return [...combinedSpots].filter((spot) => {
       const matchCategory = selectedCategory === 'all' || spot.category === selectedCategory;
       const matchArea = selectedArea === 'all' || spot.area === selectedArea;
       return matchCategory && matchArea;
@@ -94,11 +170,11 @@ export default function MapPage() {
       const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
       return distA - distB;
     });
-  }, [analogSpots, selectedCategory, selectedArea, sortByNearest, userLocation]);
+  }, [combinedSpots, selectedCategory, selectedArea, sortByNearest, userLocation]);
 
   const activeSpot = useMemo(() => {
-    return sortedSpots.find((s) => s.id === activeSpotId) || sortedSpots[0] || analogSpots[0];
-  }, [sortedSpots, activeSpotId, analogSpots]);
+    return sortedSpots.find((s) => s.id === activeSpotId) || sortedSpots[0] || combinedSpots[0];
+  }, [sortedSpots, activeSpotId, combinedSpots]);
 
   const getCategoryIcon = (category: SpotCategory) => {
     switch (category) {
@@ -143,19 +219,28 @@ export default function MapPage() {
         </div>
 
         {/* Micro-Ads & GPS Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleLocateMe}
             disabled={isLocating}
-            className="px-4 py-2.5 rounded-xl border border-vintage-300 bg-white hover:bg-vintage-50 text-xs font-semibold text-vintage-800 transition-colors flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-2.5 rounded-xl border border-vintage-300 bg-white hover:bg-vintage-50 text-xs font-semibold text-vintage-800 transition-colors flex items-center gap-1.5 shadow-2xs"
           >
             <Compass className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin text-terracotta' : 'text-emerald-700'}`} />
-            <span>{isLocating ? '위치 찾는 중...' : '내 주변 500m 스팟 찾기'}</span>
+            <span>{isLocating ? '위치 찾는 중...' : '내 주변 거리순 정렬'}</span>
+          </button>
+
+          <button
+            onClick={handleFetchTourApiNearby}
+            disabled={isLoadingNearby}
+            className="px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-900 transition-colors flex items-center gap-1.5 shadow-2xs"
+          >
+            <Sparkles className={`w-3.5 h-3.5 ${isLoadingNearby ? 'animate-spin text-amber-600' : 'text-amber-600'}`} />
+            <span>{isLoadingNearby ? '공공데이터 스캔 중...' : '📍 주변 3km 공공데이터 출사지 로딩'}</span>
           </button>
 
           <button
             onClick={() => setIsPartnerModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
           >
             <Store className="w-3.5 h-3.5" />
             <span>상점 입점 제휴 신청</span>

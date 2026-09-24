@@ -1,82 +1,48 @@
 import { NextResponse } from 'next/server';
 import { EventOrHotSpot } from '@/types';
-
-interface TourApiItem {
-  contentid: string;
-  title: string;
-  addr1: string;
-  addr2?: string;
-  firstimage?: string;
-  firstimage2?: string;
-  eventstartdate: string;
-  eventenddate: string;
-  mapy?: string;
-  mapx?: string;
-}
+import { fetchFestivals, TourApiItem } from '@/lib/tourApi';
 
 export const revalidate = 3600;
 
 export async function GET() {
   try {
-    const apiKey = process.env.TOUR_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ events: [], source: 'no_api_key' });
-    }
-
-    const today = new Date();
-    const future = new Date();
-    future.setMonth(future.getMonth() + 3);
-    const toYMD = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '');
-    const startDate = toYMD(today);
-    const endDate = toYMD(future);
-
-    const baseUrl = 'https://apis.data.go.kr/B551011/KorService1/searchFestival1';
-    const params = new URLSearchParams({
-      serviceKey: apiKey,
-      MobileOS: 'ETC',
-      MobileApp: 'DASI',
-      _type: 'json',
-      areaCode: '1',
-      eventStartDate: startDate,
-      eventEndDate: endDate,
-      numOfRows: '30',
-      pageNo: '1',
+    const rawItems: TourApiItem[] = await fetchFestivals({
+      areaCode: '1', // 서울 기본
+      numOfRows: 30,
       arrange: 'A',
     });
 
-    const res = await fetch(`${baseUrl}?${params.toString()}`, {
-      next: { revalidate: 3600 },
-    });
-
-    if (!res.ok) throw new Error(`TourAPI HTTP ${res.status}`);
-
-    const json = await res.json();
-    const rawItems: TourApiItem[] = json?.response?.body?.items?.item ?? [];
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
     const events: EventOrHotSpot[] = rawItems
-      .filter((item) => item.eventenddate >= startDate)
+      .filter((item) => (item.eventenddate ? item.eventenddate >= todayStr : true))
       .map((item) => ({
         id: `tourapi-${item.contentid}`,
         type: 'festival' as const,
         title: item.title,
         location: item.addr1 + (item.addr2 ? ` ${item.addr2}` : ''),
-        periodOrTime: `${formatDate(item.eventstartdate)} ~ ${formatDate(item.eventenddate)}`,
-        startDate: item.eventstartdate,
-        endDate: item.eventenddate,
+        periodOrTime: item.eventstartdate && item.eventenddate
+          ? `${formatDate(item.eventstartdate)} ~ ${formatDate(item.eventenddate)}`
+          : '상시 진행',
+        startDate: item.eventstartdate || todayStr,
+        endDate: item.eventenddate || todayStr,
         goldenHour: '일출·일몰 전후 1시간 (당일 골든아워 위젯 확인)',
         recommendedLenses: '35mm 또는 50mm 표준 단렌즈',
-        tips: `${item.title} 현장 출사 팁: 골든아워 시간대에 방문하시면 드라마틱한 빛을 담을 수 있습니다.`,
-        imageUrl: item.firstimage || item.firstimage2 || 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&auto=format&fit=crop&q=80',
-        tags: ['축제', '공식행사'],
+        tips: `${item.title} 공식 행사 출사: 자연광이 부드러운 골든아워 시간대에 아날로그 필름으로 담으시면 최상의 색감을 얻으실 수 있습니다.`,
+        imageUrl:
+          item.firstimage ||
+          item.firstimage2 ||
+          'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&auto=format&fit=crop&q=80',
+        tags: ['축제', '한국관광공사공인', '포토스팟'],
         source: 'tourapi' as const,
         sourceId: item.contentid,
         lat: item.mapy ? parseFloat(item.mapy) : undefined,
         lng: item.mapx ? parseFloat(item.mapx) : undefined,
       }));
 
-    return NextResponse.json({ events, source: 'tourapi' });
+    return NextResponse.json({ events, source: 'tourapi_v2' });
   } catch (err) {
-    console.error('[/api/explore] TourAPI 오류:', err);
+    console.error('[/api/explore] TourAPI KorService2 오류:', err);
     return NextResponse.json({ events: [], source: 'error' });
   }
 }
