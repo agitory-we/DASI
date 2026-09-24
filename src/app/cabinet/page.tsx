@@ -1201,6 +1201,259 @@ export default function CabinetPage() {
         </div>
       )}
 
+      {/* ======================================================== */}
+      {/* TAB 7: ANALOG PILGRIMAGE PASSPORT (성지순례 패스포트)     */}
+      {/* ======================================================== */}
+      {activeTab === 'passport' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* Vintage Leather Passport Header */}
+          <div className="rounded-3xl bg-gradient-to-br from-[#1a2332] via-[#0f172a] to-[#0b0f19] text-white p-6 sm:p-10 shadow-2xl border-2 border-amber-500/40 relative overflow-hidden space-y-6">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-amber-500/30 pb-6 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center text-xl">
+                  📜
+                </div>
+                <div>
+                  <div className="text-[10px] tracking-widest text-amber-400 font-bold uppercase">
+                    REPUBLIC OF KOREA · ANALOG PILGRIMAGE
+                  </div>
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-amber-100">
+                    아날로그 성지순례 패스포트
+                  </h2>
+                </div>
+              </div>
+
+              <div className="text-right text-xs font-mono text-amber-300/80">
+                <div>여권 번호: <strong className="text-white">DASI-PASS-2026-KR</strong></div>
+                <div>순례자: <strong className="text-amber-300">{profile?.nickname || user?.email?.split('@')[0] || '필름러'}</strong></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs relative z-10">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                <span className="text-vintage-400 text-[11px]">총 획득 스탬프</span>
+                <div className="font-serif text-2xl font-bold text-amber-300">
+                  {stampedSpots.length} <span className="text-xs text-vintage-400 font-normal">/ 11개</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                <span className="text-vintage-400 text-[11px]">스탬프 누적 적립금</span>
+                <div className="font-serif text-2xl font-bold text-emerald-400">
+                  +{(stampedSpots.length * 200).toLocaleString()}P
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1">
+                <span className="text-amber-300 text-[11px]">완주 리워드 상태</span>
+                <div className="font-serif text-sm font-bold text-white mt-1">
+                  {stampedSpots.length >= 7 ? '🎉 한정판 스트랩 수령 가능' : `남은 스팟: ${11 - stampedSpots.length}곳`}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Pilgrimage Theme Courses */}
+          <div className="space-y-8">
+            {/* COURSE 1: EULJIRO & CHUNGMURO HERITAGE */}
+            <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 space-y-5 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vintage-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🏮</span>
+                  <div>
+                    <h3 className="font-serif text-lg font-bold text-vintage-900">
+                      코스 1: 을지로·충무로 40년 헤리티지 순례 (4선)
+                    </h3>
+                    <p className="text-xs text-vintage-500">
+                      대한민국 필름 카메라의 메카, 장인들의 숨결이 살아 숨 쉬는 골목길
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
+                  완주 시 +1,000P &amp; 한정판 황동 스트랩
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { name: '망우삼림', role: '현상소', desc: '을지로 홍콩 무드 당일 스캔 성지', icon: '🧪' },
+                  { name: '을지로 신성카메라', role: '수리실', desc: '40년 명장의 카메라 오버홀', icon: '🔧' },
+                  { name: '충무로 보성광학', role: '카메라 샵', desc: '충무로 아날로그 바디 명가', icon: '📷' },
+                  { name: '세운상가 옥상 일몰', role: '포토스팟', desc: '종로·을지로 전경 골든아워', icon: '🌅' },
+                ].map((spot) => {
+                  const isStamped = stampedSpots.includes(spot.name);
+                  return (
+                    <div
+                      key={spot.name}
+                      className={`p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-4 ${
+                        isStamped
+                          ? 'border-red-600/50 bg-red-50/20 shadow-xs'
+                          : 'border-dashed border-vintage-300 bg-vintage-50/50'
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg">{spot.icon}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-vintage-200 text-vintage-700">
+                            {spot.role}
+                          </span>
+                        </div>
+                        <h4 className="font-serif text-base font-bold text-vintage-900">{spot.name}</h4>
+                        <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+                      </div>
+
+                      {isStamped ? (
+                        <div className="w-full py-2.5 rounded-xl border border-red-600 bg-red-100/60 text-red-700 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[-2deg] shadow-2xs">
+                          <span>✓ 40년 명장 공인 날인 (+200P)</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStampSpot(spot.name)}
+                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <span>스탬프 날인 (+200P)</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* COURSE 2: SEONGSU & SEOUL FOREST */}
+            <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 space-y-5 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vintage-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🌿</span>
+                  <div>
+                    <h3 className="font-serif text-lg font-bold text-vintage-900">
+                      코스 2: 성수·서울숲 붉은 벽돌 &amp; 자연광 코스 (3선)
+                    </h3>
+                    <p className="text-xs text-vintage-500">
+                      붉은 벽돌 카페거리와 싱그러운 메타세콰이어 숲속 햇살
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold">
+                  완주 시 +500P 바우처
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { name: '성수 독립서점 거리', role: '문화거리', desc: '아날로그 지류와 감성 서점', icon: '📚' },
+                  { name: '서울숲 메타세콰이어길', role: '포토스팟', desc: '자연광 빛내림 틴달 현상 명소', icon: '🌲' },
+                  { name: '성수 로컬 현상소', role: '현상소', desc: '24시간 필름 자판기 & 드롭박스', icon: '⚡' },
+                ].map((spot) => {
+                  const isStamped = stampedSpots.includes(spot.name);
+                  return (
+                    <div
+                      key={spot.name}
+                      className={`p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-4 ${
+                        isStamped
+                          ? 'border-emerald-600/50 bg-emerald-50/20 shadow-xs'
+                          : 'border-dashed border-vintage-300 bg-vintage-50/50'
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg">{spot.icon}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-vintage-200 text-vintage-700">
+                            {spot.role}
+                          </span>
+                        </div>
+                        <h4 className="font-serif text-base font-bold text-vintage-900">{spot.name}</h4>
+                        <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+                      </div>
+
+                      {isStamped ? (
+                        <div className="w-full py-2.5 rounded-xl border border-emerald-600 bg-emerald-100/60 text-emerald-800 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[1deg] shadow-2xs">
+                          <span>✓ 서울숲 순례 인증 (+200P)</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStampSpot(spot.name)}
+                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <span>스탬프 날인 (+200P)</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* COURSE 3: KOREA TOURISM TOP 100 OFFICIAL PILGRIMAGE */}
+            <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 space-y-5 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vintage-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🏅</span>
+                  <div>
+                    <h3 className="font-serif text-lg font-bold text-vintage-900">
+                      코스 3: 한국관광공사 공인 2025~2026 한국관광 100선 특별 순례 (4선)
+                    </h3>
+                    <p className="text-xs text-vintage-500">
+                      대한민국구석구석 공식 캐치프레이즈와 함께하는 최고 권위의 필름 출사지
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
+                  공공데이터포털 연동 공인 스탬프
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { name: '경복궁 & 근정전', role: '고궁', desc: '조선 왕조의 위엄과 아침 안개', icon: '🏯' },
+                  { name: '북촌 한옥마을', role: '골목', desc: '600년 역사의 돌담길과 기와', icon: '🏘️' },
+                  { name: '덕수궁 돌담길', role: '고궁', desc: '붉은 벽돌과 노란 은행잎 산책길', icon: '🍁' },
+                  { name: '순천만 국가정원 & 습지', role: '생태', desc: '황금빛 갈대숲 최고의 일몰', icon: '🌾' },
+                ].map((spot) => {
+                  const isStamped = stampedSpots.includes(spot.name);
+                  return (
+                    <div
+                      key={spot.name}
+                      className={`p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-4 ${
+                        isStamped
+                          ? 'border-amber-600/50 bg-amber-50/20 shadow-xs'
+                          : 'border-dashed border-vintage-300 bg-vintage-50/50'
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg">{spot.icon}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">
+                            {spot.role}
+                          </span>
+                        </div>
+                        <h4 className="font-serif text-base font-bold text-vintage-900">{spot.name}</h4>
+                        <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+                      </div>
+
+                      {isStamped ? (
+                        <div className="w-full py-2.5 rounded-xl border border-amber-600 bg-amber-100/60 text-amber-900 font-serif font-bold text-xs flex items-center justify-center gap-1.5 rotate-[-1deg] shadow-2xs">
+                          <span>🏅 100선 공인 날인 (+200P)</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStampSpot(spot.name)}
+                          className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <span>100선 스탬프 날인 (+200P)</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isConvertModalOpen && selectedConvertingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-vintage-200 p-6 sm:p-8 space-y-6">

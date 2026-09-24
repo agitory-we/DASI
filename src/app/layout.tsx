@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/common/BottomNav';
 import { DasiProvider } from '@/context/DasiContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { LoginModal } from '@/components/auth/LoginModal';
+import { PwaInstallBanner } from '@/components/common/PwaInstallBanner';
 
 export const viewport: Viewport = {
   themeColor: '#FAF8F5',
@@ -72,6 +73,8 @@ export default function RootLayout({
             <BottomNav />
             {/* 전역 로그인 모달 — useAuth().openLoginModal()로 어디서나 호출 가능 */}
             <LoginModal />
+            {/* PWA 모바일 앱 설치 가이드 플로팅 배너 */}
+            <PwaInstallBanner />
           </DasiProvider>
         </AuthProvider>
       </body>

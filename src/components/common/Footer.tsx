@@ -116,6 +116,17 @@ export const Footer: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Public Data Attribution */}
+        <div className="mt-12 pt-6 border-t border-vintage-800 text-[11px] text-vintage-400 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span>본 서비스의 출사 명소, 축제 캘린더, 고화질 사진 갤러리 및 관광 100선 정보는 <strong>한국관광공사(TourAPI 4.0 &amp; PhotoGalleryService)</strong> 및 <strong>공공데이터포털</strong>의 공인 공공데이터를 실시간 연동하여 제공합니다.</span>
+          </div>
+          <div className="font-mono text-[10px] text-vintage-500">
+            KOREA TOURISM ORGANIZATION · TOUR API 4.0 VERIFIED
+          </div>
+        </div>
       </div>
     </footer>
   );
