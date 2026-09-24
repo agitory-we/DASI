@@ -21,7 +21,8 @@ import {
   VolumeX,
   Bell,
   Star,
-  Store
+  Store,
+  Sliders
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
@@ -124,6 +125,7 @@ export const Header: React.FC = () => {
   ];
 
   const moreNavItems = [
+    { href: '/meter', label: '실시간 필름 노출계', desc: '카메라 조도 측정 및 명장 추천 F값/셔터 산출', icon: Sliders },
     { href: '/experiences', label: '출사 & 클래스', desc: '작가 출사 워크숍 및 장인 정비 강습', icon: Compass },
     { href: '/explore', label: '서울 축제 & 출사지', desc: '시즌별 축제 및 골든아워 촬영 팁', icon: Calendar },
     { href: '/ai-appraisal', label: 'AI 카메라 감정', desc: '사진 3장 기반 외관 등급 및 시세 산출', icon: Sparkles },

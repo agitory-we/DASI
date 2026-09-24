@@ -33,6 +33,7 @@ import { useAuth, TIER_INFO, POINT_ACTIONS } from '@/context/AuthContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
+import { AnalogMasterCertificateModal } from '@/components/cabinet/AnalogMasterCertificateModal';
 
 export default function CabinetPage() {
   const {
@@ -56,6 +57,7 @@ export default function CabinetPage() {
   const [selectedTicket, setSelectedTicket] = useState<{ type: 'gig' | 'experience'; data: any } | null>(null);
   const [selectedBarcodeCoupon, setSelectedBarcodeCoupon] = useState<UserCoupon | null>(null);
   const [selectedEscrowReviewGig, setSelectedEscrowReviewGig] = useState<any | null>(null);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   // 성지순례 패스포트 스탬프 상태
   const [stampedSpots, setStampedSpots] = useState<string[]>([
@@ -1646,6 +1648,16 @@ export default function CabinetPage() {
                     style={{ width: `${(stampedSpots.length / 7) * 100}%` }}
                   />
                 </div>
+                <button
+                  onClick={() => {
+                    triggerHaptic('medium');
+                    setIsCertModalOpen(true);
+                  }}
+                  className="mt-3 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-terracotta text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all"
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>마스터 수료증 &amp; 인스타 공유</span>
+                </button>
               </div>
             </div>
           </div>
@@ -2005,6 +2017,15 @@ export default function CabinetPage() {
         onSuccess={() => {
           showToast('현상소 스마트 스캔 접수가 완료되었습니다! (+150P 적립)', 'success');
         }}
+      />
+
+      {/* 아날로그 성지순례 마스터 디지털 수료증 & 인스타 공유 모달 */}
+      <AnalogMasterCertificateModal
+        isOpen={isCertModalOpen}
+        onClose={() => setIsCertModalOpen(false)}
+        holderName={profile?.nickname || '아날로그 필름러'}
+        stampedCount={stampedSpots.length}
+        totalSpots={7}
       />
     </div>
   );

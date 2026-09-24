@@ -52,9 +52,24 @@ export default function RentPage() {
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
   const [includeDamageCare, setIncludeDamageCare] = useState<boolean>(true);
+  const [isBundleSelected, setIsBundleSelected] = useState<boolean>(false);
   const [usedPoints, setUsedPoints] = useState<number>(0);
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [bookedTicketCode, setBookedTicketCode] = useState<string>('');
+
+  const handleToggleBundle = () => {
+    const next = !isBundleSelected;
+    setIsBundleSelected(next);
+    if (next) {
+      setIncludeFilm(true);
+      setIncludeCleaningKit(true);
+      setIncludeDamageCare(true);
+      showToast('✨ 올인원 스타터 번들 혜택 적용! (필름+클리닝+보험 패키지 6,000원 할인)', 'success');
+    } else {
+      setIncludeFilm(false);
+      setIncludeCleaningKit(false);
+    }
+  };
 
 
   const rentalDays = useMemo(() => {
@@ -76,6 +91,7 @@ export default function RentPage() {
     setIncludeFilm(false);
     setIncludeCleaningKit(false);
     setIncludeDamageCare(true);
+    setIsBundleSelected(false);
     setUsedPoints(0);
     setIsBooked(false);
     setBookedTicketCode('');
@@ -360,6 +376,7 @@ export default function RentPage() {
                             (includeFilm ? 14000 : 0) +
                             (includeCleaningKit ? 3000 : 0) +
                             (includeDamageCare ? 3000 : 0) -
+                            (isBundleSelected ? 6000 : 0) -
                             usedPoints
                           ).toLocaleString()}원
                         </span>
@@ -500,10 +517,49 @@ export default function RentPage() {
                   </div>
 
                   {/* Step 3: 부가 케어 옵션 선택 */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
-                      3. 패키지 &amp; 케어 부가 옵션 선택
-                    </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
+                        3. 패키지 &amp; 케어 부가 옵션 선택
+                      </label>
+                      {isBundleSelected && (
+                        <span className="text-[10px] font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full">
+                          번들 특가 -6,000원 할인 적용 중
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 올인원 스타터 번들 원클릭 카드 */}
+                    <div
+                      onClick={handleToggleBundle}
+                      className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                        isBundleSelected
+                          ? 'border-terracotta bg-terracotta/5 shadow-xs'
+                          : 'border-amber-200 bg-amber-50/50 hover:bg-amber-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                          🎁
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-vintage-900">아날로그 올인원 스타터 번들</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-terracotta text-white font-bold">
+                              25% OFF
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-vintage-600 mt-0.5">
+                            필름 1롤 + 클리닝 키트 + 안심 케어 보험 통합 패키지 (20,000원 → 14,000원)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-bold text-terracotta">+14,000원</div>
+                        <div className="text-[10px] text-vintage-400 line-through">20,000원</div>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                       <label
                         onClick={() => setIncludeFilm(!includeFilm)}
@@ -649,43 +705,65 @@ export default function RentPage() {
                   </div>
 
                   {/* Step 4: Rent-to-Own 실시간 시뮬레이션 계산기 */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-vintage-100 to-vintage-50 border border-vintage-200 space-y-3">
+                  {(() => {
+                    const baseRentalFee = selectedCamera.rentalPricePerDay * rentalDays;
+                    const deductionAmount = baseRentalFee + usedPoints;
+                    const remainingPurchasePrice = Math.max(0, selectedCamera.purchasePrice - deductionAmount);
+                    const discountPercent = Math.min(100, Math.round((deductionAmount / selectedCamera.purchasePrice) * 100));
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                        Rent-to-Own 소장 전환 혜택
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white font-bold">
-                        순수 대여료 100% 환급 공제
-                      </span>
-                    </div>
+                    return (
+                      <div className="p-4.5 rounded-2xl bg-gradient-to-br from-vintage-100/90 via-vintage-50 to-white border border-vintage-200 space-y-3.5 shadow-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            Rent-to-Own 실시간 소장 시뮬레이터
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold">
+                            순수 대여료 100% 공제 적용
+                          </span>
+                        </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                      <div className="p-2.5 rounded-xl bg-white border border-vintage-200">
-                        <div className="text-[10px] text-vintage-400">정상 소장가</div>
-                        <div className="font-semibold text-vintage-800">
-                          {selectedCamera.purchasePrice.toLocaleString()}원
+                        {/* 실시간 프로그레스 바 */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-vintage-600">소장 전환 달성율</span>
+                            <span className="font-bold text-terracotta">{discountPercent}% 공제 혜택</span>
+                          </div>
+                          <div className="w-full h-2.5 bg-vintage-200 rounded-full overflow-hidden relative">
+                            <div
+                              className="h-full bg-gradient-to-r from-terracotta to-amber-500 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.max(5, discountPercent)}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-white border border-vintage-200">
-                        <div className="text-[10px] text-vintage-400">대여료 공제</div>
-                        <div className="font-semibold text-terracotta">
-                          - {(selectedCamera.rentalPricePerDay * rentalDays).toLocaleString()}원
+
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                          <div className="p-2.5 rounded-xl bg-white border border-vintage-200 shadow-2xs">
+                            <div className="text-[10px] text-vintage-400">정상 소장가</div>
+                            <div className="font-semibold text-vintage-800">
+                              {selectedCamera.purchasePrice.toLocaleString()}원
+                            </div>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-white border border-vintage-200 shadow-2xs">
+                            <div className="text-[10px] text-vintage-400">대여료+포인트 공제</div>
+                            <div className="font-bold text-terracotta">
+                              - {deductionAmount.toLocaleString()}원
+                            </div>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 shadow-2xs">
+                            <div className="text-[10px] text-amber-700 font-semibold">소장 전환 잔금</div>
+                            <div className="font-extrabold text-emerald-800">
+                              {remainingPurchasePrice.toLocaleString()}원
+                            </div>
+                          </div>
                         </div>
+
+                        <p className="text-[11px] text-vintage-600 leading-snug">
+                          💡 <strong>{rentalDays}일</strong>간 마음껏 출사해 보신 후, 대여료 전액({baseRentalFee.toLocaleString()}원)을 공제받고 <strong>{remainingPurchasePrice.toLocaleString()}원</strong>에 평생 소장하실 수 있습니다.
+                        </p>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-white border border-vintage-200">
-                        <div className="text-[10px] text-vintage-400">최종 인수 잔금</div>
-                        <div className="font-bold text-emerald-800">
-                          {Math.max(
-                            0,
-                            selectedCamera.purchasePrice -
-                            selectedCamera.rentalPricePerDay * rentalDays
-                          ).toLocaleString()}원
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    );
+                  })()}
 
                   {/* Step 5: 결제 수단 선택 및 안심 가승인 안내 */}
                   <div className="space-y-2">
@@ -744,6 +822,7 @@ export default function RentPage() {
                         (includeFilm ? 14000 : 0) +
                         (includeCleaningKit ? 3000 : 0) +
                         (includeDamageCare ? 3000 : 0) -
+                        (isBundleSelected ? 6000 : 0) -
                         usedPoints
                       ).toLocaleString()}원
                     </div>
@@ -753,7 +832,8 @@ export default function RentPage() {
                           selectedCamera.rentalPricePerDay * rentalDays +
                           (includeFilm ? 14000 : 0) +
                           (includeCleaningKit ? 3000 : 0) +
-                          (includeDamageCare ? 3000 : 0)
+                          (includeDamageCare ? 3000 : 0) -
+                          (isBundleSelected ? 6000 : 0)
                         ).toLocaleString()}원
                       </span>
                     )}
@@ -774,7 +854,8 @@ export default function RentPage() {
                         selectedCamera.rentalPricePerDay * rentalDays +
                         (includeFilm ? 14000 : 0) +
                         (includeCleaningKit ? 3000 : 0) +
-                        (includeDamageCare ? 3000 : 0);
+                        (includeDamageCare ? 3000 : 0) -
+                        (isBundleSelected ? 6000 : 0);
                       const totalPaid = Math.max(0, rawTotal - usedPoints);
                       const bookingId = `rent-${Date.now()}`;
                       const code = `DASI-${Math.floor(100000 + Math.random() * 900000)}`;

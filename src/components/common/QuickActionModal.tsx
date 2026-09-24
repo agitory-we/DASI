@@ -12,7 +12,8 @@ import {
   Sparkles,
   CheckCircle2,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  Sliders
 } from 'lucide-react';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { useAuth } from '@/context/AuthContext';
@@ -130,6 +131,28 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
             <div className="text-xs text-emerald-800 flex-1 font-medium">{checkInResult}</div>
           </div>
         )}
+
+        {/* 특별 퀵 액션: 스마트폰 필름 노출계 */}
+        <button
+          onClick={() => handleActionClick('meter', '/meter')}
+          className="w-full flex items-center justify-between p-3.5 mb-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-terracotta/10 border border-amber-300/60 rounded-2xl hover:brightness-105 transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-terracotta text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              <Sliders className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <div className="flex items-center gap-1.5 font-bold text-sm text-vintage-900">
+                <span>스마트폰 실시간 노출계</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-terracotta text-white font-bold">
+                  NEW
+                </span>
+              </div>
+              <p className="text-[11px] text-vintage-500">카메라 조도 실시간 측정 · F값/셔터 속도 추천</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-vintage-400 group-hover:translate-x-0.5 transition-transform" />
+        </button>
 
         {/* 4대 퀵 액션 그리드 */}
         <div className="grid grid-cols-2 gap-3 mb-4">
