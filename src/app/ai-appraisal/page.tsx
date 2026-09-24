@@ -24,6 +24,7 @@ import {
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 import type { AppraisalResponse } from '@/app/api/ai-appraisal/route';
+import AppraisalCertificateModal from '@/components/common/AppraisalCertificateModal';
 
 export default function AIAppraisalPage() {
   const { addOwnedCamera, showToast } = useDasi();
@@ -32,6 +33,7 @@ export default function AIAppraisalPage() {
   const [analyzingText, setAnalyzingText] = useState('시리얼 넘버 데이터베이스 대조 중...');
   const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
   const [isCabinetRegistered, setIsCabinetRegistered] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   // 3-point Hybrid Self-Check state (Google Architect Fact-Grounded Principle)
   const [selfCheck, setSelfCheck] = useState<{
@@ -149,11 +151,12 @@ export default function AIAppraisalPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      {/* Hidden file inputs */}
+      {/* Hidden file inputs with mobile camera capture support */}
       <input
         ref={frontInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         className="hidden"
         onChange={(e) => handleFileChange(e, 'front')}
       />
@@ -161,6 +164,7 @@ export default function AIAppraisalPage() {
         ref={backInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         className="hidden"
         onChange={(e) => handleFileChange(e, 'back')}
       />
@@ -168,6 +172,7 @@ export default function AIAppraisalPage() {
         ref={serialInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         className="hidden"
         onChange={(e) => handleFileChange(e, 'serial')}
       />
@@ -602,6 +607,14 @@ export default function AIAppraisalPage() {
 
               <div className="flex flex-wrap gap-2.5">
                 <button
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5"
+                >
+                  <Award className="w-4 h-4 text-amber-200" />
+                  <span>📜 9:16 감정서 발급 & 인스타 공유</span>
+                </button>
+
+                <button
                   onClick={() => setIsConsignmentModalOpen(true)}
                   className="px-5 py-2.5 rounded-xl bg-vintage-800 hover:bg-vintage-700 text-white text-xs font-bold transition-colors"
                 >
@@ -624,6 +637,16 @@ export default function AIAppraisalPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 9:16 APPRAISAL CERTIFICATE MODAL */}
+      {appraisalResult && (
+        <AppraisalCertificateModal
+          isOpen={isCertModalOpen}
+          onClose={() => setIsCertModalOpen(false)}
+          result={appraisalResult}
+          photoUrl={photoData.front}
+        />
       )}
 
       {/* CONSIGNMENT MODAL */}

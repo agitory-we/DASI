@@ -27,6 +27,7 @@ import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { PhotoUploadModal } from '@/components/common/PhotoUploadModal';
+import { FilmStripViewer } from '@/components/explore/FilmStripViewer';
 import { useAuth } from '@/context/AuthContext';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -288,6 +289,15 @@ export default function ExplorePage() {
               <UploadCloud className="w-3.5 h-3.5" />
               <span>사진 등록 (+150P)</span>
             </button>
+          </div>
+
+          {/* 35mm 암실 필름 스트립 가로 뷰어 */}
+          <FilmStripViewer photos={communityPhotos} />
+
+          <div className="pt-2">
+            <h3 className="font-serif font-bold text-base text-vintage-900 mb-3">
+              전체 갤러리 피드
+            </h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

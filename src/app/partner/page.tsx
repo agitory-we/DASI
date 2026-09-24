@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -21,11 +21,14 @@ import {
   Sparkles,
   ArrowUpRight,
   Eye,
-  Camera
+  Camera,
+  X
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { sendLocalNotification } from '@/utils/webPush';
+import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 
 // 현상소 파트너 초기 재고 데이터
 interface FilmStock {
@@ -49,6 +52,7 @@ const INITIAL_FILM_STOCKS: FilmStock[] = [
 export default function PartnerDashboardPage() {
   const { showToast } = useDasi();
   const { user, profile, awardPoints } = useAuth();
+  const { triggerHaptic } = useDevicePlatform();
 
   // 상점 선택
   const [partnerType, setPartnerType] = useState<'lab' | 'repair'>('lab');
@@ -56,6 +60,9 @@ export default function PartnerDashboardPage() {
 
   // 1초 QR 접수 코드 검증
   const [qrCodeInput, setQrCodeInput] = useState('');
+  const [isCameraScanning, setIsCameraScanning] = useState(false);
+  const videoScannerRef = useRef<HTMLVideoElement>(null);
+
   const [verifiedDrop, setVerifiedDrop] = useState<{
     code: string;
     customerName: string;
@@ -83,6 +90,51 @@ export default function PartnerDashboardPage() {
   });
   const [repairCaseSuccess, setRepairCaseSuccess] = useState(false);
 
+  // 스마트폰 카메라 스캐너 시작
+  const handleStartCameraScan = async () => {
+    setIsCameraScanning(true);
+    triggerHaptic('medium');
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+        if (videoScannerRef.current) {
+          videoScannerRef.current.srcObject = stream;
+          videoScannerRef.current.play();
+        }
+      }
+    } catch {
+      // 카메라 권한 거부 시 모달 내 안내
+    }
+  };
+
+  const handleStopCameraScan = () => {
+    triggerHaptic('selection');
+    if (videoScannerRef.current && videoScannerRef.current.srcObject) {
+      const stream = videoScannerRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    setIsCameraScanning(false);
+  };
+
+  const handleSimulateScanFound = (code: string = 'DASI-LAB-8921') => {
+    triggerHaptic('success');
+    playShutterSound('slr');
+    setQrCodeInput(code);
+    handleStopCameraScan();
+    setVerifiedDrop({
+      code,
+      customerName: '김민수 (필름러)',
+      scannerType: '후지 프론티어 SP3000 (따뜻한 인물톤)',
+      rollCount: 2,
+      filmType: 'Kodak Gold 200 · 컬러네거티브 (C-41)',
+      timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+      status: 'pending',
+    });
+    showToast('📷 QR 코드를 1초 만에 감지했습니다! 접수 티켓을 확인하세요.', 'success');
+  };
+
   // QR 접수번호 검증 로직
   const handleVerifyCode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +142,7 @@ export default function PartnerDashboardPage() {
     if (!trimmed) return;
 
     playShutterSound('slr');
+    triggerHaptic('selection');
     setVerifiedDrop({
       code: trimmed.startsWith('DASI-') ? trimmed : `DASI-LAB-${trimmed}`,
       customerName: '김민수 (필름러)',
@@ -102,17 +155,24 @@ export default function PartnerDashboardPage() {
     showToast('접수 티켓을 확인했습니다. 현물 수령 후 접수 확정을 진행하세요.', 'info');
   };
 
-  // 접수 확정 처리
+  // 접수 확정 처리 (고객에게 실시간 PWA 푸시 알림 발송!)
   const handleAcceptDrop = async () => {
     if (!verifiedDrop) return;
     playShutterSound('slr');
+    triggerHaptic('success');
     setVerifiedDrop(prev => (prev ? { ...prev, status: 'accepted' } : null));
     try {
       await awardPoints('spot_report', verifiedDrop.code);
     } catch (e) {
       console.error(e);
     }
-    showToast(`✅ [${verifiedDrop.code}] 1초 스캔 접수가 승인되었습니다. 고객에게 알림이 전송됩니다. (+150P)`, 'success');
+    // 고객 스마트폰 브라우저 푸시 알림 트리거
+    sendLocalNotification(
+      '🧪 [을지로 망우삼림] 필름 스캔 접수 완료!',
+      `${verifiedDrop.customerName}님의 필름 ${verifiedDrop.rollCount}롤 접수 승인! 3영업일 내 스캔본이 캐비닛에 업로드됩니다.`,
+      '/cabinet?tab=qr'
+    );
+    showToast(`✅ [${verifiedDrop.code}] 1초 스캔 접수가 승인되었습니다. 고객에게 푸시 알림이 전송됩니다. (+150P)`, 'success');
   };
 
   // 재고 증감
@@ -259,7 +319,7 @@ export default function PartnerDashboardPage() {
                   </span>
                 </div>
 
-                {/* 코드 입력 폼 */}
+                {/* 코드 입력 폼 & 실시간 카메라 스캔 */}
                 <form onSubmit={handleVerifyCode} className="flex gap-2">
                   <div className="relative flex-1">
                     <input
@@ -270,6 +330,15 @@ export default function PartnerDashboardPage() {
                       className="w-full px-4 py-3 rounded-2xl bg-vintage-50 border border-vintage-200 text-sm font-mono font-bold text-vintage-900 placeholder:text-vintage-400 focus:outline-none focus:border-terracotta"
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleStartCameraScan}
+                    className="px-4 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs active:scale-95 shrink-0"
+                    title="스마트폰 카메라로 실시간 QR 바코드 스캔"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>카메라 스캔</span>
+                  </button>
                   <button
                     type="submit"
                     className="px-5 py-3 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs active:scale-95 shrink-0"
@@ -643,6 +712,43 @@ export default function PartnerDashboardPage() {
         )}
 
       </div>
+
+      {/* 실시간 스마트폰 카메라 바코드 스캐너 모달 */}
+      {isCameraScanning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-sm bg-vintage-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-5 text-white text-center animate-slide-up">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+              <span className="text-xs font-bold text-amber-300">카메라 실시간 QR 스캐너</span>
+              <button onClick={handleStopCameraScan} className="p-1 rounded-full text-white/60 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black mb-4 flex items-center justify-center border-2 border-dashed border-amber-400">
+              <video ref={videoScannerRef} playsInline muted className="w-full h-full object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-48 h-48 border-2 border-amber-400 rounded-2xl relative animate-pulse">
+                  <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-amber-400" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-amber-400" />
+                  <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-amber-400" />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-amber-400" />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-vintage-300 mb-3">
+              고객이 제시한 1초 스마트 스캔 QR 코드를 중앙에 맞춰주세요
+            </p>
+
+            <button
+              onClick={() => handleSimulateScanFound('DASI-LAB-7294')}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-terracotta text-black font-bold text-xs shadow-md transition-all active:scale-95"
+            >
+              ⚡️ 바코드 1초 인식 시뮬레이션 (#7294)
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
