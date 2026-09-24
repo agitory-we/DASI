@@ -1,4 +1,4 @@
-﻿// DASI Progressive Web App (PWA) Service Worker v1.0
+// DASI Progressive Web App (PWA) Service Worker v1.0
 const CACHE_NAME = 'dasi-cache-v1';
 const STATIC_ASSETS = [
   '/',
@@ -29,12 +29,20 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Network-first with cache fallback
+// Network-first with dynamic cache update & offline fallback
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  if (!event.request.url.startsWith('http')) return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
         return response;
       })
       .catch(() => {

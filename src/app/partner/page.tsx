@@ -22,6 +22,7 @@ import {
   ArrowUpRight,
   Eye,
   Camera,
+  Download,
   X
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
@@ -228,6 +229,46 @@ export default function PartnerDashboardPage() {
       setRepairCase({ model: '', symptom: '', solution: '', cost: '', durationDays: '3' });
       setRepairCaseSuccess(false);
     }, 2500);
+  };
+
+  // B2B 월간 정산서 UTF-8 with BOM CSV 다운로드 (글로벌 헌장 Rule 1 준수)
+  const handleDownloadSettlementCsv = (mode: 'lab' | 'repair') => {
+    playShutterSound('slr');
+    triggerHaptic('medium');
+
+    const isLab = mode === 'lab';
+    const filename = isLab
+      ? 'DASI_현상소파트너_정산내역서_202609.csv'
+      : 'DASI_수리명장_공임정산내역서_202609.csv';
+
+    let csvContent = '\uFEFF'; // Excel 한글 깨짐 방지 UTF-8 with BOM
+
+    if (isLab) {
+      csvContent += '정산월,접수번호,일자,구분,고객명,필름/장비,스캐너,금액,수수료율,지급예정액,상태\r\n';
+      csvContent += '2026-09,DASI-LAB-7294,2026-09-24 14:20,현장QR접수대행,김민준,Kodak Gold 200 (2롤),노리츠(Noritsu),14000,10%,12600,승인완료\r\n';
+      csvContent += '2026-09,DASI-LAB-3180,2026-09-23 11:15,현장QR접수대행,이수진,Fujifilm 200 (1롤),후지(Frontier),7000,10%,6300,승인완료\r\n';
+      csvContent += '2026-09,DASI-RENT-1082,2026-09-22 16:40,렌탈거점픽업마진,박서연,Olympus PEN EE-3 (주말),45000,20%,9000,지급완료\r\n';
+      csvContent += '2026-09,DASI-RENT-1094,2026-09-21 13:00,렌탈거점픽업마진,정현우,Canon AE-1 Program (주말),68000,20%,13600,지급완료\r\n';
+      csvContent += '2026-09,합계,,,,,,,432000원 정산예정액,,\r\n';
+    } else {
+      csvContent += '정산월,접수번호,완료일자,카메라기종,고장증상,조치내역,소요일수,실제공임,DASI수수료,실수령액,지급상태\r\n';
+      csvContent += '2026-09,DASI-REP-0112,2026-09-24,Nikon FM2,셔터막 저속 지연 및 프리즘 곰팡이,오버홀 분해소제 및 프리즘 세척,3일,85000,0원(명장전액지급),85000,지급예정\r\n';
+      csvContent += '2026-09,DASI-REP-0110,2026-09-22,Olympus PEN EE-3,셀레늄 수광소자 접점 청소 및 적기 해제,적기 릴리즈 센서 정밀 조정,당일,45000,0원(명장전액지급),45000,지급완료\r\n';
+      csvContent += '2026-09,DASI-REP-0108,2026-09-20,Canon AE-1,캐논 셔터 소리(스퀴크) 발생,미러 기어 윤활 및 오버홀,2일,70000,0원(명장전액지급),70000,지급완료\r\n';
+      csvContent += '2026-09,합계,,,,,,,200000원 공임합계,,\r\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(`📊 2026년 9월 B2B 정산서가 UTF-8 with BOM CSV로 다운로드되었습니다.`, 'success');
   };
 
   return (
@@ -555,7 +596,7 @@ export default function PartnerDashboardPage() {
               </div>
 
               {/* 월간 정산 요약 카드 */}
-              <div className="bg-gradient-to-br from-[#2D211A] to-vintage-900 rounded-3xl p-6 text-white shadow-xs space-y-3">
+              <div className="bg-gradient-to-br from-[#2D211A] to-vintage-900 rounded-3xl p-6 text-white shadow-xs space-y-4">
                 <div className="flex items-center justify-between text-xs text-vintage-300">
                   <span>2026년 9월 정산 예정액</span>
                   <span className="text-emerald-400 font-bold">익월 10일 정산</span>
@@ -565,6 +606,14 @@ export default function PartnerDashboardPage() {
                   <div>• QR 접수 대행료: ₩104,000</div>
                   <div>• 렌탈 픽업 거점 마진: ₩328,000</div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadSettlementCsv('lab')}
+                  className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 transition-all active:scale-95"
+                >
+                  <Download className="w-3.5 h-3.5 text-amber-300" />
+                  <span>월간 정산서 다운로드 (Excel CSV BOM)</span>
+                </button>
               </div>
             </div>
 
@@ -694,6 +743,23 @@ export default function PartnerDashboardPage() {
                     </div>
                     <p className="text-vintage-600 text-[11px]">캐논 셔터 명음(소리) 오버홀 구리스 주입 · 2일</p>
                   </div>
+                </div>
+
+                {/* 수리 명장 월간 공임 정산 카드 */}
+                <div className="p-4 rounded-2xl bg-vintage-900 text-white space-y-2.5">
+                  <div className="flex justify-between items-center text-xs text-vintage-300">
+                    <span>9월 명장 공임 정산액</span>
+                    <span className="text-emerald-400 font-bold">수수료 0% 전액 지급</span>
+                  </div>
+                  <div className="font-serif text-2xl font-bold text-amber-300">₩200,000</div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSettlementCsv('repair')}
+                    className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-white/20 transition-all active:scale-95"
+                  >
+                    <Download className="w-3.5 h-3.5 text-amber-300" />
+                    <span>공임 정산 내역서 CSV (BOM) 다운로드</span>
+                  </button>
                 </div>
 
                 <div className="pt-2">

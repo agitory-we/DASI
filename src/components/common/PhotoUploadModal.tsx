@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { X, Camera, Film, MapPin, Sparkles, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 
 interface Props {
   isOpen: boolean;
@@ -207,15 +208,40 @@ export function PhotoUploadModal({
             <div>
               <label className="block text-xs font-bold text-vintage-800 mb-1 flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                <span>촬영 장소</span>
+                <span>촬영 장소 *</span>
               </label>
               <input
                 type="text"
+                required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="예: 을지로 세운상가"
+                placeholder="예: 경복궁, 을지로 세운상가"
                 className="w-full p-2.5 rounded-xl border border-vintage-200 bg-white text-xs text-vintage-900 focus:outline-none focus:border-terracotta font-medium"
               />
+            </div>
+          </div>
+
+          {/* 한국관광 100선 빠른 위치 선택 칩 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-vintage-500">
+              <span className="font-semibold text-vintage-700">🏆 한국관광 100선 추천 태그:</span>
+              <span className="text-[10px] text-vintage-400">클릭 시 자동 입력</span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+              {KOREA_TOP_100_SPOTS.slice(0, 7).map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setLocation(s.name)}
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-all shrink-0 ${
+                    location === s.name
+                      ? 'bg-vintage-900 text-white border-vintage-900'
+                      : 'bg-white border-vintage-200 text-vintage-700 hover:bg-vintage-100'
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
             </div>
           </div>
 

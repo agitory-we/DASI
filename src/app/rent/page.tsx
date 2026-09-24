@@ -27,6 +27,7 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
+import { sendLocalNotification, requestNotificationPermission, PUSH_SCENARIOS } from '@/utils/webPush';
 
 export default function RentPage() {
   const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos } = useDasi();
@@ -100,6 +101,20 @@ export default function RentPage() {
 
   const currentShop = pickupShops.find((s) => s.id === selectedShopId) || pickupShops[0];
 
+  const handleFridayDropPush = async () => {
+    playShutterSound('slr');
+    const perm = await requestNotificationPermission();
+    if (perm === 'granted') {
+      const dropScenario = PUSH_SCENARIOS.find((s) => s.id === 'friday_drop');
+      if (dropScenario) {
+        sendLocalNotification(dropScenario.title, dropScenario.body, dropScenario.url);
+      }
+      showToast('🔔 Friday DROP 실시간 브라우저 푸시 알림이 예약 및 전송되었습니다!', 'success');
+    } else {
+      showToast('금요일 20:00 한정 기종 렌탈 드롭 알림 예약이 완료되었습니다!', 'info');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Header Banner */}
@@ -142,7 +157,7 @@ export default function RentPage() {
             <div className="text-sm sm:text-base font-bold text-amber-400">D-2 11:42:09</div>
           </div>
           <button
-            onClick={() => showToast('금요일 20:00 한정 기종 렌탈 드롭 알림 예약이 완료되었습니다!', 'success')}
+            onClick={handleFridayDropPush}
             className="px-4 py-2.5 rounded-2xl bg-white text-vintage-900 text-xs font-bold hover:bg-vintage-100 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
           >
             <span>🔔 오픈 알림 받기</span>

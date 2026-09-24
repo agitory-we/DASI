@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, Sparkles, MapPin } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 
 interface Props {
   isOpen: boolean;
@@ -68,6 +69,38 @@ export function SpotReportModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
           <button onClick={onClose} className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100"><X className="w-4 h-4" /></button>
         </div>
+        {/* 🏆 한국관광 100선 빠른 선택 배너 */}
+        <div className="px-6 pt-4">
+          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>한국관광 100선 공식 출사지 빠른 선택</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {KOREA_TOP_100_SPOTS.slice(0, 6).map((spot) => (
+                <button
+                  key={spot.id}
+                  type="button"
+                  onClick={() => {
+                    setForm({
+                      title: spot.name,
+                      location: spot.address,
+                      goldenHour: spot.goldenHour,
+                      filmTips: `${spot.catchphrase} (${spot.filmRecommendation})`,
+                      bestTime: `${spot.region} 사계절 추천`,
+                      tags: `${spot.region}, ${spot.category}, 한국관광100선, 필름출사`,
+                    });
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-vintage-800 text-[11px] font-medium hover:bg-amber-100 hover:border-amber-400 transition-colors flex items-center gap-1"
+                >
+                  <MapPin className="w-3 h-3 text-terracotta" />
+                  <span>{spot.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-vintage-700">장소명 <span className="text-terracotta">*</span></label>
