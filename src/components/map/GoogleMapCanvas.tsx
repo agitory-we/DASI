@@ -50,9 +50,15 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
 
   // Google Maps API Key (옵션: .env.local의 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+  // 기본 모드는 오류 없이 100% 렌더링되는 'standard' (무료 표준 임베드)
+  // 사용자가 API 키를 등록하고 Cloud v1 모드로 시험해보고 싶다면 토글 가능
+  const [useCloudApi, setUseCloudApi] = useState(false);
+  const [showKeyGuide, setShowKeyGuide] = useState(false);
 
-  // Google Maps Embed URL (정식 API Key 지원 + Fallback 무키 모드 완벽 호환)
-  const embedUrl = apiKey
+  // Google Maps Embed URL
+  // standard: API 키 및 과금 제한 없이 언제나 100% 작동하는 Google 공식 쿼리 임베드
+  // cloud: Google Cloud Console에서 Maps Embed API가 활성화되었을 때 작동하는 v1 place API
+  const embedUrl = useCloudApi && apiKey
     ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${activeSpot.lat},${activeSpot.lng}&zoom=${zoomLevel}&language=ko`
     : `https://maps.google.com/maps?q=${activeSpot.lat},${activeSpot.lng}&hl=ko&z=${zoomLevel}&output=embed`;
 
@@ -76,7 +82,7 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
 
       {/* 2. Interactive Google Maps Iframe Viewport */}
       <iframe
-        key={`${activeSpot.id}-${zoomLevel}`}
+        key={`${activeSpot.id}-${zoomLevel}-${useCloudApi ? 'cloud' : 'std'}`}
         src={embedUrl}
         title={`Google Map - ${activeSpot.name}`}
         onLoad={() => setIsLoading(false)}
@@ -86,26 +92,97 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
         referrerPolicy="no-referrer-when-downgrade"
       />
 
-      {/* 3. Top Floating Glassmorphism Badge */}
-      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-stone-950/80 backdrop-blur-md border border-white/15 text-white shadow-lg">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] font-bold tracking-tight">Google Maps 실시간 뷰</span>
-          <span className="text-white/30">|</span>
-          <span className="text-[11px] text-amber-300 font-medium truncate max-w-[140px] sm:max-w-xs">
+      {/* 3. Top Floating Glassmorphism Badge & Mode Selector */}
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none gap-2">
+        <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-stone-950/85 backdrop-blur-md border border-white/15 text-white shadow-lg max-w-[75%] truncate">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          <span className="text-[11px] font-bold tracking-tight shrink-0">Google Maps</span>
+          <span className="text-white/30 shrink-0">|</span>
+          <span className="text-[11px] text-amber-300 font-medium truncate">
             {activeSpot.name}
           </span>
+          {apiKey && (
+            <button
+              onClick={() => setUseCloudApi((prev) => !prev)}
+              className={`ml-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold transition border ${
+                useCloudApi
+                  ? 'bg-blue-600/80 border-blue-400 text-white'
+                  : 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80'
+              }`}
+              title={useCloudApi ? 'Cloud v1 API 모드 사용 중' : '표준 Google 맵 모드 (클릭하여 Cloud API 전환)'}
+            >
+              {useCloudApi ? 'v1 API' : '표준 모드'}
+            </button>
+          )}
         </div>
 
-        {/* Viewport Resize Toggle Button */}
-        <button
-          onClick={() => setIsExpanded((prev) => !prev)}
-          className="pointer-events-auto p-2 rounded-xl bg-stone-950/80 hover:bg-stone-900 backdrop-blur-md border border-white/15 text-white/80 hover:text-white transition shadow-lg"
-          title={isExpanded ? '지도 축소' : '지도 넓게 보기'}
-        >
-          {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </button>
+        <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
+          {apiKey && useCloudApi && (
+            <button
+              onClick={() => setShowKeyGuide(true)}
+              className="px-2 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-[10px] font-medium transition"
+              title="403 오류 해결 방법 보기"
+            >
+              403 도움말
+            </button>
+          )}
+          {/* Viewport Resize Toggle Button */}
+          <button
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="p-2 rounded-xl bg-stone-950/80 hover:bg-stone-900 backdrop-blur-md border border-white/15 text-white/80 hover:text-white transition shadow-lg"
+            title={isExpanded ? '지도 축소' : '지도 넓게 보기'}
+          >
+            {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
+
+      {/* 403 API Key Guide Modal */}
+      {showKeyGuide && (
+        <div className="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-stone-900 border border-vintage-700/60 rounded-2xl p-5 max-w-md w-full shadow-2xl text-left space-y-3 text-white text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-800">
+              <span className="font-bold text-amber-400 text-sm">💡 구글 맵 403 오류 해결 방법</span>
+              <button
+                onClick={() => setShowKeyGuide(false)}
+                className="text-stone-400 hover:text-white text-base leading-none p-1"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-2 text-stone-300 leading-relaxed">
+              <p>
+                Google Cloud 콘솔에서 발급한 API 키로 Embed API 호출 시 <strong>403 Forbidden</strong>이 발생하는 경우:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 bg-stone-950/50 p-2.5 rounded-xl border border-stone-800">
+                <li><a href="https://console.cloud.google.com/apis/library/maps-embed-backend.googleapis.com" target="_blank" rel="noreferrer" className="text-blue-400 underline">Google Cloud Console</a> 접속</li>
+                <li><strong>&apos;Maps Embed API&apos;</strong> 검색 후 <strong>[사용 설정(Enable)]</strong> 클릭</li>
+                <li>API 키 제한사항(HTTP 리퍼러)에 <code>http://localhost:*/*</code> 허용 추가</li>
+              </ol>
+              <p className="text-vintage-400 text-[11px]">
+                설정 전까지는 상단의 <strong>[표준 모드]</strong> 버튼을 누르면 API 키/과금 제한 없이 구글 지도를 100% 정상 이용할 수 있습니다.
+              </p>
+            </div>
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setUseCloudApi(false);
+                  setShowKeyGuide(false);
+                }}
+                className="px-3 py-1.5 bg-terracotta text-white rounded-xl font-bold hover:bg-terracotta-dark transition"
+              >
+                표준 지도로 즉시 보기
+              </button>
+              <button
+                onClick={() => setShowKeyGuide(false)}
+                className="px-3 py-1.5 bg-stone-800 text-stone-300 rounded-xl hover:bg-stone-700 transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4. Bottom Floating Action Pill (Google / Kakao / Naver Navigation) */}
       <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
