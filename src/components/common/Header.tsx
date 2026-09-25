@@ -37,7 +37,9 @@ import {
   requestNotificationPermission,
   checkNotificationPermission,
 } from '@/utils/webPush';
-
+import { FilmVendingMachineModal } from '@/components/fun/FilmVendingMachineModal';
+import { ViewfinderToyModal } from '@/components/fun/ViewfinderToyModal';
+import { Gift } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -48,6 +50,8 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isVendingOpen, setIsVendingOpen] = useState(false);
+  const [isViewfinderOpen, setIsViewfinderOpen] = useState(false);
   const [muted, setMuted] = useState(false);
   const [pushPerm, setPushPerm] = useState<string>('default');
 
@@ -333,6 +337,26 @@ export const Header: React.FC = () => {
               </div>
             )}
 
+            {/* 을지로 24시 필름 자판기 가챠 런처 */}
+            <button
+              onClick={() => setIsVendingOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/25 hover:from-amber-500/25 hover:to-amber-600/35 text-amber-900 border border-amber-300/80 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              title="을지로 24시 필름 가챠 자판기 (쿠폰 & 한정판 스티커)"
+            >
+              <Gift className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <span className="hidden lg:inline-block">필름 자판기</span>
+            </button>
+
+            {/* 찰칵-치익 가상 뷰파인더 토이 런처 */}
+            <button
+              onClick={() => setIsViewfinderOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              title="가상 뷰파인더 & 와인딩 레버 (기계식 손맛)"
+            >
+              <Camera className="w-3.5 h-3.5 text-stone-700" />
+              <span className="hidden lg:inline-block">뷰파인더</span>
+            </button>
+
             {/* Shutter Sound Mute Toggle */}
             <button
               onClick={handleToggleSound}
@@ -436,12 +460,41 @@ export const Header: React.FC = () => {
                 </Link>
               );
             })}
+            {/* 모바일 전용 인터랙티브 토이 바로가기 */}
+            <div className="pt-2 border-t border-vintage-100 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsVendingOpen(true);
+                }}
+                className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Gift className="w-4 h-4 text-amber-600" />
+                <span>🎰 필름 자판기</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsViewfinderOpen(true);
+                }}
+                className="p-2.5 rounded-xl bg-stone-100 border border-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Camera className="w-4 h-4 text-stone-700" />
+                <span>📸 뷰파인더 토이</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Global Search Modal */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Film Vending Machine Modal */}
+      <FilmVendingMachineModal isOpen={isVendingOpen} onClose={() => setIsVendingOpen(false)} />
+
+      {/* Viewfinder Toy Modal */}
+      <ViewfinderToyModal isOpen={isViewfinderOpen} onClose={() => setIsViewfinderOpen(false)} />
     </header>
   );
 };

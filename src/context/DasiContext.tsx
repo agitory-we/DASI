@@ -122,6 +122,7 @@ interface DasiContextType {
   convertToOwn: (rentingId: string) => void;
   addOwnedCamera: (item: Omit<OwnedCameraItem, 'id'>) => string;
   useCoupon: (couponId: string) => void;
+  addCoupon: (coupon: UserCoupon) => void;
   claimWelcomeCoupons: () => void;
   isWelcomeClaimed: boolean;
   bookGig: (item: Omit<BookedGigItem, 'id' | 'bookedAt' | 'status'>) => void;
@@ -402,6 +403,10 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const addCoupon = (coupon: UserCoupon) => {
+    setCoupons((prev) => [coupon, ...prev]);
+  };
+
   const claimWelcomeCoupons = () => {
     setIsWelcomeClaimed(true);
   };
@@ -524,6 +529,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         convertToOwn,
         addOwnedCamera,
         useCoupon,
+        addCoupon,
         claimWelcomeCoupons,
         isWelcomeClaimed,
         bookGig,

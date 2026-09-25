@@ -119,3 +119,158 @@ export function triggerCameraFlash() {
     }, 40);
   });
 }
+
+/**
+ * 짤랑- 맑은 동전 투입 사운드 (Coin drop bell tone)
+ */
+export function playCoinSound() {
+  if (typeof window === 'undefined' || isAudioMuted()) return;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+    // Two high metallic chime frequencies
+    [1950, 2450].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+      gain.gain.setValueAtTime(0.35, now + idx * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.04 + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.04);
+      osc.stop(now + idx * 0.04 + 0.36);
+    });
+  } catch (err) {
+    console.error('Coin sound failed', err);
+  }
+}
+
+/**
+ * 덜커덩- 묵직한 기계식 레버/자판기 캡슐 낙하 사운드
+ */
+export function playVendingClunkSound() {
+  if (typeof window === 'undefined' || isAudioMuted()) return;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+
+    // 1. Mechanical clunk low thump
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(110, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.15);
+
+    gain.gain.setValueAtTime(0.8, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.16);
+
+    // 2. Plastic capsule bounce rattle
+    [0.08, 0.14].forEach((delay, i) => {
+      const rattleOsc = ctx.createOscillator();
+      const rattleGain = ctx.createGain();
+      rattleOsc.type = 'sine';
+      rattleOsc.frequency.setValueAtTime(320 - i * 60, now + delay);
+      rattleGain.gain.setValueAtTime(0.4 - i * 0.15, now + delay);
+      rattleGain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.08);
+
+      rattleOsc.connect(rattleGain);
+      rattleGain.connect(ctx.destination);
+      rattleOsc.start(now + delay);
+      rattleOsc.stop(now + delay + 0.09);
+    });
+  } catch (err) {
+    console.error('Vending clunk failed', err);
+  }
+}
+
+/**
+ * 치이익-착! 35mm 수동 필름 와인딩 레버 래칫 기어 사운드
+ */
+export function playWindingAdvanceSound() {
+  if (typeof window === 'undefined' || isAudioMuted()) return;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+    const clicks = 5; // 5-tooth ratchet sound
+    for (let i = 0; i < clicks; i++) {
+      const clickTime = now + (i * 0.045);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(600 + i * 80, clickTime);
+
+      gain.gain.setValueAtTime(0.25, clickTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, clickTime + 0.025);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(clickTime);
+      osc.stop(clickTime + 0.03);
+    }
+
+    // Final crisp ratchet lock '착!'
+    const lockTime = now + (clicks * 0.045) + 0.02;
+    const lockOsc = ctx.createOscillator();
+    const lockGain = ctx.createGain();
+    lockOsc.type = 'triangle';
+    lockOsc.frequency.setValueAtTime(950, lockTime);
+    lockOsc.frequency.exponentialRampToValueAtTime(200, lockTime + 0.04);
+    lockGain.gain.setValueAtTime(0.5, lockTime);
+    lockGain.gain.exponentialRampToValueAtTime(0.001, lockTime + 0.05);
+
+    lockOsc.connect(lockGain);
+    lockGain.connect(ctx.destination);
+    lockOsc.start(lockTime);
+    lockOsc.stop(lockTime + 0.06);
+  } catch (err) {
+    console.error('Winding sound failed', err);
+  }
+}
+
+/**
+ * 삑! 이중합치 / 초점 정렬 일치 확인음
+ */
+export function playFocusBeepSound() {
+  if (typeof window === 'undefined' || isAudioMuted()) return;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1480, now);
+
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.13);
+  } catch (err) {
+    console.error('Focus beep failed', err);
+  }
+}
