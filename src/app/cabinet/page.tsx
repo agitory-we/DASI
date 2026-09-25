@@ -24,11 +24,14 @@ import {
   Award,
   Send,
   Plus,
-  MapPin
+  MapPin,
+  Compass,
+  Navigation
 } from 'lucide-react';
 import { UserCoupon } from '@/types';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { speakSeniorVoice } from '@/utils/seniorVoice';
 import { useAuth, TIER_INFO, POINT_ACTIONS } from '@/context/AuthContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
@@ -50,6 +53,94 @@ const SPOT_PREVIEWS: Record<string, string> = {
   '순천만 습지 & 갈대밭': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
   '경주 불국사 & 토함산': 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80',
 };
+
+// 성지순례 스팟 공식 좌표 및 세부 메타데이터
+interface HeritageSpotItem {
+  name: string;
+  role: string;
+  desc: string;
+  lat: number;
+  lng: number;
+  openMapId: string;
+  tag: string;
+  address: string;
+}
+
+const EULJIRO_COURSE_SPOTS: HeritageSpotItem[] = [
+  {
+    name: '망우삼림',
+    role: '을지로 대표 현상소',
+    desc: '노리츠/후지 고화질 스캔 & 빈티지 암실 감성',
+    lat: 37.5662,
+    lng: 126.9925,
+    openMapId: 'spot-1',
+    tag: '현상소',
+    address: '서울 중구 을지로 108 3층',
+  },
+  {
+    name: '을지로 신성카메라',
+    role: '강태훈 명장 (42년)',
+    desc: '장롱 속 기계식 바디 정밀 점검 및 픽업처',
+    lat: 37.5668,
+    lng: 126.9912,
+    openMapId: 'spot-2',
+    tag: '수리명장',
+    address: '서울 중구 을지로 114',
+  },
+  {
+    name: '충무로 보성광학',
+    role: '한동규 장인 (38년)',
+    desc: '1/4000초 셔터막 오차 오버홀 전문 공방',
+    lat: 37.5615,
+    lng: 126.9968,
+    openMapId: 'spot-2',
+    tag: '수리명장',
+    address: '서울 중구 충무로 3가 25-10',
+  },
+  {
+    name: '세운상가 옥상 일몰',
+    role: '골든아워 핫스팟',
+    desc: '종묘와 북한산 뷰가 펼쳐지는 노을 성지',
+    lat: 37.5693,
+    lng: 126.9944,
+    openMapId: 'spot-1',
+    tag: '출사명소',
+    address: '서울 종로구 청계천로 159 세운상가 옥상',
+  },
+];
+
+const SEONGSU_COURSE_SPOTS: HeritageSpotItem[] = [
+  {
+    name: '성수 독립서점 거리',
+    role: '인문학 필름 스냅',
+    desc: '골목길 사이 따스한 자연광과 종이 냄새',
+    lat: 37.5448,
+    lng: 127.0543,
+    openMapId: 'spot-3',
+    tag: '출사명소',
+    address: '서울 성동구 성수이로 78 일대',
+  },
+  {
+    name: '서울숲 억새밭 일몰',
+    role: '자연광 골든아워',
+    desc: '가을 억새와 부드러운 역광 인물 촬영지',
+    lat: 37.5435,
+    lng: 127.0416,
+    openMapId: 'spot-3',
+    tag: '자연광',
+    address: '서울 성동구 뚝섬로 273 서울숲공원',
+  },
+  {
+    name: '연무장길 24시 필름 자판기',
+    role: '심야 필름 스팟',
+    desc: '야간 긴급 필름 보급 및 Y2K 인증샷',
+    lat: 37.5429,
+    lng: 127.0560,
+    openMapId: 'spot-3',
+    tag: '24시자판기',
+    address: '서울 성동구 연무장길 31',
+  },
+];
 
 export default function CabinetPage() {
   const {
@@ -85,6 +176,55 @@ export default function CabinetPage() {
     '성수 독립서점 거리',
   ]);
 
+  // 실시간 GPS 및 거리 계산 상태
+  const [userGps, setUserGps] = useState<{ lat: number; lng: number } | null>(null);
+  const [isGpsLocating, setIsGpsLocating] = useState<boolean>(false);
+
+  const handleLocateMeForPassport = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      showToast('브라우저에서 위치 서비스를 지원하지 않습니다.', 'warning');
+      return;
+    }
+    setIsGpsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserGps({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+        setIsGpsLocating(false);
+        showToast('📍 현재 위치를 확인했습니다! 300m 이내 스팟이 하이라이트됩니다.', 'success');
+        speakSeniorVoice('현재 위치를 기준으로 성지순례 스팟과의 거리를 계산했습니다.');
+      },
+      () => {
+        // Fallback: 을지로3가역 기준
+        setUserGps({ lat: 37.5665, lng: 126.9910 });
+        setIsGpsLocating(false);
+        showToast('위치 권한 미허용으로 을지로 거리를 기준으로 거리를 계산합니다.', 'info');
+      },
+      { timeout: 5000 }
+    );
+  };
+
+  const getDistanceToSpot = (spotLat: number, spotLng: number) => {
+    if (!userGps) return null;
+    const R = 6371e3; // meters
+    const phi1 = (userGps.lat * Math.PI) / 180;
+    const phi2 = (spotLat * Math.PI) / 180;
+    const deltaPhi = ((spotLat - userGps.lat) * Math.PI) / 180;
+    const deltaLambda = ((spotLng - userGps.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+      Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const meters = Math.round(R * c);
+    return {
+      meters,
+      isNear: meters <= 300,
+      label: meters < 1000 ? `${meters}m` : `${(meters / 1000).toFixed(1)}km`,
+    };
+  };
+
   const handleStampSpot = async (spotName: string) => {
     if (stampedSpots.includes(spotName)) return;
     triggerHaptic('success');
@@ -97,12 +237,14 @@ export default function CabinetPage() {
       console.error(e);
     }
     showToast(`📜 [${spotName}] 성지순례 스탬프 획득! (+200P 적립)`, 'success');
+    speakSeniorVoice(`${spotName} 성지순례 스탬프가 찍혔습니다. 200포인트가 적립되었습니다.`);
 
     const euljiroCourse = ['망우삼림', '을지로 신성카메라', '충무로 보성광학', '세운상가 옥상 일몰'];
     const isEuljiroComplete = euljiroCourse.every(s => nextStamped.includes(s));
     if (isEuljiroComplete && spotName === '세운상가 옥상 일몰') {
       setTimeout(() => {
         showToast('🎉 을지로·충무로 코스 완주! 1,000P 보너스와 한정판 스트랩 교환권이 발급되었습니다.', 'success');
+        speakSeniorVoice('축하합니다! 을지로 충무로 코스를 완주하셨습니다. 보너스 천 포인트가 지급되었습니다.');
       }, 1500);
     }
   };
@@ -2005,6 +2147,25 @@ export default function CabinetPage() {
                 <p className="text-xs text-vintage-300 max-w-xl leading-relaxed">
                   현상소, 40년 명장 수리 공방, 골든아워 출사지를 방문해 디지털 브라스 도장을 모으세요. 각 코스를 완주할 때마다 1,000P 바우처와 한정판 실물 굿즈가 지급됩니다.
                 </p>
+
+                {/* GPS 실시간 현장 거리 확인 버튼 */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleLocateMeForPassport}
+                    disabled={isGpsLocating}
+                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  >
+                    <Compass className={`w-4 h-4 ${isGpsLocating ? 'animate-spin' : ''}`} />
+                    <span>{isGpsLocating ? 'GPS 확인 중...' : userGps ? '📍 내 위치 기준 거리 갱신' : '📍 내 위치 켜기 (현장 300m 자동 인식)'}</span>
+                  </button>
+                  {userGps && (
+                    <span className="text-[11px] text-amber-300 font-mono flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      실시간 거리 계산 중 (300m 이내 근접 시 스탬프 활성화)
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Passport User Stamp Card */}
@@ -2054,19 +2215,17 @@ export default function CabinetPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { name: '망우삼림', role: '을지로 대표 현상소', desc: '노리츠/후지 고화질 스캔 & 빈티지 암실 감성' },
-                { name: '을지로 신성카메라', role: '강태훈 명장 (42년)', desc: '장롱 속 기계식 바디 정밀 점검 및 픽업처' },
-                { name: '충무로 보성광학', role: '한동규 장인 (38년)', desc: '1/4000초 셔터막 오차 오버홀 전문 공방' },
-                { name: '세운상가 옥상 일몰', role: '골든아워 핫스팟', desc: '종묘와 북한산 뷰가 펼쳐지는 노을 성지' },
-              ].map((spot, idx) => {
+              {EULJIRO_COURSE_SPOTS.map((spot, idx) => {
                 const isStamped = stampedSpots.includes(spot.name);
+                const dist = getDistanceToSpot(spot.lat, spot.lng);
                 return (
                   <div
                     key={idx}
                     className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
                       isStamped
                         ? 'bg-amber-50/50 border-amber-300/80 shadow-2xs'
+                        : dist?.isNear
+                        ? 'bg-emerald-50/30 border-emerald-400 shadow-sm ring-2 ring-emerald-300/50'
                         : 'bg-vintage-50 border-vintage-200'
                     }`}
                   >
@@ -2076,7 +2235,7 @@ export default function CabinetPage() {
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => openMapModal('spot-1')}
+                            onClick={() => openMapModal(spot.openMapId)}
                             className="text-[10px] text-vintage-600 hover:text-terracotta flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded bg-white border border-vintage-200 shadow-2xs transition-colors"
                             title="팝업 지도로 위치 보기"
                           >
@@ -2088,6 +2247,23 @@ export default function CabinetPage() {
                       </div>
                       <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
                       <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+
+                      {/* 실시간 GPS 거리 인디케이터 */}
+                      {dist && (
+                        <div className="pt-1.5">
+                          {dist.isNear ? (
+                            <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                              <span>🟢 현장 근접 ({dist.label})</span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1 text-[10px] text-vintage-500 bg-vintage-100/70 px-1.5 py-0.5 rounded">
+                              <Navigation className="w-2.5 h-2.5 text-vintage-400" />
+                              <span>거리: {dist.label}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Stamp Mark or Action Button */}
@@ -2102,10 +2278,14 @@ export default function CabinetPage() {
                       ) : (
                         <button
                           onClick={() => handleStampSpot(spot.name)}
-                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                          className={`w-full py-2.5 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs ${
+                            dist?.isNear
+                              ? 'bg-emerald-600 hover:bg-emerald-700 animate-pulse'
+                              : 'bg-vintage-900 hover:bg-terracotta'
+                          }`}
                         >
                           <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                          <span>스탬프 찍기 (+200P)</span>
+                          <span>{dist?.isNear ? '현장 즉시 스탬프 (+200P)' : '스탬프 찍기 (+200P)'}</span>
                         </button>
                       )}
                     </div>
@@ -2135,18 +2315,17 @@ export default function CabinetPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { name: '성수 독립서점 거리', role: '인문학 필름 스냅', desc: '골목길 사이 따스한 자연광과 종이 냄새' },
-                { name: '서울숲 억새밭 일몰', role: '자연광 골든아워', desc: '가을 억새와 부드러운 역광 인물 촬영지' },
-                { name: '연무장길 24시 필름 자판기', role: '심야 필름 스팟', desc: '야간 긴급 필름 보급 및 Y2K 인증샷' },
-              ].map((spot, idx) => {
+              {SEONGSU_COURSE_SPOTS.map((spot, idx) => {
                 const isStamped = stampedSpots.includes(spot.name);
+                const dist = getDistanceToSpot(spot.lat, spot.lng);
                 return (
                   <div
                     key={idx}
                     className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
                       isStamped
                         ? 'bg-emerald-50/50 border-emerald-300/80 shadow-2xs'
+                        : dist?.isNear
+                        ? 'bg-emerald-50/30 border-emerald-400 shadow-sm ring-2 ring-emerald-300/50'
                         : 'bg-vintage-50 border-vintage-200'
                     }`}
                   >
@@ -2156,7 +2335,7 @@ export default function CabinetPage() {
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => openMapModal('spot-3')}
+                            onClick={() => openMapModal(spot.openMapId)}
                             className="text-[10px] text-vintage-600 hover:text-emerald-700 flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded bg-white border border-vintage-200 shadow-2xs transition-colors"
                             title="팝업 지도로 위치 보기"
                           >
@@ -2168,6 +2347,23 @@ export default function CabinetPage() {
                       </div>
                       <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
                       <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
+
+                      {/* 실시간 GPS 거리 인디케이터 */}
+                      {dist && (
+                        <div className="pt-1.5">
+                          {dist.isNear ? (
+                            <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                              <span>🟢 현장 근접 ({dist.label})</span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1 text-[10px] text-vintage-500 bg-vintage-100/70 px-1.5 py-0.5 rounded">
+                              <Navigation className="w-2.5 h-2.5 text-vintage-400" />
+                              <span>거리: {dist.label}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-2">
@@ -2181,10 +2377,14 @@ export default function CabinetPage() {
                       ) : (
                         <button
                           onClick={() => handleStampSpot(spot.name)}
-                          className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                          className={`w-full py-2.5 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs ${
+                            dist?.isNear
+                              ? 'bg-emerald-600 hover:bg-emerald-700 animate-pulse'
+                              : 'bg-vintage-900 hover:bg-emerald-700'
+                          }`}
                         >
                           <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>스탬프 찍기 (+200P)</span>
+                          <span>{dist?.isNear ? '현장 즉시 스탬프 (+200P)' : '스탬프 찍기 (+200P)'}</span>
                         </button>
                       )}
                     </div>

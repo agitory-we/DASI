@@ -39,7 +39,7 @@ export interface MapContentProps {
 }
 
 export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
-  const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot, communityPhotos } = useDasi();
+  const { analogSpots, isLoadingData, showToast, savedSpotIds, toggleSaveSpot, communityPhotos, addCoupon } = useDasi();
   const [selectedCategory, setSelectedCategory] = useState<SpotCategory | 'all'>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [activeSpotId, setActiveSpotId] = useState<string>(defaultSpotId || '');
@@ -532,6 +532,16 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedCouponSpot(spot);
+                          addCoupon({
+                            id: `coupon-${Date.now()}-${spot.id}`,
+                            title: `[현장 할인] ${spot.name}`,
+                            issuerName: spot.name,
+                            discountText: spot.qrDiscountRate || 'DASI 공식 제휴 20% 즉시 할인',
+                            validUntil: '2026.12.31',
+                            category: spot.category === 'repair' ? 'repair' : 'lab',
+                            isUsed: false,
+                          });
+                          showToast(`${spot.name} 현장 할인 쿠폰이 캐비닛 쿠폰함에 자동 보관되었습니다!`, 'success');
                         }}
                         className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold transition-colors shadow-2xs shrink-0"
                       >
@@ -691,7 +701,19 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                         </p>
                       </div>
                       <button
-                        onClick={() => setSelectedCouponSpot(activeSpot)}
+                        onClick={() => {
+                          setSelectedCouponSpot(activeSpot);
+                          addCoupon({
+                            id: `coupon-${Date.now()}-${activeSpot.id}`,
+                            title: `[현장 할인] ${activeSpot.name}`,
+                            issuerName: activeSpot.name,
+                            discountText: activeSpot.qrDiscountRate || 'DASI 공식 제휴 20% 즉시 할인',
+                            validUntil: '2026.12.31',
+                            category: activeSpot.category === 'repair' ? 'repair' : 'lab',
+                            isUsed: false,
+                          });
+                          showToast(`${activeSpot.name} 현장 할인 쿠폰이 캐비닛 쿠폰함에 자동 보관되었습니다!`, 'success');
+                        }}
                         className="w-full sm:w-auto px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
                       >
                         <QrCode className="w-4 h-4" />

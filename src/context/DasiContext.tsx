@@ -134,6 +134,8 @@ interface DasiContextType {
   selectedSpotIdForModal: string | null;
   openMapModal: (spotId?: string) => void;
   closeMapModal: () => void;
+  isAccessibilityMode: boolean;
+  toggleAccessibilityMode: () => void;
   redeemCouponByCode: (code: string) => { success: boolean; coupon?: UserCoupon; message: string };
   toast: { message: string; type: 'info' | 'success' | 'warning' } | null;
   showToast: (message: string, type?: 'info' | 'success' | 'warning') => void;
@@ -174,6 +176,28 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSelectedSpotIdForModal(null);
     }
     setIsMapModalOpen(true);
+  };
+
+  const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(false);
+
+  const toggleAccessibilityMode = () => {
+    setIsAccessibilityMode((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('dasi_accessibility_mode', JSON.stringify(next));
+          if (next) {
+            document.documentElement.classList.add('accessibility-mode');
+          } else {
+            document.documentElement.classList.remove('accessibility-mode');
+          }
+        } catch {
+          // ignore
+        }
+      }
+      showToast(next ? '👓 큰글씨 접근성 모드가 켜졌습니다. 모든 글씨와 버튼이 커집니다.' : '👓 표준 글씨 크기로 복귀했습니다.', 'info');
+      return next;
+    });
   };
 
   const closeMapModal = () => {
@@ -611,6 +635,8 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedSpotIdForModal,
         openMapModal,
         closeMapModal,
+        isAccessibilityMode,
+        toggleAccessibilityMode,
         redeemCouponByCode,
         toast,
         showToast,

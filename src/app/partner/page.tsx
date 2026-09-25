@@ -30,6 +30,7 @@ import { useAuth } from '@/context/AuthContext';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { sendLocalNotification } from '@/utils/webPush';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
+import { speakSeniorVoice } from '@/utils/seniorVoice';
 
 // 현상소 파트너 초기 재고 데이터
 interface FilmStock {
@@ -120,12 +121,14 @@ export default function PartnerDashboardPage() {
       ]);
       setStudioCodeInput('');
       triggerHaptic('success');
+      speakSeniorVoice('제휴 이십퍼센트 할인이 정상 승인되었습니다. 사천원 정산이 누적되었습니다.');
     } else {
       setStudioRedeemResult({
         ...result,
         redeemedAt: nowTime,
       });
       triggerHaptic('warning');
+      speakSeniorVoice('유효하지 않은 쿠폰입니다. 번호를 다시 확인해 주세요.');
     }
   };
 
@@ -225,6 +228,7 @@ export default function PartnerDashboardPage() {
       '/cabinet?tab=qr'
     );
     showToast(`✅ [${verifiedDrop.code}] 1초 스캔 접수가 승인되었습니다. 고객에게 푸시 알림이 전송됩니다. (+150P)`, 'success');
+    speakSeniorVoice(`${verifiedDrop.customerName} 손님의 필름 ${verifiedDrop.rollCount}롤 접수가 완료되었습니다.`);
   };
 
   // 재고 증감
@@ -1113,8 +1117,136 @@ export default function PartnerDashboardPage() {
         )}
 
         {/* ── REPAIR MODE: 수리 명장 대시보드 ── */}
-        {partnerType === 'repair' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {partnerType === 'repair' && isSeniorEasyMode && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* 수리 명장 큰글씨 핵심 카드 */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border-3 border-amber-400 shadow-md space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-vintage-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-terracotta text-white flex items-center justify-center text-xl font-bold">
+                    🔧
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-black text-vintage-900">수리 명장 간편 완료 처리</h3>
+                    <p className="text-xs sm:text-sm text-vintage-600">오늘 수리 완료하신 카메라를 버튼 한 번으로 등록하세요.</p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-xl">
+                  명장 공임 100% 정산
+                </span>
+              </div>
+
+              {/* 기종 & 증상 빠른 선택 */}
+              <div className="space-y-4">
+                <div>
+                  <div className="text-xs font-bold text-vintage-800 mb-1.5">카메라 기종 선택:</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {['Nikon FM2', 'Canon AE-1', 'Olympus PEN EE-3', 'Minolta X-700'].map((cam) => (
+                      <button
+                        key={cam}
+                        type="button"
+                        onClick={() => {
+                          setRepairCase((prev) => ({ ...prev, model: cam }));
+                          triggerHaptic('selection');
+                        }}
+                        className={`p-3 rounded-xl border text-sm font-bold transition-all ${
+                          repairCase.model === cam
+                            ? 'bg-vintage-950 text-amber-300 border-vintage-950 shadow-xs'
+                            : 'bg-vintage-50 hover:bg-vintage-100 text-vintage-800 border-vintage-200'
+                        }`}
+                      >
+                        {cam}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-bold text-vintage-800 mb-1.5">수리 조치 내용 선택:</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { name: '셔터막 정밀 오버홀', cost: '75,000' },
+                      { name: '프리즘 곰팡이 세척', cost: '50,000' },
+                      { name: '차광 몰트 전면 교체', cost: '30,000' },
+                      { name: '노출계 센서 복원', cost: '60,000' },
+                    ].map((item) => (
+                      <button
+                        key={item.name}
+                        type="button"
+                        onClick={() => {
+                          setRepairCase((prev) => ({
+                            ...prev,
+                            symptom: item.name,
+                            solution: `${item.name} 완료 및 정밀 테스터 검수 통과`,
+                            cost: item.cost,
+                          }));
+                          triggerHaptic('selection');
+                        }}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          repairCase.symptom === item.name
+                            ? 'bg-terracotta text-white border-terracotta shadow-xs'
+                            : 'bg-vintage-50 hover:bg-vintage-100 text-vintage-800 border-vintage-200'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{item.name}</div>
+                        <div className="text-[11px] opacity-80 mt-0.5">{item.cost}원</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-vintage-600">선택 내역: </span>
+                    <strong className="text-vintage-900 text-sm">{repairCase.model || '기종 미선택'} · {repairCase.symptom || '증상 미선택'}</strong>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-vintage-500">수리비: </span>
+                    <strong className="text-terracotta text-base">{repairCase.cost ? `${repairCase.cost}원` : '-'}</strong>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!repairCase.model || !repairCase.symptom) {
+                      showToast('카메라 기종과 수리 내용을 선택해주세요.', 'warning');
+                      return;
+                    }
+                    setRepairCaseSuccess(true);
+                    triggerHaptic('success');
+                    speakSeniorVoice(`${repairCase.model} 수리 완료가 정상 등록되었습니다.`);
+                    showToast(`✅ [${repairCase.model}] 수리 완료 건이 성공적으로 등록되었습니다 (+300P)`, 'success');
+                    setTimeout(() => setRepairCaseSuccess(false), 3000);
+                  }}
+                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
+                >
+                  <CheckCircle2 className="w-6 h-6" />
+                  <span>오늘 수리 완료 즉시 등록 (고객 알림 전송)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 하단 상세 기능 펼치기 토글 안내 */}
+            <div className="p-4 rounded-2xl bg-vintage-100/70 border border-vintage-200 text-center text-xs text-vintage-600 flex items-center justify-between">
+              <span>💡 수리 증상 직접 서술 및 명장 정산서 다운로드는 아래 상세 화면에서 진행하실 수 있습니다.</span>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setIsSeniorEasyMode(false);
+                }}
+                className="text-terracotta font-bold underline shrink-0 ml-2"
+              >
+                상세 화면 보기 →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── REPAIR MODE: 수리 명장 대시보드 (상세 화면: 간편 모드 OFF일 때 표시) ── */}
+        {partnerType === 'repair' && !isSeniorEasyMode && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
 
             {/* 수리 케이스 신속 등록기 (7 Cols) */}
             <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-vintage-200 shadow-xs space-y-6">
