@@ -139,6 +139,9 @@ export default function PartnerDashboardPage() {
   });
   const [repairCaseSuccess, setRepairCaseSuccess] = useState(false);
 
+  // 어르신 사장님 전용 큰글씨 간편 POS 모드 (모바일 기본 활성화)
+  const [isSeniorEasyMode, setIsSeniorEasyMode] = useState(true);
+
   // 스마트폰 카메라 스캐너 시작
   const handleStartCameraScan = async () => {
     setIsCameraScanning(true);
@@ -341,18 +344,51 @@ export default function PartnerDashboardPage() {
               </p>
             </div>
 
-            {/* Micro-Ads 구독 뱃지 & 실시간 지표 */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex items-center gap-4 shrink-0">
-              <div className="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-xl">
-                ⭐
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-vintage-300">
-                  <span>DASI Micro-Ads</span>
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">운영중</span>
+            {/* 큰글씨 간편 사장님 모드 & Micro-Ads 지표 */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setIsSeniorEasyMode(!isSeniorEasyMode);
+                }}
+                className={`p-3 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all ${
+                  isSeniorEasyMode
+                    ? 'bg-amber-400 text-vintage-950 border-amber-300 shadow-md ring-2 ring-amber-300/80'
+                    : 'bg-white/10 hover:bg-white/15 text-white border-white/20'
+                }`}
+                title="어르신 사장님을 위한 큼직한 글씨와 1초 원터치 모드"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">👓</span>
+                  <div>
+                    <div className="text-xs font-bold leading-tight flex items-center gap-1.5">
+                      <span>큰글씨 간편 사장님 모드</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${isSeniorEasyMode ? 'bg-vintage-950 text-amber-300' : 'bg-white/20 text-white'}`}>
+                        {isSeniorEasyMode ? '작동중' : '꺼짐'}
+                      </span>
+                    </div>
+                    <div className={`text-[10px] mt-0.5 ${isSeniorEasyMode ? 'text-vintage-800' : 'text-vintage-300'}`}>
+                      할인 &amp; 접수만 아주 크게 보기
+                    </div>
+                  </div>
                 </div>
-                <div className="text-base font-bold text-white mt-0.5">황금 핀 노출 활성</div>
-                <div className="text-[11px] text-amber-300 font-mono mt-0.5">이번 달 유입 148명 · QR 접수 52건</div>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${isSeniorEasyMode ? 'bg-vintage-950 text-white' : 'bg-white/20 text-white'}`}>
+                  {isSeniorEasyMode ? 'ON' : 'OFF'}
+                </div>
+              </button>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/15 hidden md:flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-lg">
+                  ⭐
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs text-vintage-300">
+                    <span>황금 핀 파트너</span>
+                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">인증완료</span>
+                  </div>
+                  <div className="text-xs text-amber-300 font-mono mt-0.5">이번 달 유입 148명 · 접수 52건</div>
+                </div>
               </div>
             </div>
           </div>
@@ -384,9 +420,267 @@ export default function PartnerDashboardPage() {
           </div>
         </div>
 
-        {/* ── LAB MODE: 현상소 파트너 대시보드 ── */}
-        {partnerType === 'lab' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ══════════════════════════════════════════════════════════════════
+            어르신 사장님 맞춤형 초간편 모바일 POS 인터페이스 (Senior POS)
+            - 노안을 고려한 18px~26px 대형 폰트와 고대비 컬러
+            - 손떨림/오터치 방지 56px+ 대형 터치 버튼
+            - "오늘 장사 상태", "20% 할인 확인", "필름 접수", "오늘 번 돈" 4대 핵심만 노출
+        ══════════════════════════════════════════════════════════════════ */}
+        {isSeniorEasyMode && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* 1. 영업 상태 & 오늘 정산금 요약 바 */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-white border-2 border-vintage-300 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-xs shrink-0 ${isScanAccepting ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-300' : 'bg-rose-100 text-rose-700 border-2 border-rose-300'}`}>
+                  {isScanAccepting ? '영업' : '마감'}
+                </div>
+                <div>
+                  <div className="text-xs text-vintage-500 font-bold">지금 우리 가게 상태</div>
+                  <div className="text-xl sm:text-2xl font-extrabold text-vintage-900 mt-0.5">
+                    {isScanAccepting ? '손님 필름 정상 접수 중' : '오늘 접수 마감됨'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !isScanAccepting;
+                    setIsScanAccepting(next);
+                    triggerHaptic('medium');
+                    showToast(next ? '지금부터 정상 영업(접수 시작)으로 전환되었습니다.' : '오늘 당일 접수가 마감되었습니다.', 'info');
+                  }}
+                  className={`flex-1 sm:flex-none px-6 py-3.5 rounded-2xl font-bold text-base transition-all shadow-xs active:scale-95 flex items-center justify-center gap-2 ${
+                    isScanAccepting
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  <Clock className="w-5 h-5" />
+                  <span>{isScanAccepting ? '오늘 장사 마감하기' : '손님 다시 받기 (영업 재개)'}</span>
+                </button>
+
+                <div className="px-5 py-3 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-center gap-3 shrink-0">
+                  <span className="text-xl">💰</span>
+                  <div>
+                    <div className="text-[11px] font-bold text-amber-900">오늘 모인 정산금</div>
+                    <div className="text-lg sm:text-xl font-mono font-black text-amber-950">
+                      {(studioHistory.length * 4000 + 16000).toLocaleString()}원
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2대 대형 핵심 카드 (Big Card POS Grid) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* [카드 ①] 🎟️ 손님 20% 할인 확인 (가장 중요) */}
+              <div className="p-6 sm:p-7 rounded-3xl bg-amber-50 border-3 border-amber-400 shadow-md space-y-4 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-black tracking-wide">
+                      가장 많이 쓰는 기능
+                    </span>
+                    <span className="text-xs font-mono font-bold text-terracotta bg-white px-2.5 py-1 rounded-xl border border-amber-300">
+                      건당 +4,000원 적립
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-amber-950 flex items-center gap-2">
+                    <span>🎟️ 손님 20% 할인 확인</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
+                    손님이 스마트폰으로 보여주는 <strong>할인 쿠폰 번호</strong>를 입력하고 승인 버튼을 누르세요.
+                  </p>
+                </div>
+
+                {/* 대형 입력창 & 승인 버튼 */}
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={studioCodeInput}
+                    onChange={(e) => setStudioCodeInput(e.target.value)}
+                    placeholder="예: ILJIN-DASI-20"
+                    className="w-full px-5 py-4 rounded-2xl bg-white border-2 border-amber-400 text-lg sm:text-xl font-mono font-black text-vintage-900 placeholder:text-vintage-400 focus:outline-none focus:ring-4 focus:ring-amber-300 shadow-inner"
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyStudioCoupon()}
+                      className="w-full py-4 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
+                    >
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>1초 즉시 할인 승인</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleStartCameraScan}
+                      className="w-full py-4 rounded-2xl bg-vintage-900 hover:bg-black text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all"
+                    >
+                      <Camera className="w-5 h-5 text-amber-400" />
+                      <span>📸 카메라로 QR 찍기</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 손쉬운 원터치 테스트 칩 */}
+                <div className="pt-2 border-t border-amber-200">
+                  <div className="text-[11px] font-bold text-amber-800 mb-1.5">터치해서 바로 시험해보기:</div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { name: '일진사 20% 할인', code: 'ILJIN-DASI-20' },
+                      { name: '고래사진관 20% 할인', code: 'GOHALE-DASI-SCAN' },
+                      { name: '망우삼림 20% 할인', code: 'MANGWOO-DASI-20' },
+                      { name: '우성상사 필름할인', code: 'WOOSUNG-DASI-FILM' },
+                    ].map((item) => (
+                      <button
+                        key={item.code}
+                        type="button"
+                        onClick={() => {
+                          setStudioCodeInput(item.code);
+                          handleVerifyStudioCoupon(item.code);
+                        }}
+                        className="p-2.5 rounded-xl bg-white hover:bg-amber-200/80 border border-amber-300 text-amber-950 font-bold text-xs text-left transition-colors truncate shadow-2xs"
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 대형 승인 결과 피드백 */}
+                {studioRedeemResult && (
+                  <div className={`p-4 rounded-2xl border-2 animate-fadeIn ${
+                    studioRedeemResult.success
+                      ? 'bg-emerald-100 border-emerald-500 text-emerald-950'
+                      : 'bg-rose-100 border-rose-500 text-rose-950'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{studioRedeemResult.success ? '🎉' : '⚠️'}</span>
+                      <div>
+                        <div className="text-base font-black">
+                          {studioRedeemResult.success ? '20% 제휴 할인 정상 승인 완료!' : '승인 불가'}
+                        </div>
+                        <div className="text-xs font-semibold mt-0.5 opacity-90">
+                          {studioRedeemResult.message}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* [카드 ②] 🧪 오늘 맡긴 필름 1초 접수 */}
+              <div className="p-6 sm:p-7 rounded-3xl bg-white border-2 border-vintage-300 shadow-md space-y-4 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <span className="px-3 py-1 rounded-full bg-vintage-900 text-white text-xs font-black tracking-wide">
+                    필름 현물 수령 접수
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-black text-vintage-900 flex items-center gap-2">
+                    <span>🧪 손님 필름 접수하기</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-vintage-600 leading-relaxed font-medium">
+                    손님이 가져온 필름과 <strong>접수번호 4자리</strong>를 확인하고 수령을 확정하세요.
+                  </p>
+                </div>
+
+                {/* 코드 입력 & 확인 */}
+                <form onSubmit={handleVerifyCode} className="space-y-3">
+                  <input
+                    type="text"
+                    value={qrCodeInput}
+                    onChange={(e) => setQrCodeInput(e.target.value)}
+                    placeholder="예: 7294 또는 DASI-LAB-7294"
+                    className="w-full px-5 py-4 rounded-2xl bg-vintage-50 border-2 border-vintage-300 text-lg sm:text-xl font-mono font-black text-vintage-900 placeholder:text-vintage-400 focus:outline-none focus:ring-4 focus:ring-vintage-300 shadow-inner"
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
+                    >
+                      <Search className="w-5 h-5 text-amber-400" />
+                      <span>접수번호 확인</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQrCodeInput('DASI-LAB-7294')}
+                      className="w-full py-4 rounded-2xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 font-bold text-sm flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span>예시 #7294 채우기</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* 검증된 접수증이 있을 때 대형 수령 확인 버튼 */}
+                {verifiedDrop ? (
+                  <div className="p-4 rounded-2xl bg-[#FAF8F5] border-2 border-amber-400 space-y-3 animate-fadeIn">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-xs font-mono font-bold text-amber-800">{verifiedDrop.code}</div>
+                        <div className="text-lg font-black text-vintage-900">{verifiedDrop.customerName} 손님</div>
+                        <div className="text-xs font-bold text-terracotta mt-0.5">총 {verifiedDrop.rollCount}롤 · {verifiedDrop.filmType}</div>
+                      </div>
+                      <span className="text-[10px] bg-vintage-200 text-vintage-700 px-2 py-0.5 rounded font-mono">
+                        {verifiedDrop.timestamp}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAcceptDrop}
+                      className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all"
+                    >
+                      <Check className="w-5 h-5" />
+                      <span>손님 필름 받았음 (수령 확정)</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 text-center text-xs text-vintage-500">
+                    접수번호를 입력하고 확인을 누르면 손님이 맡긴 롤 수와 스캐너가 크게 표시됩니다.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 하단 상세 기능 펼치기 토글 안내 */}
+            <div className="p-4 rounded-2xl bg-vintage-100/70 border border-vintage-200 text-center text-xs text-vintage-600 flex items-center justify-between">
+              <span>💡 필름 재고 증감, 정산 엑셀(CSV) 다운로드 등 복잡한 설정은 아래 상세 화면에서 관리하실 수 있습니다.</span>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setIsSeniorEasyMode(false);
+                }}
+                className="text-terracotta font-bold underline shrink-0 ml-2"
+              >
+                상세 화면 보기 →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── LAB MODE: 현상소 파트너 대시보드 (상세 화면: 간편 모드 OFF일 때만 표시) ── */}
+        {partnerType === 'lab' && !isSeniorEasyMode && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* 상단 간편 모드 복귀 버튼 */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setIsSeniorEasyMode(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-vintage-950 font-black text-xs flex items-center gap-1.5 shadow-xs transition-all"
+              >
+                <span>👓 큰글씨 간편 사장님 모드로 돌아가기</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             {/* 좌측: 1초 QR 접수 검증기 (8 Cols) */}
             <div className="lg:col-span-7 space-y-6">
@@ -814,6 +1108,7 @@ export default function PartnerDashboardPage() {
               </div>
             </div>
 
+          </div>
           </div>
         )}
 
