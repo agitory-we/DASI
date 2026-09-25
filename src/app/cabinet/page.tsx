@@ -63,7 +63,8 @@ export default function CabinetPage() {
     coupons,
     useCoupon,
     addCoupon,
-    showToast
+    showToast,
+    openMapModal,
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const { triggerHaptic } = useDevicePlatform();
@@ -2072,7 +2073,18 @@ export default function CabinetPage() {
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono font-bold text-vintage-400">0{idx + 1}</span>
-                        <span className="text-[10px] font-bold text-terracotta">{spot.role}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openMapModal('spot-1')}
+                            className="text-[10px] text-vintage-600 hover:text-terracotta flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded bg-white border border-vintage-200 shadow-2xs transition-colors"
+                            title="팝업 지도로 위치 보기"
+                          >
+                            <MapPin className="w-2.5 h-2.5 text-terracotta" />
+                            <span>지도</span>
+                          </button>
+                          <span className="text-[10px] font-bold text-terracotta">{spot.role}</span>
+                        </div>
                       </div>
                       <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
                       <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>
@@ -2141,7 +2153,18 @@ export default function CabinetPage() {
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono font-bold text-vintage-400">0{idx + 1}</span>
-                        <span className="text-[10px] font-bold text-emerald-700">{spot.role}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openMapModal('spot-3')}
+                            className="text-[10px] text-vintage-600 hover:text-emerald-700 flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded bg-white border border-vintage-200 shadow-2xs transition-colors"
+                            title="팝업 지도로 위치 보기"
+                          >
+                            <MapPin className="w-2.5 h-2.5 text-emerald-600" />
+                            <span>지도</span>
+                          </button>
+                          <span className="text-[10px] font-bold text-emerald-700">{spot.role}</span>
+                        </div>
                       </div>
                       <h4 className="text-sm font-bold text-vintage-900">{spot.name}</h4>
                       <p className="text-[11px] text-vintage-500 leading-snug">{spot.desc}</p>

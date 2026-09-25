@@ -86,7 +86,7 @@ const BULK_FILM_PACKS: BulkFilmPack[] = [
 ];
 
 export default function RentPage() {
-  const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos } = useDasi();
+  const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos, openMapModal } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
@@ -677,9 +677,20 @@ export default function RentPage() {
 
                   {/* Step 2: 픽업 거점 선택 */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
-                      2. 방문 픽업 &amp; 10분 강습 매장 선택
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
+                        2. 방문 픽업 &amp; 10분 강습 매장 선택
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => openMapModal('spot-1')}
+                        className="text-[11px] font-bold text-terracotta hover:underline flex items-center gap-1 transition-all"
+                        title="전국 아날로그 맵 팝업으로 매장 위치 및 현상소 확인"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>팝업 지도로 위치 보기</span>
+                      </button>
+                    </div>
                     <div className="space-y-2">
                       {pickupShops.map((shop) => (
                         <div
@@ -698,9 +709,23 @@ export default function RentPage() {
                               <div className="text-[11px] text-vintage-500">{shop.address} · {shop.masterName} ({shop.masterExperienceYears}년)</div>
                             </div>
                           </div>
-                          <span className="text-[11px] font-semibold text-terracotta">
-                            강습 포함
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openMapModal(shop.id === 'shop-1' ? 'spot-1' : 'spot-2');
+                              }}
+                              className="px-2 py-1 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-700 text-[10px] font-bold flex items-center gap-1 transition-all"
+                              title="지도로 매장 상세 핀 포커싱"
+                            >
+                              <MapPin className="w-3 h-3 text-terracotta" />
+                              <span>지도</span>
+                            </button>
+                            <span className="text-[11px] font-semibold text-terracotta shrink-0">
+                              강습 포함
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>

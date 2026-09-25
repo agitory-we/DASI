@@ -310,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* 전국 아날로그 스팟 & 당일 현상소 팝업 지도 런처 */}
             <button
-              onClick={openMapModal}
+              onClick={() => openMapModal()}
               className="px-2.5 py-1.5 rounded-xl bg-terracotta/10 hover:bg-terracotta/20 text-terracotta border border-terracotta/30 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
               title="전국 아날로그 스팟 & 당일 현상소 팝업 지도 (X 누르면 웹으로 복귀)"
             >

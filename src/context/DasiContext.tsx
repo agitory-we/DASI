@@ -131,8 +131,10 @@ interface DasiContextType {
   bookProConsultation: (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => string;
   toggleSaveSpot: (spotId: string) => void;
   isMapModalOpen: boolean;
-  openMapModal: () => void;
+  selectedSpotIdForModal: string | null;
+  openMapModal: (spotId?: string) => void;
   closeMapModal: () => void;
+  redeemCouponByCode: (code: string) => { success: boolean; coupon?: UserCoupon; message: string };
   toast: { message: string; type: 'info' | 'success' | 'warning' } | null;
   showToast: (message: string, type?: 'info' | 'success' | 'warning') => void;
 }
@@ -162,10 +164,22 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isWelcomeClaimed, setIsWelcomeClaimed] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [selectedSpotIdForModal, setSelectedSpotIdForModal] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
 
-  const openMapModal = () => setIsMapModalOpen(true);
-  const closeMapModal = () => setIsMapModalOpen(false);
+  const openMapModal = (spotId?: string) => {
+    if (spotId) {
+      setSelectedSpotIdForModal(spotId);
+    } else {
+      setSelectedSpotIdForModal(null);
+    }
+    setIsMapModalOpen(true);
+  };
+
+  const closeMapModal = () => {
+    setIsMapModalOpen(false);
+    setSelectedSpotIdForModal(null);
+  };
 
   const showToast = (message: string, type: 'info' | 'success' | 'warning' = 'success') => {
     setToast({ message, type });
@@ -410,6 +424,55 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const redeemCouponByCode = (code: string): { success: boolean; coupon?: UserCoupon; message: string } => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: '쿠폰 코드를 입력해주세요.' };
+    }
+
+    // 1. 기존 발급 쿠폰 목록에서 검색
+    const target = coupons.find((c) => (c.code && c.code.toUpperCase() === cleanCode) || c.id.toUpperCase() === cleanCode);
+    if (target) {
+      if (target.isUsed) {
+        return { success: false, coupon: target, message: '이미 현장에서 사용 완료된 쿠폰입니다.' };
+      }
+      setCoupons((prev) =>
+        prev.map((c) => (c.id === target.id ? { ...c, isUsed: true } : c))
+      );
+      showToast(`[${cleanCode}] 20% 제휴 할인이 현장에서 정상 승인되었습니다.`, 'success');
+      return { success: true, coupon: { ...target, isUsed: true }, message: '정상 승인 완료되었습니다.' };
+    }
+
+    // 2. 파트너 공식 제휴 코드 직접 스캔 처리 (캐비닛 미등록 상태의 종이/외부 QR 대응)
+    const partnerCodes: Record<string, { title: string; discountText: string; issuerName: string }> = {
+      'ILJIN-DASI-20': { title: '충무로 일진사 제휴 20% 할인', discountText: '현상/스캔 20% 즉시 할인', issuerName: '충무로 일진사' },
+      'WOOSUNG-DASI-FILM': { title: '을지로 우성상사 제휴 필름 할인', discountText: '필름 롤당 2,000원 즉시 할인', issuerName: '을지로 우성상사' },
+      'GOHALE-DASI-SCAN': { title: '종로 고래사진관 20% 할인', discountText: '셀프 스캐너 이용료 20% 할인', issuerName: '종로 고래사진관' },
+      'PHOTOMARU-DASI-VIP': { title: '충무로 포토마루 15% VIP 할인', discountText: '현상/스캔 패키지 15% 할인', issuerName: '충무로 포토마루' },
+      'MANGWOO-DASI-20': { title: '을지로 망우삼림 20% 제휴 할인', discountText: '후지 스캔 20% 즉시 할인', issuerName: '을지로 망우삼림' },
+      'BAUM-DARKROOM-PLUS': { title: '성수 바움 암실 무료 추가권', discountText: '셀프 암실 1시간 무료 추가', issuerName: '성수 바움 암실' },
+    };
+
+    if (partnerCodes[cleanCode]) {
+      const info = partnerCodes[cleanCode];
+      const newCoupon: UserCoupon = {
+        id: `c-partner-${Date.now()}`,
+        code: cleanCode,
+        title: info.title,
+        issuerName: info.issuerName,
+        discountText: info.discountText,
+        validUntil: '2026-12-31',
+        isUsed: true,
+        category: 'lab',
+      };
+      setCoupons((prev) => [newCoupon, ...prev]);
+      showToast(`[${cleanCode}] ${info.discountText} 현장 승인이 완료되었습니다.`, 'success');
+      return { success: true, coupon: newCoupon, message: '파트너 공식 제휴 쿠폰 승인 완료' };
+    }
+
+    return { success: false, message: '유효하지 않거나 등록되지 않은 DASI 제휴 쿠폰 코드입니다.' };
+  };
+
   const addCoupon = (coupon: UserCoupon) => {
     setCoupons((prev) => [coupon, ...prev]);
   };
@@ -545,8 +608,10 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bookProConsultation,
         toggleSaveSpot,
         isMapModalOpen,
+        selectedSpotIdForModal,
         openMapModal,
         closeMapModal,
+        redeemCouponByCode,
         toast,
         showToast,
       }}

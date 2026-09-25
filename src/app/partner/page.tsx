@@ -51,7 +51,7 @@ const INITIAL_FILM_STOCKS: FilmStock[] = [
 ];
 
 export default function PartnerDashboardPage() {
-  const { showToast } = useDasi();
+  const { showToast, redeemCouponByCode } = useDasi();
   const { user, profile, awardPoints } = useAuth();
   const { triggerHaptic } = useDevicePlatform();
 
@@ -80,6 +80,54 @@ export default function PartnerDashboardPage() {
   // 당일 스캔 마감 스위치
   const [isScanAccepting, setIsScanAccepting] = useState(true);
   const [cutoffTime, setCutoffTime] = useState('17:30');
+
+  // 사진관 20% 제휴 할인 QR 검증 상태 & 핸들러
+  const [studioCodeInput, setStudioCodeInput] = useState('');
+  const [studioRedeemResult, setStudioRedeemResult] = useState<{
+    success: boolean;
+    coupon?: any;
+    message: string;
+    redeemedAt?: string;
+  } | null>(null);
+  const [studioHistory, setStudioHistory] = useState<Array<{ code: string; title: string; time: string; discountAmt: number }>>([
+    { code: 'GOHALE-DASI-SCAN', title: '종로 고래사진관 20% 할인', time: '11:42', discountAmt: 3000 },
+    { code: 'ILJIN-DASI-20', title: '충무로 일진사 제휴 20% 할인', time: '10:15', discountAmt: 4000 },
+  ]);
+
+  const handleVerifyStudioCoupon = (codeToVerify?: string) => {
+    const code = (codeToVerify || studioCodeInput).trim().toUpperCase();
+    if (!code) {
+      showToast('쿠폰 코드를 입력해주세요.', 'warning');
+      return;
+    }
+    triggerHaptic('selection');
+    playShutterSound('slr');
+    const result = redeemCouponByCode(code);
+    const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    if (result.success) {
+      setStudioRedeemResult({
+        ...result,
+        redeemedAt: nowTime,
+      });
+      setStudioHistory(prev => [
+        {
+          code,
+          title: result.coupon?.title || '제휴 20% 즉시 할인',
+          time: nowTime,
+          discountAmt: 4000,
+        },
+        ...prev,
+      ]);
+      setStudioCodeInput('');
+      triggerHaptic('success');
+    } else {
+      setStudioRedeemResult({
+        ...result,
+        redeemedAt: nowTime,
+      });
+      triggerHaptic('warning');
+    }
+  };
 
   // 수리 명장 케이스 등록 상태
   const [repairCase, setRepairCase] = useState({
@@ -455,6 +503,155 @@ export default function PartnerDashboardPage() {
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* 1.5. [신규] 서울 사진관 & DASI 제휴 현상소 20% 할인 QR 검증기 */}
+              <div className="bg-white rounded-3xl p-6 border-2 border-amber-300 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-vintage-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white flex items-center justify-center font-bold shadow-xs">
+                      <Store className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h2 className="text-sm font-bold text-vintage-900">제휴 사진관 &amp; 현상소 20% 할인 QR 승인기</h2>
+                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200">
+                          O2O 현장 정산
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-vintage-500">
+                        고객이 제시한 20% 할인 QR 코드(또는 쿠폰 번호)를 1초 만에 검증하고 현장 할인을 확정합니다.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-terracotta bg-terracotta/10 px-2.5 py-1 rounded-xl">
+                    건당 +4,000원 정산
+                  </span>
+                </div>
+
+                {/* 코드 입력 폼 */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={studioCodeInput}
+                    onChange={(e) => setStudioCodeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleVerifyStudioCoupon();
+                      }
+                    }}
+                    placeholder="예: ILJIN-DASI-20 또는 GOHALE-DASI-SCAN"
+                    className="flex-1 px-4 py-3 rounded-2xl bg-amber-50/50 border border-amber-300 text-sm font-mono font-bold text-vintage-900 placeholder:text-vintage-400 focus:outline-none focus:border-terracotta"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleVerifyStudioCoupon()}
+                    className="px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs active:scale-95 shrink-0"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>1초 할인 승인</span>
+                  </button>
+                </div>
+
+                {/* 빠른 제휴 쿠폰 시뮬레이션 버튼 */}
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-vintage-600">
+                  <span className="font-semibold text-vintage-500">빠른 테스트:</span>
+                  {[
+                    { label: '충무로 일진사 (20%)', code: 'ILJIN-DASI-20' },
+                    { label: '종로 고래사진관 (20%)', code: 'GOHALE-DASI-SCAN' },
+                    { label: '을지로 망우삼림 (20%)', code: 'MANGWOO-DASI-20' },
+                    { label: '우성상사 (필름할인)', code: 'WOOSUNG-DASI-FILM' },
+                  ].map((testItem) => (
+                    <button
+                      key={testItem.code}
+                      type="button"
+                      onClick={() => {
+                        setStudioCodeInput(testItem.code);
+                        handleVerifyStudioCoupon(testItem.code);
+                      }}
+                      className="px-2 py-0.5 rounded-lg bg-vintage-100 hover:bg-amber-100 hover:text-amber-900 text-vintage-700 font-medium transition-colors"
+                    >
+                      {testItem.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 실시간 승인 결과 피드백 */}
+                {studioRedeemResult && (
+                  <div
+                    className={`p-4 rounded-2xl border animate-fadeIn transition-all ${
+                      studioRedeemResult.success
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                        : 'bg-rose-50 border-rose-300 text-rose-900'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {studioRedeemResult.success ? (
+                          <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0">
+                            <X className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-xs font-bold">
+                            {studioRedeemResult.success ? '현장 20% 제휴 할인 정상 승인 완료' : '쿠폰 승인 불가'}
+                          </div>
+                          <div className="text-[11px] opacity-90 mt-0.5">
+                            {studioRedeemResult.message}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono opacity-70">
+                        {studioRedeemResult.redeemedAt}
+                      </span>
+                    </div>
+
+                    {studioRedeemResult.success && studioRedeemResult.coupon && (
+                      <div className="mt-3 pt-3 border-t border-emerald-200/80 flex items-center justify-between text-xs font-semibold">
+                        <span>혜택: {studioRedeemResult.coupon.title}</span>
+                        <span className="text-emerald-700 font-bold bg-white px-2 py-0.5 rounded border border-emerald-200">
+                          파트너 정산 마진 +4,000원 반영
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 금일 제휴 할인 승인 내역 */}
+                <div className="pt-2 border-t border-vintage-100 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-vintage-800">금일 제휴 QR 할인 승인 목록</span>
+                    <span className="text-[11px] text-vintage-500 font-mono">
+                      총 {studioHistory.length}건 승인
+                    </span>
+                  </div>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {studioHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-200/70 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-vintage-900 bg-white px-2 py-0.5 rounded border border-vintage-200">
+                            {item.code}
+                          </span>
+                          <span className="text-vintage-700 text-[11px]">{item.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-vintage-400 font-mono">{item.time}</span>
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                            +{item.discountAmt.toLocaleString()}원 정산
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* 2. 당일 스캔 마감 시간 관리 */}

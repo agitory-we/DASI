@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { X, ArrowLeft, MapPin } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
-import MapPage from '@/app/map/page';
+import MapContent from '@/components/map/MapContent';
 
 interface SpotMapModalProps {
   isOpen?: boolean;
@@ -11,7 +11,7 @@ interface SpotMapModalProps {
 }
 
 export const SpotMapModal: React.FC<SpotMapModalProps> = ({ isOpen: propIsOpen, onClose: propOnClose }) => {
-  const { isMapModalOpen, closeMapModal } = useDasi();
+  const { isMapModalOpen, closeMapModal, selectedSpotIdForModal } = useDasi();
 
   const isOpen = propIsOpen !== undefined ? propIsOpen : isMapModalOpen;
   const handleClose = propOnClose || closeMapModal;
@@ -70,7 +70,7 @@ export const SpotMapModal: React.FC<SpotMapModalProps> = ({ isOpen: propIsOpen, 
 
         {/* 모달 내부: 스크롤 가능한 지도 페이지 콘텐츠 */}
         <div className="flex-1 overflow-y-auto">
-          <MapPage />
+          <MapContent defaultSpotId={selectedSpotIdForModal || undefined} />
         </div>
       </div>
     </div>

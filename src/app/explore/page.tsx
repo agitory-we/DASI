@@ -176,7 +176,7 @@ function isExpired(item: EventOrHotSpot): boolean {
 }
 
 export default function ExplorePage() {
-  const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto } = useDasi();
+  const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto, openMapModal } = useDasi();
   const { user, openLoginModal } = useAuth();
   const [filterType, setFilterType] = useState<'all' | 'top100' | 'knto_gallery' | 'festival' | 'hotspot' | 'guidebooks' | 'saved' | 'photos'>('all');
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
@@ -939,6 +939,15 @@ export default function ExplorePage() {
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
               <button
+                type="button"
+                onClick={() => openMapModal(item.id)}
+                className="px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
+                title="웹 내 팝업 지도로 이 스팟 위치 보기"
+              >
+                <MapPin className="w-3.5 h-3.5 text-emerald-700" />
+                <span className="hidden sm:inline">지도</span>
+              </button>
+              <button
                 onClick={() => setCheckInSpot(item)}
                 className="px-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
                 title="현장 방문 브라스 핀 인증 (+200P)"
@@ -1059,15 +1068,19 @@ export default function ExplorePage() {
                       이 장소 스냅 작가
                     </div>
                   </a>
-                  <a
-                    href="/map"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedSpot(null);
+                      openMapModal('spot-1');
+                    }}
                     className="p-2.5 rounded-xl border border-vintage-200 hover:border-terracotta bg-vintage-50 hover:bg-white text-center transition-all group"
                   >
                     <div className="text-sm">📍</div>
                     <div className="text-[11px] font-bold text-vintage-900 group-hover:text-terracotta">
                       인근 제휴 현상소
                     </div>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

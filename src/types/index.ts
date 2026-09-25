@@ -127,6 +127,7 @@ export interface UserCoupon {
   validUntil: string;
   category: 'lab' | 'repair' | 'film' | 'rental';
   barcode?: string;
+  code?: string;
   isUsed: boolean;
 }
 

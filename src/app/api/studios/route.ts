@@ -201,70 +201,92 @@ const BASE_STUDIOS: PhotoStudio[] = [
   },
 ];
 
+// 메모리 캐시 및 동기화 주기 (1시간)
+let memoryCache: {
+  studios: PhotoStudio[];
+  lastSynced: number;
+} | null = null;
+
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1시간
+
+async function getOrSyncStudios(forceSync: boolean = false): Promise<{ studios: PhotoStudio[]; fromCache: boolean; lastSynced: number }> {
+  const now = Date.now();
+  if (!forceSync && memoryCache && (now - memoryCache.lastSynced < CACHE_TTL_MS)) {
+    return { studios: memoryCache.studios, fromCache: true, lastSynced: memoryCache.lastSynced };
+  }
+
+  let mergedStudios = [...BASE_STUDIOS];
+  const currentYear = 2026;
+
+  // 1. 소상공인 상권정보 API (SMBA) 실데이터 동적 조회 시도
+  const smbaKey = process.env.SMBA_API_KEY;
+  const smbaBaseUrl = process.env.SMBA_API_BASE_URL || 'https://apis.data.go.kr/B553077/api/open/sdsc2';
+
+  if (smbaKey) {
+    try {
+      const smbaUrl = `${smbaBaseUrl}/storeListInDong?serviceKey=${encodeURIComponent(
+        smbaKey
+      )}&pageNo=1&numOfRows=20&divId=signguCd&key=11140&indsLclsCd=S2&indsMclsCd=S206&type=json`;
+
+      const res = await fetch(smbaUrl, { next: { revalidate: 3600 } });
+      if (res.ok) {
+        const json = await res.json();
+        const items = json?.body?.items;
+        if (Array.isArray(items) && items.length > 0) {
+          const parsedApiStudios: PhotoStudio[] = items.map((item: any, idx: number) => {
+            const estYear = item.bizesNm.includes('현상') || item.bizesNm.includes('칼라') ? 1994 : 2012;
+            const years = currentYear - estYear;
+            return {
+              id: `api-smba-${item.bizesId || idx}`,
+              name: item.bizesNm,
+              category: item.bizesNm.includes('현상') ? 'lab' : 'studio',
+              address: item.rdnmAdr || item.lnoAdr || '서울특별시 중구',
+              lat: parseFloat(item.lat) || 37.563,
+              lng: parseFloat(item.lon) || 126.99,
+              tel: item.telNo || '02-2270-0000',
+              openYear: estYear,
+              yearsInBusiness: years,
+              isHeritage: years >= 20,
+              heritageTier: years >= 30 ? 'master' : years >= 15 ? 'veteran' : undefined,
+              status: 'active',
+              isPartner: false,
+              specialties: ['일반 사진촬영', '필름 현상 및 인쇄'],
+              commercialDistrict: '공공데이터포털 소상공인 상권 연계',
+            };
+          });
+
+          const existingNames = new Set(mergedStudios.map((s) => s.name));
+          parsedApiStudios.forEach((apiS) => {
+            if (!existingNames.has(apiS.name)) {
+              mergedStudios.push(apiS);
+            }
+          });
+        }
+      }
+    } catch (apiErr) {
+      console.warn('[/api/studios] SMBA API fetch fallback activated:', apiErr);
+    }
+  }
+
+  memoryCache = {
+    studios: mergedStudios,
+    lastSynced: now,
+  };
+
+  return { studios: mergedStudios, fromCache: false, lastSynced: now };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const filter = searchParams.get('filter') || 'all'; // all | partner | heritage | lab | dropoff
     const district = searchParams.get('district'); // junggu | jongno | mapo | seongsu
-    const currentYear = 2026;
+    const forceSync = searchParams.get('force') === 'true';
 
-    let studios = [...BASE_STUDIOS];
+    const { studios: allStudios, fromCache, lastSynced } = await getOrSyncStudios(forceSync);
+    let studios = [...allStudios];
 
-    // 1. 소상공인 상권정보 API (SMBA) 실데이터 동적 조회 시도
-    const smbaKey = process.env.SMBA_API_KEY;
-    const smbaBaseUrl = process.env.SMBA_API_BASE_URL || 'https://apis.data.go.kr/B553077/api/open/sdsc2';
-
-    if (smbaKey) {
-      try {
-        // 서울 중구(11140) 사진관 업종(S20601) 조회 예시
-        const smbaUrl = `${smbaBaseUrl}/storeListInDong?serviceKey=${encodeURIComponent(
-          smbaKey
-        )}&pageNo=1&numOfRows=20&divId=signguCd&key=11140&indsLclsCd=S2&indsMclsCd=S206&type=json`;
-
-        const res = await fetch(smbaUrl, { next: { revalidate: 3600 } });
-        if (res.ok) {
-          const json = await res.json();
-          const items = json?.body?.items;
-          if (Array.isArray(items) && items.length > 0) {
-            // 외부 공공데이터 아이템을 PhotoStudio 포맷으로 파싱 및 결합
-            const parsedApiStudios: PhotoStudio[] = items.map((item: any, idx: number) => {
-              // 개업일자 추정 (소상공인 데이터 또는 인허가 매핑)
-              const estYear = item.bizesNm.includes('현상') || item.bizesNm.includes('칼라') ? 1994 : 2012;
-              const years = currentYear - estYear;
-              return {
-                id: `api-smba-${item.bizesId || idx}`,
-                name: item.bizesNm,
-                category: item.bizesNm.includes('현상') ? 'lab' : 'studio',
-                address: item.rdnmAdr || item.lnoAdr || '서울특별시 중구',
-                lat: parseFloat(item.lat) || 37.563,
-                lng: parseFloat(item.lon) || 126.99,
-                tel: item.telNo || '02-2270-0000',
-                openYear: estYear,
-                yearsInBusiness: years,
-                isHeritage: years >= 20,
-                heritageTier: years >= 30 ? 'master' : years >= 15 ? 'veteran' : undefined,
-                status: 'active',
-                isPartner: false, // 공공 수집 데이터는 기본 비제휴, 검증 후 제휴 전환
-                specialties: ['일반 사진촬영', '필름 현상 및 인쇄'],
-                commercialDistrict: '공공데이터포털 소상공인 상권 연계',
-              };
-            });
-
-            // 기존 명장/제휴 팩트 데이터와 중복 없이 머지
-            const existingNames = new Set(studios.map((s) => s.name));
-            parsedApiStudios.forEach((apiS) => {
-              if (!existingNames.has(apiS.name)) {
-                studios.push(apiS);
-              }
-            });
-          }
-        }
-      } catch (apiErr) {
-        console.warn('[/api/studios] SMBA API fetch fallback activated:', apiErr);
-      }
-    }
-
-    // 2. 필터링 로직
+    // 필터링 로직
     if (filter === 'partner') {
       studios = studios.filter((s) => s.isPartner);
     } else if (filter === 'heritage') {
@@ -275,7 +297,7 @@ export async function GET(req: NextRequest) {
       studios = studios.filter((s) => s.dropoffAvailable);
     }
 
-    // 3. 지역(District) 필터링
+    // 지역(District) 필터링
     if (district && district !== 'all') {
       if (district === 'junggu') {
         studios = studios.filter((s) => s.address.includes('중구'));
@@ -288,7 +310,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 4. 정렬: DASI 공식 제휴샵 최우선 배치 -> 노포 역사(yearsInBusiness 내림차순) 순
+    // 정렬: DASI 공식 제휴샵 최우선 배치 -> 노포 역사(yearsInBusiness 내림차순) 순
     studios.sort((a, b) => {
       if (a.isPartner && !b.isPartner) return -1;
       if (!a.isPartner && b.isPartner) return 1;
@@ -305,6 +327,8 @@ export async function GET(req: NextRequest) {
         dropoffCount: studios.filter((s) => s.dropoffAvailable).length,
         appliedFilter: filter,
         appliedDistrict: district || 'all',
+        fromCache,
+        lastSyncedAt: new Date(lastSynced).toISOString(),
         dataSources: [
           '소상공인시장진흥공단_상가(상권)정보 (data.go.kr)',
           '서울시 사진촬영및처리업 인허가 정보 (data.seoul.go.kr)',
@@ -316,6 +340,21 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error('[/api/studios] Error:', err);
+    return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
+  }
+}
+
+// 수동 즉시 동기화 엔드포인트
+export async function POST() {
+  try {
+    const { studios, lastSynced } = await getOrSyncStudios(true);
+    return NextResponse.json({
+      success: true,
+      message: '공공데이터 사진관 DB 즉시 동기화가 완료되었습니다.',
+      syncedCount: studios.length,
+      lastSyncedAt: new Date(lastSynced).toISOString(),
+    });
+  } catch (err) {
     return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
   }
 }
