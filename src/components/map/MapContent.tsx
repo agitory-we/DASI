@@ -33,6 +33,7 @@ import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
 import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
+import { GoogleMapCanvas } from '@/components/map/GoogleMapCanvas';
 
 export interface MapContentProps {
   defaultSpotId?: string;
@@ -261,8 +262,15 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
     }
   };
 
-  const openNavigation = (spot: AnalogSpot, service: 'kakao' | 'naver') => {
-    if (service === 'kakao') {
+  const openNavigation = (spot: AnalogSpot, service: 'google' | 'kakao' | 'naver') => {
+    if (service === 'google') {
+      window.open(
+        `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&destination_place_id=${encodeURIComponent(
+          spot.name
+        )}`,
+        '_blank'
+      );
+    } else if (service === 'kakao') {
       window.open(`https://map.kakao.com/link/to/${encodeURIComponent(spot.name)},${spot.lat},${spot.lng}`, '_blank');
     } else {
       window.open(`https://map.naver.com/v5/search/${encodeURIComponent(spot.address)}`, '_blank');
@@ -565,46 +573,11 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
         <div className="lg:col-span-7 space-y-6">
           {activeSpot && (
             <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs space-y-6">
-              {/* Map Canvas Mock with Real Coordinates & Pins */}
-              <div className="relative aspect-16/9 bg-stone-900 rounded-t-3xl overflow-hidden flex items-center justify-center p-6 text-center text-white">
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-40 filter grayscale contrast-125"
-                  style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=1200&auto=format&fit=crop&q=80')`,
-                  }}
-                />
-                <div className="absolute inset-0 bg-radial from-transparent to-black/80" />
-
-                <div className="relative z-10 space-y-2 max-w-md">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta text-white text-xs font-bold animate-bounce">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>{activeSpot.name}</span>
-                  </div>
-                  <div className="font-mono text-xs text-vintage-300">
-                    좌표: {activeSpot.lat.toFixed(4)}, {activeSpot.lng.toFixed(4)}
-                  </div>
-                  <p className="text-xs text-vintage-300">
-                    {activeSpot.address}
-                  </p>
-
-                  <div className="flex justify-center gap-2 pt-2">
-                    <button
-                      onClick={() => openNavigation(activeSpot, 'kakao')}
-                      className="px-3.5 py-1.5 rounded-xl bg-amber-400 text-stone-950 text-xs font-bold hover:bg-amber-300 transition-colors flex items-center gap-1"
-                    >
-                      <span>카카오맵 길찾기</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => openNavigation(activeSpot, 'naver')}
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 transition-colors flex items-center gap-1"
-                    >
-                      <span>네이버 지도 길찾기</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              {/* Live Interactive Google Map Canvas */}
+              <GoogleMapCanvas
+                activeSpot={activeSpot}
+                onOpenNavigation={openNavigation}
+              />
 
               {/* Spot Body Details */}
               <div className="p-6 sm:p-8 space-y-6">
