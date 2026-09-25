@@ -1,81 +1,84 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import * as SunCalc from 'suncalc';
 import {
   Sun,
-  Sunset,
-  Sunrise,
-  Sparkles,
-  Camera,
-  MapPin,
+  Moon,
   Clock,
+  MapPin,
+  Camera,
   Compass,
   Sliders,
-  ChevronRight,
-  Info,
+  Sparkles,
+  Share2,
   Calendar,
-  Layers
+  AlertCircle,
+  ChevronRight,
 } from 'lucide-react';
-import { useDasi } from '@/context/DasiContext';
+import * as SunCalc from 'suncalc';
+import { shareViaKakaoTalk } from '@/utils/kakaoShare';
 
 interface SunsetSpot {
+  id: string;
   name: string;
-  area: string;
-  vibe: string;
+  district: string;
   bestAngle: string;
-  lensRecommendation: string;
   recommendedFilm: string;
+  recommendedLens: string;
   exposureTip: string;
+  description: string;
   imageUrl: string;
 }
 
 const SUNSET_SPOTS: SunsetSpot[] = [
   {
-    name: '세운상가 옥상 (서울옥상)',
-    area: '종로·을지로',
-    vibe: '종묘와 북악산, 남산타워를 360도로 조망하는 레트로 스카이라인',
-    bestAngle: '일몰 20분 전 종묘 방향 붉은 노을 + 종로 귀금속 골목 네온',
-    lensRecommendation: '35mm 단렌즈 (도심 원경) 또는 50mm F1.4',
-    recommendedFilm: '코닥 포트라 400 또는 울트라맥스 400',
-    exposureTip: 'F2.8 ~ F4, 셔터 1/60s (노을 하이라이트 측광)',
-    imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
-  },
-  {
-    name: '노들섬 일몰 잔디마당 & 한강철교',
-    area: '용산·동작',
-    vibe: '한강 위로 달리는 1호선 전동차와 63빌딩 실루엣의 물빛 반영',
-    bestAngle: '일몰 직후 블루아워 15분간 한강철교 교각 실루엣',
-    lensRecommendation: '85mm ~ 135mm 망원렌즈 (열차 압축 구도)',
-    recommendedFilm: '시네스틸 800T 또는 후지 C200',
-    exposureTip: 'F5.6, 셔터 1/125s (열차 움직임 고정 시 삼각대 권장)',
-    imageUrl: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&auto=format&fit=crop&q=80',
-  },
-  {
-    name: '남산 백범광장 한양도성 성곽길',
-    area: '중구·용산',
-    vibe: '고색창연한 조선 성곽과 현대적인 힐튼·도심 빌딩의 절묘한 공존',
-    bestAngle: '성곽 조명이 켜지는 일몰 후 10분, 성곽 곡선 라인',
-    lensRecommendation: '28mm 광각렌즈 또는 40mm 팬케이크 렌즈',
-    recommendedFilm: '코닥 컬러플러스 200',
-    exposureTip: 'F4, 셔터 1/30s (성곽 돌담 텍스처 살리기)',
+    id: 'spot-1',
+    name: '응봉산 팔각정',
+    district: '성동구 응봉동',
+    bestAngle: '동호대교 & 성수대교 S자 한강 물결 뷰',
+    recommendedFilm: '후지 벨비아 50 / 코닥 엑타 100',
+    recommendedLens: '85mm ~ 135mm 망원계열',
+    exposureTip: 'F8, 1/60s (삼각대 지참 권장, 일몰 15분 전 하이라이트 중점 측광)',
+    description: '서울 한강과 도심 도로의 차량 궤적 및 골든아워 반사를 담기에 가장 이상적인 성지입니다.',
     imageUrl: 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&auto=format&fit=crop&q=80',
   },
   {
-    name: '응봉산 팔각정 일몰 & 동호대교 야경',
-    area: '성동구 응봉동',
-    vibe: '한강, 중랑천, 강변북로의 끝없는 차량 궤적과 황금빛 일몰',
-    bestAngle: '동호대교 남단 오렌지색 조명과 한강 수면 반사',
-    lensRecommendation: '50mm 표준 또는 24-70mm 줌렌즈',
-    recommendedFilm: '코닥 골드 200 또는 일포드 HP5+ 흑백',
-    exposureTip: 'F8 조리개 조임 (가로등 빛갈라짐 연출)',
-    imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    id: 'spot-2',
+    name: '낙산공원 한양도성 성곽길',
+    district: '종로구 이화동',
+    bestAngle: '도성 성곽 능선 너머 동대문 & 남산타워 실루엣',
+    recommendedFilm: '코닥 포트라 400 / 컬러플러스 200',
+    recommendedLens: '35mm ~ 50mm 표준 렌즈',
+    exposureTip: 'F4.0 ~ F5.6, 1/125s (일몰 직후 블루아워 시 성곽 은은한 조명 점등)',
+    description: '고즈넉한 조선의 돌담 성곽과 현대적인 남산타워 야경이 조화를 이루는 대표 출사지입니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'spot-3',
+    name: '선유도공원 선유교',
+    district: '영등포구 양평동',
+    bestAngle: '선유교 아치형 다리 위 양화대교 & 국회의사당 일몰',
+    recommendedFilm: '코닥 골드 200 / 일포드 HP5+ (흑백)',
+    recommendedLens: '28mm ~ 35mm 광각 렌즈',
+    exposureTip: 'F8, 1/250s (태양 직접 프레임 인 시 역광 렌즈 플레어 연출)',
+    description: '탁 트인 한강 서쪽 지평선으로 떨어지는 붉은 노을과 다리의 기하학적 곡선이 일품입니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'spot-4',
+    name: '노들섬 달빛광장 & 서쪽 잔디밭',
+    district: '용산구 이촌동',
+    bestAngle: '한강철교 위로 지나가는 1호선 전철과 여의도 63빌딩',
+    recommendedFilm: '시네스틸 800T (블루아워/야경 특화)',
+    recommendedLens: '50mm F1.4 단렌즈',
+    exposureTip: 'F2.8, 1/60s (네온사인과 차량 전조등의 붉은 할레이션 극대화)',
+    description: '철교를 건너는 기차의 아날로그 감성과 여의도의 현대적 스카이라인이 드라마틱하게 대비됩니다.',
+    imageUrl: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&auto=format&fit=crop&q=80',
   },
 ];
 
 export default function GoldenHourPage() {
-  const [now, setNow] = useState<Date>(new Date());
   const [times, setTimes] = useState<{
     sunset: string;
     goldenStart: string;
@@ -84,15 +87,9 @@ export default function GoldenHourPage() {
     blueEnd: string;
     countdownMinutes: number;
     phase: string;
-  }>({
-    sunset: '18:24',
-    goldenStart: '17:24',
-    goldenEnd: '18:24',
-    blueStart: '18:24',
-    blueEnd: '18:54',
-    countdownMinutes: 45,
-    phase: 'golden_approaching',
-  });
+  } | null>(null);
+
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     const calc = () => {
@@ -108,7 +105,7 @@ export default function GoldenHourPage() {
           const fmt = (d: Date) => {
             const h = String(d.getHours()).padStart(2, '0');
             const m = String(d.getMinutes()).padStart(2, '0');
-            return ${h}:;
+            return `${h}:${m}`;
           };
 
           const diffMins = Math.round((sunsetDate.getTime() - current.getTime()) / (1000 * 60));
@@ -143,175 +140,191 @@ export default function GoldenHourPage() {
   }, []);
 
   return (
-    <div className=max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Header Banner */}
-      <div className=space-y-3>
-        <div className=inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200>
-          <Sun className=w-3.5 h-3.5 text-amber-600 animate-spin />
+      <div className="space-y-3">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
+          <Sun className="w-3.5 h-3.5 text-amber-600 animate-spin" />
           <span>실시간 천문 기상 알고리즘 (SunCalc 서울 천구 기준)</span>
         </div>
-        <h1 className=font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
           서울 실시간 골든아워 &amp; 매직아워 출사 예보
         </h1>
-        <p className=text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed>
+        <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           필름카메라 사진이 가장 아름답게 물드는 하루 1시간, 태양의 고도가 6도 이하로 내려앉는 
           <strong>골든아워(Golden Hour)</strong>와 일몰 직후 30분의 <strong>블루아워(Blue Hour)</strong>를 실시간으로 예보합니다.
         </p>
       </div>
 
-      {/* Realtime Golden Hour Timeline Monitor */}
-      <div className=rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden space-y-6>
-        <div className=flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/20 pb-6 relative z-10>
-          <div className=space-y-1>
-            <span className=px-2.5 py-0.5 rounded-full bg-black/40 text-amber-200 text-xs font-mono font-bold>
-              {times.phase}
+      {/* Real-time Sun Timeline Dashboard */}
+      {times && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#2D241E] to-[#1F1813] text-white shadow-2xl relative overflow-hidden space-y-6">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+            <div>
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-xs">
+                현재 상태: {times.phase}
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold mt-2">
+                오늘의 서울 일몰: <span className="text-amber-400">{times.sunset}</span>
+              </h2>
+            </div>
+
+            <div className="text-right sm:text-right">
+              <div className="text-xs text-stone-400">일몰까지 남은 시간</div>
+              <div className="font-serif text-3xl sm:text-4xl font-bold text-amber-300 tracking-tight">
+                {times.countdownMinutes > 0 ? `${times.countdownMinutes}분 전` : '일몰 완료'}
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Bar */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+              <div className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
+                <Sun className="w-3.5 h-3.5" />
+                <span>골든아워 (Golden Hour)</span>
+              </div>
+              <div className="text-lg font-bold font-mono">
+                {times.goldenStart} ~ {times.goldenEnd}
+              </div>
+              <div className="text-[11px] text-stone-400 leading-snug">
+                따뜻한 황금빛 사광선, 인물 윤곽광 및 긴 그림자 연출
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+              <div className="text-xs text-rose-400 font-bold flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>일몰 정점 (Sunset Peak)</span>
+              </div>
+              <div className="text-lg font-bold font-mono text-rose-300">
+                {times.sunset}
+              </div>
+              <div className="text-[11px] text-stone-400 leading-snug">
+                태양이 지평선에 걸치는 3분, 드라마틱한 실루엣 노출
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+              <div className="text-xs text-indigo-400 font-bold flex items-center gap-1.5">
+                <Moon className="w-3.5 h-3.5" />
+                <span>블루아워 (Blue Hour)</span>
+              </div>
+              <div className="text-lg font-bold font-mono text-indigo-300">
+                {times.blueStart} ~ {times.blueEnd}
+              </div>
+              <div className="text-[11px] text-stone-400 leading-snug">
+                하늘의 짙은 코발트 블루와 도심 네온사인의 조화
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Meter Link */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs">
+            <span className="text-stone-300">
+              💡 현장에서 조도가 급격히 변할 때는 DASI 실시간 필름 노출계를 활용하세요.
             </span>
-            <h2 className=text-2xl sm:text-3xl font-serif font-bold>
-              오늘 서울 일몰 시각은 <span className=underline decoration-amber-300 font-mono>{times.sunset}</span> 입니다
-            </h2>
-          </div>
-
-          <div className=p-4 rounded-2xl bg-black/30 backdrop-blur-md border border-white/20 text-center font-mono shrink-0>
-            <div className=text-[10px] text-amber-200 uppercase tracking-widest>일몰까지 카운트다운</div>
-            <div className=text-2xl sm:text-3xl font-extrabold text-amber-300>
-              {times.countdownMinutes > 0 ? D-분 : '일몰 완료'}
-            </div>
+            <Link
+              href="/meter"
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>실시간 필름 노출계 열기</span>
+            </Link>
           </div>
         </div>
+      )}
 
-        {/* 3-Step Timeline */}
-        <div className=grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 text-xs>
-          <div className=p-4 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15 space-y-1.5>
-            <div className=flex items-center justify-between font-bold text-amber-200>
-              <span>1. 골든아워 (Golden Hour)</span>
-              <span className=font-mono>{times.goldenStart} ~ {times.goldenEnd}</span>
-            </div>
-            <p className=text-amber-100/90 text-[11px] leading-relaxed>
-              사광이 길게 늘어지며 도시 전체가 따스한 오렌지빛으로 물듭니다. 감도 ISO 200 추천.
-            </p>
-          </div>
-
-          <div className=p-4 rounded-2xl bg-white/20 backdrop-blur-xs border-2 border-white/40 space-y-1.5 shadow-md>
-            <div className=flex items-center justify-between font-bold text-white>
-              <span>2. 공식 일몰 (Sunset Moment)</span>
-              <span className=font-mono text-amber-300 font-extrabold text-sm>{times.sunset}</span>
-            </div>
-            <p className=text-amber-100 text-[11px] leading-relaxed>
-              태양이 지평선 아래로 사라지는 10분. 노출계는 하늘의 하이라이트에 맞추세요.
-            </p>
-          </div>
-
-          <div className=p-4 rounded-2xl bg-indigo-950/40 backdrop-blur-xs border border-white/15 space-y-1.5>
-            <div className=flex items-center justify-between font-bold text-indigo-200>
-              <span>3. 딥 블루아워 (Blue Hour)</span>
-              <span className=font-mono>{times.blueStart} ~ {times.blueEnd}</span>
-            </div>
-            <p className=text-indigo-100/90 text-[11px] leading-relaxed>
-              가로등이 켜지며 감청색 하늘과 도심 불빛이 극적 대비를 이룹니다. 감도 ISO 400~800 추천.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Film & Exposure Guide Bar */}
-      <div className=grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 rounded-2xl bg-white border border-vintage-200 text-xs shadow-2xs>
-        <div className=space-y-1>
-          <span className=font-bold text-vintage-900 flex items-center gap-1.5>
-            <Camera className=w-4 h-4 text-terracotta />
-            <span>오늘의 추천 필름</span>
-          </span>
-          <p className=text-vintage-600 text-[11px]>
-            코닥 컬러플러스 200 (낮~노을) / 시네스틸 800T (블루아워 야경)
+      {/* 4 Sunset Spots Grid */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-vintage-900">
+            서울 4대 골든아워 일몰 출사 명소 &amp; 추천 세팅
+          </h2>
+          <p className="text-xs sm:text-sm text-vintage-600 mt-1">
+            아날로그 필름의 입자와 색감을 가장 드라마틱하게 담을 수 있는 서울의 검증된 포인트입니다.
           </p>
         </div>
 
-        <div className=space-y-1>
-          <span className=font-bold text-vintage-900 flex items-center gap-1.5>
-            <Sliders className=w-4 h-4 text-amber-600 />
-            <span>표준 측광 팁</span>
-          </span>
-          <p className=text-vintage-600 text-[11px]>
-            노을 하늘 측광 시 +1스탑 오버 권장 (역광 피사체 실루엣 방지)
-          </p>
-        </div>
-
-        <div className=space-y-1>
-          <span className=font-bold text-vintage-900 flex items-center gap-1.5>
-            <Clock className=w-4 h-4 text-emerald-600 />
-            <span>필름 당일 퀵 수령</span>
-          </span>
-          <p className=text-vintage-600 text-[11px]>
-            출사지 출발 전 <Link href=/films className=text-terracotta font-bold underline>필름 3롤 퀵 주문</Link> 시 3시간 내 현장 도착
-          </p>
-        </div>
-      </div>
-
-      {/* 4 Sunset Spots Showcase */}
-      <div className=space-y-4>
-        <h3 className=font-serif text-2xl font-bold text-vintage-900>
-          서울 4대 일몰 &amp; 매직아워 추천 출사 스팟
-        </h3>
-        <p className=text-xs text-vintage-500>
-          오늘 골든아워에 맞춰 방문하기 좋은 검증된 스팟과 최적의 촬영 세팅입니다.
-        </p>
-
-        <div className=grid grid-cols-1 md:grid-cols-2 gap-6 pt-2>
-          {SUNSET_SPOTS.map((spot, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {SUNSET_SPOTS.map((spot) => (
             <div
-              key={idx}
-              className=rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:border-amber-400 hover:shadow-xl transition-all flex flex-col justify-between group
+              key={spot.id}
+              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className=relative aspect-[16/9] bg-vintage-100 overflow-hidden>
+                <div className="relative aspect-[16/9] bg-stone-900 overflow-hidden">
                   <img
                     src={spot.imageUrl}
                     alt={spot.name}
-                    className=w-full h-full object-cover group-hover:scale-105 transition-transform duration-700
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className=absolute top-3 left-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-bold flex items-center gap-1>
-                    <MapPin className=w-3.5 h-3.5 text-amber-400 />
-                    <span>{spot.area}</span>
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-xs font-bold flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-terracotta" />
+                    <span>{spot.district}</span>
                   </div>
                 </div>
 
-                <div className=p-6 space-y-4>
+                <div className="p-6 space-y-4">
                   <div>
-                    <h4 className=font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors>
+                    <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
                       {spot.name}
-                    </h4>
-                    <p className=text-xs text-vintage-600 mt-1 leading-relaxed>
-                      {spot.vibe}
+                    </h3>
+                    <p className="text-xs text-vintage-600 mt-1.5 leading-relaxed">
+                      {spot.description}
                     </p>
                   </div>
 
-                  <div className=space-y-2 text-xs>
-                    <div className=p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1>
-                      <span className=font-bold text-amber-950 block>📸 최적의 앵글 타이밍:</span>
-                      <span className=text-amber-900 text-[11px] block>{spot.bestAngle}</span>
+                  <div className="space-y-2 pt-2 border-t border-vintage-100 text-xs">
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-vintage-800 shrink-0">추천 앵글:</span>
+                      <span className="text-vintage-600">{spot.bestAngle}</span>
                     </div>
-
-                    <div className=grid grid-cols-2 gap-2 text-[11px]>
-                      <div className=p-2.5 rounded-xl bg-vintage-50 border border-vintage-150>
-                        <span className=text-vintage-500 font-bold block>추천 화각:</span>
-                        <span className=text-vintage-800 font-medium>{spot.lensRecommendation}</span>
-                      </div>
-                      <div className=p-2.5 rounded-xl bg-vintage-50 border border-vintage-150>
-                        <span className=text-vintage-500 font-bold block>노출 가이드:</span>
-                        <span className=text-vintage-800 font-mono font-medium>{spot.exposureTip}</span>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-vintage-800 shrink-0">추천 필름:</span>
+                      <span className="text-amber-800 font-semibold">{spot.recommendedFilm}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-vintage-800 shrink-0">추천 렌즈:</span>
+                      <span className="text-vintage-600">{spot.recommendedLens}</span>
+                    </div>
+                    <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-950 font-medium">
+                      <Camera className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold block">권장 노출값:</span>
+                        <span className="text-[11px] leading-tight">{spot.exposureTip}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className=p-6 pt-0>
+              <div className="p-6 pt-0 flex gap-2">
                 <Link
-                  href=/map
-                  className=w-full py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5
+                  href={`/map?lat=37.5665&lng=126.978`}
+                  className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1.5"
                 >
-                  <MapPin className=w-3.5 h-3.5 />
-                  <span>스팟 지도에서 근처 현상소 찾기</span>
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>지도로 위치 보기</span>
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    shareViaKakaoTalk({
+                      title: `${spot.name} - 골든아워 일몰 출사 가이드`,
+                      description: `추천 필름: ${spot.recommendedFilm} · 권장 세팅: ${spot.exposureTip}`,
+                      imageUrl: spot.imageUrl,
+                      buttonTitle: '일몰 예보 & 출사 팁 보기',
+                    })
+                  }
+                  className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold"
+                  title="카카오톡 공유"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}

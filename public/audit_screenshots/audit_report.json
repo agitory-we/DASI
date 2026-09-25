@@ -2,7 +2,10 @@
   {
     "name": "01_home",
     "url": "http://localhost:3000/",
-    "error": "page.goto: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\01_home.png"
   },
   {
     "name": "02_explore",
@@ -91,5 +94,29 @@
     "clientWidth": 1440,
     "hasHorizontalOverflow": false,
     "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\12_partner.png"
+  },
+  {
+    "name": "13_films",
+    "url": "http://localhost:3000/films",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\13_films.png"
+  },
+  {
+    "name": "14_studios",
+    "url": "http://localhost:3000/studios",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\14_studios.png"
+  },
+  {
+    "name": "15_golden_hour",
+    "url": "http://localhost:3000/golden-hour",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\15_golden_hour.png"
   }
 ]
