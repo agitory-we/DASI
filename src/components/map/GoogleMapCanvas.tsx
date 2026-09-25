@@ -48,8 +48,13 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
     }
   };
 
-  // Google Maps Embed URL (좌표 기반 실시간 인터랙티브 맵)
-  const embedUrl = `https://maps.google.com/maps?q=${activeSpot.lat},${activeSpot.lng}&hl=ko&z=${zoomLevel}&output=embed`;
+  // Google Maps API Key (옵션: .env.local의 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+
+  // Google Maps Embed URL (정식 API Key 지원 + Fallback 무키 모드 완벽 호환)
+  const embedUrl = apiKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${activeSpot.lat},${activeSpot.lng}&zoom=${zoomLevel}&language=ko`
+    : `https://maps.google.com/maps?q=${activeSpot.lat},${activeSpot.lng}&hl=ko&z=${zoomLevel}&output=embed`;
 
   return (
     <div
