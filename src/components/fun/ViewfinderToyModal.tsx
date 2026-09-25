@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Camera, RotateCw, Sparkles, Check, Sliders, Volume2, VolumeX, Award, ArrowRight } from 'lucide-react';
 import { playShutterSound, playWindingAdvanceSound, playFocusBeepSound, isAudioMuted, toggleAudioMute } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -40,6 +41,7 @@ const VIEWFINDER_SCENES = [
 
 export const ViewfinderToyModal: React.FC<ViewfinderToyModalProps> = ({ isOpen, onClose }) => {
   const { showToast } = useDasi();
+  const [mounted, setMounted] = useState<boolean>(false);
 
   const [sceneIndex, setSceneIndex] = useState<number>(0);
   const [focusSlider, setFocusSlider] = useState<number>(15); // 0 ~ 100 (50이 정초점)
@@ -52,10 +54,21 @@ export const ViewfinderToyModal: React.FC<ViewfinderToyModalProps> = ({ isOpen, 
   const [isDraggingLever, setIsDraggingLever] = useState<boolean>(false);
 
   useEffect(() => {
+    setMounted(true);
     setIsMuted(isAudioMuted());
   }, []);
 
-  if (!isOpen) return null;
+  // ESC 키 누르면 모달 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !mounted) return null;
 
   const currentScene = VIEWFINDER_SCENES[sceneIndex];
 
@@ -137,9 +150,15 @@ export const ViewfinderToyModal: React.FC<ViewfinderToyModalProps> = ({ isOpen, 
     setFocusSlider(15);
   };
 
-  return (
-    <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-5 bg-stone-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-stone-900 rounded-3xl border border-stone-700 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+  return createPortal(
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-stone-950/85 backdrop-blur-md overflow-y-auto animate-fadeIn"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl bg-stone-900 rounded-3xl border border-stone-700 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto"
+      >
         {/* 상단 툴바 */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-stone-800 bg-stone-900/95 sticky top-0 z-20">
           <div className="flex items-center gap-2">
@@ -161,10 +180,11 @@ export const ViewfinderToyModal: React.FC<ViewfinderToyModalProps> = ({ isOpen, 
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition"
+              className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition shadow-xs"
               aria-label="닫기"
+              title="창 닫기 (ESC)"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -369,6 +389,7 @@ export const ViewfinderToyModal: React.FC<ViewfinderToyModalProps> = ({ isOpen, 
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

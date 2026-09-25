@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Store,
@@ -32,12 +33,27 @@ interface StudioDirectoryModalProps {
 
 export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOpen, onClose }) => {
   const { showToast, addCoupon } = useDasi();
+  const [mounted, setMounted] = useState<boolean>(false);
   const [studios, setStudios] = useState<PhotoStudio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'partner' | 'heritage' | 'lab' | 'dropoff'>('all');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedStudioForQr, setSelectedStudioForQr] = useState<PhotoStudio | null>(null);
   const [qrRemainingSeconds, setQrRemainingSeconds] = useState<number>(600); // 10분 유효시간
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleIssueQrVoucher = (studio: PhotoStudio) => {
     setSelectedStudioForQr(studio);
@@ -89,7 +105,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
       });
   }, [isOpen, activeFilter, selectedDistrict]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -102,7 +118,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
     window.open(`https://map.kakao.com/link/search/${query}`, '_blank');
   };
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-stone-950/80 backdrop-blur-md overflow-y-auto animate-fadeIn"
@@ -436,6 +452,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

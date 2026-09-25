@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Sparkles, Gift, Download, RotateCcw, Coins, Check, ArrowRight, ShieldCheck, Flame } from 'lucide-react';
 import { playCoinSound, playVendingClunkSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -69,6 +70,7 @@ const PRIZE_POOL: PrizeResult[] = [
 
 export const FilmVendingMachineModal: React.FC<FilmVendingMachineModalProps> = ({ isOpen, onClose }) => {
   const { addCoupon, showToast } = useDasi();
+  const [mounted, setMounted] = useState<boolean>(false);
   const [points, setPoints] = useState<number>(600); // 사용자 가상 포인트
   const [isCoinInserted, setIsCoinInserted] = useState<boolean>(false);
   const [isDialTurning, setIsDialTurning] = useState<boolean>(false);
@@ -77,7 +79,21 @@ export const FilmVendingMachineModal: React.FC<FilmVendingMachineModalProps> = (
   const [isOpeningCapsule, setIsOpeningCapsule] = useState<boolean>(false);
   const [revealedPrize, setRevealedPrize] = useState<PrizeResult | null>(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !mounted) return null;
 
   // 동전 투입
   const handleInsertCoin = () => {
@@ -203,11 +219,17 @@ export const FilmVendingMachineModal: React.FC<FilmVendingMachineModalProps> = (
     setIsCoinInserted(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-[9990] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-xl bg-stone-900 rounded-3xl border border-stone-700 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  return createPortal(
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-stone-950/85 backdrop-blur-md overflow-y-auto animate-fadeIn"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-xl bg-stone-900 rounded-3xl border border-stone-700 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-800 bg-stone-900/90 sticky top-0 z-20">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-800 bg-stone-900/95 sticky top-0 z-20">
           <div className="flex items-center gap-2.5">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -227,10 +249,11 @@ export const FilmVendingMachineModal: React.FC<FilmVendingMachineModalProps> = (
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition"
+              className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition shadow-xs"
               aria-label="닫기"
+              title="창 닫기 (ESC)"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -407,6 +430,7 @@ export const FilmVendingMachineModal: React.FC<FilmVendingMachineModalProps> = (
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
