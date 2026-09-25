@@ -41,7 +41,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onToggleCollapse,
 }) => {
   const pathname = usePathname();
-  const { cameras, analogSpots, experiences, coupons } = useDasi();
+  const { cameras, analogSpots, experiences, coupons, openMapModal } = useDasi();
   const { profile } = useAuth();
 
   // 실시간 일몰/골든아워 계산 (서울 위경도)
@@ -292,7 +292,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <Link
                     key={iIdx}
                     href={item.href}
-                    onClick={() => {
+                    onClick={(e) => {
+                      if (item.href === '/map') {
+                        e.preventDefault();
+                        openMapModal();
+                      }
                       if (onCloseMobile) onCloseMobile();
                     }}
                     title={isCollapsed ? item.title : undefined}

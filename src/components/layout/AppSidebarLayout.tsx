@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
+import { SpotMapModal } from '@/components/map/SpotMapModal';
 
 interface AppSidebarLayoutProps {
   children: React.ReactNode;
@@ -37,6 +38,9 @@ export const AppSidebarLayout: React.FC<AppSidebarLayoutProps> = ({ children }) 
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <Footer />
       </div>
+
+      {/* 3. Global Spot Map Popup Modal */}
+      <SpotMapModal />
     </div>
   );
 };

@@ -130,6 +130,9 @@ interface DasiContextType {
   submitRepairEstimate: (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => string;
   bookProConsultation: (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => string;
   toggleSaveSpot: (spotId: string) => void;
+  isMapModalOpen: boolean;
+  openMapModal: () => void;
+  closeMapModal: () => void;
   toast: { message: string; type: 'info' | 'success' | 'warning' } | null;
   showToast: (message: string, type?: 'info' | 'success' | 'warning') => void;
 }
@@ -158,7 +161,11 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [communityPhotos, setCommunityPhotos] = useState<CommunityPhoto[]>(mockCommunityPhotos);
   const [isWelcomeClaimed, setIsWelcomeClaimed] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'warning' } | null>(null);
+
+  const openMapModal = () => setIsMapModalOpen(true);
+  const closeMapModal = () => setIsMapModalOpen(false);
 
   const showToast = (message: string, type: 'info' | 'success' | 'warning' = 'success') => {
     setToast({ message, type });
@@ -537,6 +544,9 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         submitRepairEstimate,
         bookProConsultation,
         toggleSaveSpot,
+        isMapModalOpen,
+        openMapModal,
+        closeMapModal,
         toast,
         showToast,
       }}

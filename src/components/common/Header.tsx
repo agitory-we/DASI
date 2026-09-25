@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const pathname = usePathname();
   const { triggerHaptic } = useDevicePlatform();
-  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast } = useDasi();
+  const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast, openMapModal } = useDasi();
   const { user, profile } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const coreNavItems = [
     { href: '/rent', label: '카메라 렌탈' },
-    { href: '/map', label: '스팟 지도' },
+    { href: '/map', label: '스팟 지도', isModal: true },
     { href: '/gigs', label: '로컬 포토긱' },
     { href: '/clinic', label: '명장 케어' },
   ];
@@ -308,6 +308,17 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
+            {/* 전국 아날로그 스팟 & 당일 현상소 팝업 지도 런처 */}
+            <button
+              onClick={openMapModal}
+              className="px-2.5 py-1.5 rounded-xl bg-terracotta/10 hover:bg-terracotta/20 text-terracotta border border-terracotta/30 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              title="전국 아날로그 스팟 & 당일 현상소 팝업 지도 (X 누르면 웹으로 복귀)"
+            >
+              <MapPin className="w-3.5 h-3.5 text-terracotta" />
+              <span className="hidden xl:inline-block">스팟 맵</span>
+              <span className="text-[9px] px-1 py-0.2 bg-terracotta text-white rounded font-mono">POPUP</span>
+            </button>
+
             {/* 서울 사진관 & 제휴 현상소 디렉토리 런처 */}
             <button
               onClick={() => setIsStudioOpen(true)}
@@ -411,17 +422,35 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            {coreNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`p-3 rounded-xl font-bold flex items-center justify-between ${
-                  pathname === item.href ? 'bg-vintage-900 text-white' : 'bg-vintage-50 text-vintage-800'
-                }`}
-              >
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {coreNavItems.map((item) => {
+              if (item.isModal) {
+                return (
+                  <button
+                    key={item.href}
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      openMapModal();
+                    }}
+                    className="p-3 rounded-xl font-bold flex items-center justify-between bg-amber-500/10 text-amber-900 border border-amber-200/80 text-left transition-all hover:bg-amber-500/20 shadow-2xs"
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-terracotta text-white font-mono">POPUP</span>
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`p-3 rounded-xl font-bold flex items-center justify-between ${
+                    pathname === item.href ? 'bg-vintage-900 text-white' : 'bg-vintage-50 text-vintage-800'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </div>
 
           <div className="pt-2 border-t border-vintage-100 space-y-1">

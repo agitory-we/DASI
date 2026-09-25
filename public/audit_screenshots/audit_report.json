@@ -1,0 +1,95 @@
+[
+  {
+    "name": "01_home",
+    "url": "http://localhost:3000/",
+    "error": "page.goto: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+  },
+  {
+    "name": "02_explore",
+    "url": "http://localhost:3000/explore",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\02_explore.png"
+  },
+  {
+    "name": "03_map",
+    "url": "http://localhost:3000/map",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\03_map.png"
+  },
+  {
+    "name": "04_rent",
+    "url": "http://localhost:3000/rent",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\04_rent.png"
+  },
+  {
+    "name": "05_clinic",
+    "url": "http://localhost:3000/clinic",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\05_clinic.png"
+  },
+  {
+    "name": "06_cabinet_coupons",
+    "url": "http://localhost:3000/cabinet?tab=coupons",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\06_cabinet_coupons.png"
+  },
+  {
+    "name": "07_cabinet_points",
+    "url": "http://localhost:3000/cabinet?tab=points",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\07_cabinet_points.png"
+  },
+  {
+    "name": "08_pro",
+    "url": "http://localhost:3000/pro",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\08_pro.png"
+  },
+  {
+    "name": "09_experiences",
+    "url": "http://localhost:3000/experiences",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\09_experiences.png"
+  },
+  {
+    "name": "10_ai_appraisal",
+    "url": "http://localhost:3000/ai-appraisal",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\10_ai_appraisal.png"
+  },
+  {
+    "name": "11_meter",
+    "url": "http://localhost:3000/meter",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\11_meter.png"
+  },
+  {
+    "name": "12_partner",
+    "url": "http://localhost:3000/partner",
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "shotPath": "C:\\Users\\story\\Desktop\\REborn\\public\\audit_screenshots\\12_partner.png"
+  }
+]

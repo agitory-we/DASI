@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { AnalogSpot, SpotCategory } from '@/types';
 import {
   MapPin,
@@ -255,9 +256,19 @@ export default function MapPage() {
       {/* Top Banner & Heading */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mb-2">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>실시간 아날로그 스팟 &amp; 당일 스캔 맵</span>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vintage-200/80 hover:bg-vintage-300 text-vintage-800 text-xs font-bold transition-all shadow-2xs group"
+              title="메인 웹(홈) 화면으로 돌아가기"
+            >
+              <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+              <span>웹으로 돌아가기</span>
+            </Link>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>실시간 아날로그 스팟 &amp; 당일 스캔 맵</span>
+            </div>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
             전국 현상소 · 필름 자판기 지도
