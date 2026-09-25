@@ -51,6 +51,7 @@ export interface AnalogSpot {
   name: string;
   category: SpotCategory;
   isMicroAdPartner: boolean; // 소액 홍보 파트너 여부
+  isPartner?: boolean; // 공식 제휴 여부
   partnerBadgeText?: string;
   address: string;
   area: string;

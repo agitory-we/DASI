@@ -130,7 +130,7 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
             <span style="font-size: 13px;">${catStyle.icon}</span>
             <strong style="font-size: 13px;">${spot.name}</strong>
-            ${spot.isPartner ? '<span style="font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #fef3c7; color: #92400e; font-weight: bold;">제휴</span>' : ''}
+            ${spot.isPartner || spot.isMicroAdPartner || spot.hasQrDiscount ? '<span style="font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #fef3c7; color: #92400e; font-weight: bold;">제휴</span>' : ''}
           </div>
           <div style="font-size: 11px; color: #78716c; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             ${spot.address || spot.area}
