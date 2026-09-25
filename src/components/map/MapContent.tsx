@@ -573,9 +573,11 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
         <div className="lg:col-span-7 space-y-6">
           {activeSpot && (
             <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs space-y-6">
-              {/* Live Interactive Google Map Canvas */}
+              {/* Live Interactive Multi-Spot Google Map Canvas */}
               <GoogleMapCanvas
                 activeSpot={activeSpot}
+                spots={sortedSpots}
+                onSelectSpot={(spot) => setActiveSpotId(spot.id)}
                 onOpenNavigation={openNavigation}
               />
 
