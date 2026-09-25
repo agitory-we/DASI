@@ -24,7 +24,8 @@ import {
   Star,
   Film,
   Truck,
-  PackageCheck
+  PackageCheck,
+  Store
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -105,6 +106,7 @@ export default function RentPage() {
   const [pickupTime, setPickupTime] = useState<string>('14:00');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'toss' | 'kakao'>('card');
   const [selectedShopId, setSelectedShopId] = useState<string>('shop-1');
+  const [returnMethod, setReturnMethod] = useState<'shop' | 'convenience'>('shop');
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
   const [filmRollCount, setFilmRollCount] = useState<number>(1);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
@@ -723,6 +725,51 @@ export default function RentPage() {
                           Fujifilm 200 (잔여 5롤)
                         </span>
                       </div>
+                    </div>
+
+                    {/* 반납 방식 선택 (행정안전부 24시 편의점 드롭오프 연계) */}
+                    <div className="pt-2 border-t border-vintage-200/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-vintage-800">
+                          반납 방식 선택
+                        </label>
+                        <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full">
+                          24시간 심야 반납 지원
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setReturnMethod('shop')}
+                          className={`p-2.5 rounded-xl border font-bold flex flex-col items-center justify-center gap-1 transition ${
+                            returnMethod === 'shop'
+                              ? 'border-vintage-900 bg-vintage-900 text-white shadow-2xs'
+                              : 'border-vintage-200 bg-white text-vintage-700 hover:bg-vintage-50'
+                          }`}
+                        >
+                          <Store className="w-4 h-4" />
+                          <span>픽업 매장 직접 반납</span>
+                          <span className="text-[9px] opacity-70">영업시간 내 방문</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setReturnMethod('convenience')}
+                          className={`p-2.5 rounded-xl border font-bold flex flex-col items-center justify-center gap-1 transition ${
+                            returnMethod === 'convenience'
+                              ? 'border-emerald-600 bg-emerald-700 text-white shadow-2xs'
+                              : 'border-vintage-200 bg-white text-vintage-700 hover:bg-vintage-50'
+                          }`}
+                        >
+                          <Clock className="w-4 h-4" />
+                          <span>🏪 24시 편의점 무인 반납</span>
+                          <span className="text-[9px] opacity-70">전국 GS25/CU (행안부 연계)</span>
+                        </button>
+                      </div>
+                      {returnMethod === 'convenience' && (
+                        <p className="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200 leading-snug">
+                          💡 <strong>무인 반납 혜택:</strong> 반납일 자정까지 가까운 GS25/CU 무인 택배함에 넣으시면 자동 반납 처리되며, 촬영한 필름도 제휴 현상소로 묶음 배송됩니다.
+                        </p>
+                      )}
                     </div>
                   </div>
 

@@ -29,13 +29,29 @@ interface StudioDirectoryModalProps {
 }
 
 export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOpen, onClose }) => {
-  const { showToast } = useDasi();
+  const { showToast, addCoupon } = useDasi();
   const [studios, setStudios] = useState<PhotoStudio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'partner' | 'heritage' | 'lab' | 'dropoff'>('all');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedStudioForQr, setSelectedStudioForQr] = useState<PhotoStudio | null>(null);
   const [qrRemainingSeconds, setQrRemainingSeconds] = useState<number>(600); // 10분 유효시간
+
+  const handleIssueQrVoucher = (studio: PhotoStudio) => {
+    setSelectedStudioForQr(studio);
+    if (studio.partnerBenefit) {
+      addCoupon({
+        id: `voucher-${Date.now()}`,
+        title: `[현장 20% 할인] ${studio.name}`,
+        issuerName: studio.name,
+        discountText: studio.partnerBenefit.discountText,
+        validUntil: '2026.12.31',
+        category: 'lab',
+        isUsed: false,
+      });
+      showToast(`${studio.name} 20% 현장 할인권이 캐비닛 쿠폰함에 자동 보관되었습니다!`, 'success');
+    }
+  };
 
   // QR 모달 타이머
   useEffect(() => {
@@ -287,7 +303,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
                     <div className="mt-4 pt-3 border-t border-vintage-200/70 flex items-center gap-2">
                       {studio.isPartner ? (
                         <button
-                          onClick={() => setSelectedStudioForQr(studio)}
+                          onClick={() => handleIssueQrVoucher(studio)}
                           className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
                         >
                           <QrCode className="w-3.5 h-3.5" />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AnalogSpot, SpotCategory } from '@/types';
 import {
   MapPin,
@@ -30,6 +30,7 @@ import { ReviewModal } from '@/components/common/ReviewModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
+import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
 import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 
 export default function MapPage() {
@@ -41,6 +42,7 @@ export default function MapPage() {
   const [isSpotReviewModalOpen, setIsSpotReviewModalOpen] = useState<boolean>(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState<boolean>(false);
   const [isSpotCheckInOpen, setIsSpotCheckInOpen] = useState<boolean>(false);
+  const [isStudioModalOpen, setIsStudioModalOpen] = useState<boolean>(false);
   const [selectedCouponSpot, setSelectedCouponSpot] = useState<AnalogSpot | null>(null);
   const [filterSameDayOnly, setFilterSameDayOnly] = useState<boolean>(false);
   const [filterQrDiscountOnly, setFilterQrDiscountOnly] = useState<boolean>(false);
@@ -93,7 +95,45 @@ export default function MapPage() {
   };
 
   const [tourApiNearbySpots, setTourApiNearbySpots] = useState<AnalogSpot[]>([]);
+  const [studiosList, setStudiosList] = useState<AnalogSpot[]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+
+  // 서울시 사진관/노포 현상소 공공 융합 데이터 동적 로드
+  useEffect(() => {
+    fetch('/api/studios')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.studios)) {
+          const mapped: AnalogSpot[] = data.studios.map((st: any) => ({
+            id: st.id,
+            name: st.name,
+            category: (st.category === 'lab' || st.category === 'darkroom' ? 'lab' : 'film_shop') as SpotCategory,
+            isPartner: st.isPartner,
+            partnerBadgeText: st.isPartner ? '⭐ DASI 제휴 20% 할인' : st.isHeritage ? `🏛️ ${st.yearsInBusiness}년 노포` : undefined,
+            address: st.address,
+            area: st.address.includes('중구') ? '을지로/충무로' : st.address.includes('종로') ? '종로' : st.address.includes('성동') ? '성수' : '홍대/연남',
+            lat: st.lat,
+            lng: st.lng,
+            contact: st.tel || '02-2270-0000',
+            openHours: st.isHeritage ? '10:00 - 19:00 (일요일 휴무)' : '11:00 - 20:00 (연중무휴)',
+            rating: st.isHeritage ? 4.9 : 4.8,
+            reviewsCount: st.isHeritage ? 89 : 45,
+            services: st.specialties || ['필름 현상', '스캔'],
+            scanners: ['노리츠/후지 고정밀'],
+            description: st.isPartner && st.partnerBenefit ? `${st.partnerBenefit.discountText} — ${st.partnerBenefit.perk}` : `${st.yearsInBusiness ? `${st.yearsInBusiness}년 전통 ` : ''}${st.commercialDistrict || '서울 사진관'}`,
+            imageUrl: st.isPartner
+              ? 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80'
+              : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+            sameDayAvailable: true,
+            hasQrDiscount: st.isPartner,
+            qrDiscountRate: st.isPartner ? '20%' : undefined,
+            dropBox: st.dropoffAvailable,
+          }));
+          setStudiosList(mapped);
+        }
+      })
+      .catch((err) => console.error('Failed to load studios on map:', err));
+  }, []);
 
   // 한국관광 100선 및 공식 캐치프레이즈를 AnalogSpot 형태로 매핑
   const top100AnalogSpots: AnalogSpot[] = useMemo(() => {
@@ -163,8 +203,8 @@ export default function MapPage() {
   };
 
   const combinedSpots = useMemo(() => {
-    return [...analogSpots, ...top100AnalogSpots, ...tourApiNearbySpots];
-  }, [analogSpots, top100AnalogSpots, tourApiNearbySpots]);
+    return [...analogSpots, ...top100AnalogSpots, ...tourApiNearbySpots, ...studiosList];
+  }, [analogSpots, top100AnalogSpots, tourApiNearbySpots, studiosList]);
 
   const sortedSpots = useMemo(() => {
     return [...combinedSpots].filter((spot) => {
@@ -245,6 +285,15 @@ export default function MapPage() {
           >
             <Sparkles className={`w-3.5 h-3.5 ${isLoadingNearby ? 'animate-spin text-amber-600' : 'text-amber-600'}`} />
             <span>{isLoadingNearby ? '공공데이터 스캔 중...' : '📍 주변 3km 공공데이터 출사지 로딩'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsStudioModalOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-500/15 hover:bg-amber-500/25 text-xs font-bold text-amber-900 transition-colors flex items-center gap-1.5 shadow-2xs"
+            title="서울시 사진관 & 노포 현상소 (20% 할인 QR & 업력)"
+          >
+            <Store className="w-3.5 h-3.5 text-terracotta" />
+            <span>🏛️ 서울 사진관·현상소 (제휴 QR)</span>
           </button>
 
           <button
@@ -838,6 +887,12 @@ export default function MapPage() {
           leadTime={selectedCouponSpot.filmDevelopLeadTime || selectedCouponSpot.repairLeadTime || '당일 현장 즉시 적용'}
         />
       )}
+
+      {/* 서울시 사진관 & 노포 현상소 공공 융합 디렉토리 모달 */}
+      <StudioDirectoryModal
+        isOpen={isStudioModalOpen}
+        onClose={() => setIsStudioModalOpen(false)}
+      />
     </div>
   );
 }
