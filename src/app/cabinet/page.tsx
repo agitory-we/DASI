@@ -143,7 +143,20 @@ const SEONGSU_COURSE_SPOTS: HeritageSpotItem[] = [
   },
 ];
 
-export default function CabinetPage() {
+export const dynamic = 'force-dynamic';
+
+function TabQuerySync({ onTabChange }: { onTabChange: (tab: any) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['camera', 'tickets', 'repairs', 'pro', 'coupons', 'points', 'passport'].includes(tabParam)) {
+      onTabChange(tabParam);
+    }
+  }, [searchParams, onTabChange]);
+  return null;
+}
+
+function CabinetContent() {
   const {
     rentingItems,
     ownedItems,
@@ -160,16 +173,7 @@ export default function CabinetPage() {
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const { triggerHaptic } = useDevicePlatform();
-  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
-
-  // URL 쿼리 파라미터 (?tab=coupons 등) 기반 탭 자동 동기화
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['camera', 'tickets', 'repairs', 'pro', 'coupons', 'points', 'passport'].includes(tabParam)) {
-      setActiveTab(tabParam as any);
-    }
-  }, [searchParams]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
@@ -337,6 +341,10 @@ export default function CabinetPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <Suspense fallback={null}>
+        <TabQuerySync onTabChange={setActiveTab} />
+      </Suspense>
+
       {/* Header & User Ecosystem Profile Banner */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-vintage-900 via-[#2D241E] to-vintage-800 text-white shadow-md">
         <div className="space-y-1.5">
@@ -2659,6 +2667,21 @@ export default function CabinetPage() {
         totalSpots={7}
       />
     </div>
+  );
+}
+
+export default function CabinetPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center min-h-[50vh] space-y-3">
+          <div className="w-8 h-8 rounded-full border-2 border-vintage-900 border-t-transparent animate-spin" />
+          <p className="text-xs text-vintage-500 font-serif">마이 캐비닛 데이터를 불러오는 중입니다...</p>
+        </div>
+      }
+    >
+      <CabinetContent />
+    </Suspense>
   );
 }
 

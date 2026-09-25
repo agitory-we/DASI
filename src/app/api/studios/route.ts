@@ -234,27 +234,38 @@ async function getOrSyncStudios(forceSync: boolean = false): Promise<{ studios: 
         const json = await res.json();
         const items = json?.body?.items;
         if (Array.isArray(items) && items.length > 0) {
-          const parsedApiStudios: PhotoStudio[] = items.map((item: any, idx: number) => {
-            const estYear = item.bizesNm.includes('현상') || item.bizesNm.includes('칼라') ? 1994 : 2012;
-            const years = currentYear - estYear;
-            return {
-              id: `api-smba-${item.bizesId || idx}`,
-              name: item.bizesNm,
-              category: item.bizesNm.includes('현상') ? 'lab' : 'studio',
-              address: item.rdnmAdr || item.lnoAdr || '서울특별시 중구',
-              lat: parseFloat(item.lat) || 37.563,
-              lng: parseFloat(item.lon) || 126.99,
-              tel: item.telNo || '02-2270-0000',
-              openYear: estYear,
-              yearsInBusiness: years,
-              isHeritage: years >= 20,
-              heritageTier: years >= 30 ? 'master' : years >= 15 ? 'veteran' : undefined,
-              status: 'active',
-              isPartner: false,
-              specialties: ['일반 사진촬영', '필름 현상 및 인쇄'],
-              commercialDistrict: '공공데이터포털 소상공인 상권 연계',
-            };
-          });
+          const PHOTO_KEYWORDS = ['사진', '스튜디오', '현상', '포토', '칼라', '카메라', '필름', '인화', '랩', '현상소'];
+          const EXCLUDE_KEYWORDS = ['구두', '수선', '열쇠', '도장', '철물', '가방', '신발', '의류', '세탁'];
+
+          const parsedApiStudios: PhotoStudio[] = items
+            .filter((item: any) => {
+              const name = item.bizesNm || '';
+              const isExcluded = EXCLUDE_KEYWORDS.some((kw) => name.includes(kw));
+              if (isExcluded) return false;
+              // 상호명에 사진 관련 키워드가 포함되었거나, 업종소분류명이 사진/촬영 관련인 경우만 엄격하게 수용
+              return PHOTO_KEYWORDS.some((kw) => name.includes(kw)) || item.indsSclsNm?.includes('사진');
+            })
+            .map((item: any, idx: number) => {
+              const estYear = item.bizesNm.includes('현상') || item.bizesNm.includes('칼라') ? 1994 : 2012;
+              const years = currentYear - estYear;
+              return {
+                id: `api-smba-${item.bizesId || idx}`,
+                name: item.bizesNm,
+                category: item.bizesNm.includes('현상') ? 'lab' : 'studio',
+                address: item.rdnmAdr || item.lnoAdr || '서울특별시 중구',
+                lat: parseFloat(item.lat) || 37.563,
+                lng: parseFloat(item.lon) || 126.99,
+                tel: item.telNo || '02-2270-0000',
+                openYear: estYear,
+                yearsInBusiness: years,
+                isHeritage: years >= 20,
+                heritageTier: years >= 30 ? 'master' : years >= 15 ? 'veteran' : undefined,
+                status: 'active',
+                isPartner: false,
+                specialties: ['일반 사진촬영', '필름 현상 및 인쇄'],
+                commercialDistrict: '공공데이터포털 소상공인 상권 연계',
+              };
+            });
 
           const existingNames = new Set(mergedStudios.map((s) => s.name));
           parsedApiStudios.forEach((apiS) => {
