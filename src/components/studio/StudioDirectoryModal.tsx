@@ -18,10 +18,12 @@ import {
   ChevronRight,
   Layers,
   Copy,
-  Check
+  Check,
+  Share2
 } from 'lucide-react';
 import { PhotoStudio } from '@/types';
 import { useDasi } from '@/context/DasiContext';
+import { shareViaKakaoTalk } from '@/utils/kakaoShare';
 
 interface StudioDirectoryModalProps {
   isOpen: boolean;
@@ -322,6 +324,26 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
                       >
                         <ExternalLink className="w-3.5 h-3.5 text-vintage-500" />
                         <span className="hidden sm:inline">길찾기</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const shared = shareViaKakaoTalk({
+                            title: `[DASI 공식 제휴 현상소] ${studio.name}`,
+                            description: `${studio.address} · ${studio.specialties.join(', ')}`,
+                            buttonTitle: '현상소 20% 할인권 보기',
+                          });
+                          if (shared) {
+                            showToast('카카오톡 공유창이 열렸습니다!', 'success');
+                          } else {
+                            showToast('링크가 클립보드에 복사되었습니다.', 'info');
+                          }
+                        }}
+                        className="py-2 px-2.5 rounded-xl bg-[#FEE500] hover:bg-[#F0D700] text-[#3B1E08] font-bold text-xs flex items-center gap-1 transition shadow-2xs shrink-0"
+                        title="카카오톡으로 현상소 정보 공유하기"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">공유</span>
                       </button>
                     </div>
                   </div>

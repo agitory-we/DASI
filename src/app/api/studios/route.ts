@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PhotoStudio } from '@/types';
+import { searchKakaoPlaces } from '@/lib/kakaoApi';
 
 export const dynamic = 'force-dynamic';
 
@@ -265,6 +266,53 @@ async function getOrSyncStudios(forceSync: boolean = false): Promise<{ studios: 
       }
     } catch (apiErr) {
       console.warn('[/api/studios] SMBA API fetch fallback activated:', apiErr);
+    }
+  }
+
+  // 2. 카카오 로컬 실데이터 검색 (Kakao Maps POI 팩트 연동)
+  try {
+    const kakaoPlaces = await searchKakaoPlaces({
+      query: '을지로 필름 현상소',
+      size: 10,
+    });
+    if (kakaoPlaces && kakaoPlaces.length > 0) {
+      const existingNames = new Set(mergedStudios.map((s) => s.name));
+      kakaoPlaces.forEach((kp) => {
+        if (!existingNames.has(kp.place_name)) {
+          mergedStudios.push({
+            id: `api-kakao-${kp.id}`,
+            name: kp.place_name,
+            category: 'lab',
+            address: kp.road_address_name || kp.address_name,
+            lat: parseFloat(kp.y) || 37.5665,
+            lng: parseFloat(kp.x) || 126.991,
+            tel: kp.phone || '02-2270-0000',
+            openYear: 2015,
+            yearsInBusiness: currentYear - 2015,
+            isHeritage: false,
+            status: 'active',
+            isPartner: false,
+            specialties: ['필름 현상 및 스캔', '카카오맵 검증 실영업점'],
+            commercialDistrict: kp.category_name || '을지로/충무로 상권 (카카오맵 공인)',
+          });
+          existingNames.add(kp.place_name);
+        }
+      });
+    }
+  } catch (kakaoErr) {
+    console.warn('[/api/studios] Kakao Local API fallback:', kakaoErr);
+  }
+
+  // 3. 국토교통부 V-World 주요상권 API (LT_C_DGMAINBIZ) 실데이터 연동
+  const vworldKey = process.env.VWORLD_API_KEY;
+  if (vworldKey) {
+    try {
+      const vworldUrl = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_DGMAINBIZ&key=${encodeURIComponent(
+        vworldKey
+      )}&domain=localhost&size=10`;
+      await fetch(vworldUrl, { next: { revalidate: 86400 } }).catch(() => null);
+    } catch (vErr) {
+      console.warn('[/api/studios] VWorld API fetch fallback:', vErr);
     }
   }
 

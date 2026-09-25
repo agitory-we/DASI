@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { AppSidebarLayout } from '@/components/layout/AppSidebarLayout';
 import { BottomNav } from '@/components/common/BottomNav';
@@ -81,6 +82,11 @@ export default function RootLayout({
             <PwaInstallBanner />
           </DasiProvider>
         </AuthProvider>
+        {/* Kakao JavaScript SDK for Kakao Share & Maps */}
+        <Script
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
