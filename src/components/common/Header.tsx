@@ -179,8 +179,12 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Brand Logo */}
             <Link href="/" className="lg:hidden flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded-lg bg-terracotta text-white flex items-center justify-center font-serif text-sm font-bold shadow-xs">
-                다
+              <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-xs border border-vintage-300/80 bg-stone-900 shrink-0 group-hover:scale-105 transition-transform">
+                <img
+                  src="/icons/dasi_camera_icon.png"
+                  alt="DASI 사진기 아이콘"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="font-serif font-bold text-base text-vintage-900 tracking-tight">
                 DASI
@@ -188,8 +192,19 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
 
             {/* Desktop Section Indicator & Quick Shortcut */}
-            <div className="hidden lg:flex items-center gap-2 text-xs text-vintage-600">
-              <span className="font-semibold text-vintage-900">DASI 아날로그 허브</span>
+            <div className="hidden lg:flex items-center gap-2.5 text-xs text-vintage-600">
+              <Link href="/" className="flex items-center gap-2 group mr-1">
+                <div className="relative w-7 h-7 rounded-lg overflow-hidden shadow-2xs border border-vintage-300/80 bg-stone-900 shrink-0 group-hover:scale-105 transition-transform">
+                  <img
+                    src="/icons/dasi_camera_icon.png"
+                    alt="DASI 사진기 아이콘"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="font-serif font-bold text-sm text-vintage-900 tracking-tight group-hover:text-terracotta transition-colors">
+                  DASI 다시
+                </span>
+              </Link>
               <span className="text-vintage-300">/</span>
               <span className="px-2 py-0.5 rounded-full bg-vintage-100 font-medium text-vintage-700">
                 {pathname === '/' ? '홈 피드' : pathname.replace('/', '').toUpperCase()}

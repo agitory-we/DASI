@@ -53,7 +53,12 @@ export const metadata: Metadata = {
     description: '아날로그 카메라 렌탈 & Rent-to-Own 소장 플랫폼',
     images: ['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1200&auto=format&fit=crop&q=80']
   },
-  manifest: '/manifest.json'
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/dasi_camera_icon.png',
+    shortcut: '/icons/dasi_camera_icon.png',
+    apple: '/icons/dasi_camera_icon.png',
+  },
 };
 
 export default function RootLayout({

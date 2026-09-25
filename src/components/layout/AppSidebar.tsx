@@ -216,8 +216,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       {/* 1. Brand Header */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-vintage-200/80 bg-white/70 backdrop-blur-xs shrink-0">
         <Link href="/" className="flex items-center gap-2.5 overflow-hidden group">
-          <div className="w-8 h-8 rounded-xl bg-terracotta text-white flex items-center justify-center font-serif text-base font-bold shadow-xs shrink-0 group-hover:bg-terracotta-dark transition-colors">
-            다
+          <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-xs shrink-0 border border-vintage-300/80 bg-stone-900 group-hover:scale-105 transition-transform">
+            <img
+              src="/icons/dasi_camera_icon.png"
+              alt="DASI 아날로그 카메라 로고"
+              className="w-full h-full object-cover"
+            />
           </div>
           {!isCollapsed && (
             <div className="flex items-center gap-2 min-w-0">

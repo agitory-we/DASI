@@ -64,8 +64,14 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Copy */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-terracotta/10 border border-terracotta/20 text-terracotta text-xs sm:text-sm font-semibold">
-                <Sparkles className="w-4 h-4" />
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-vintage-100/90 border border-vintage-200/90 text-vintage-800 text-xs sm:text-sm font-semibold shadow-2xs">
+                <img
+                  src="/icons/dasi_camera_icon.png"
+                  alt="DASI 메인 카메라"
+                  className="w-5 h-5 rounded-md object-cover shadow-2xs"
+                />
+                <span className="text-terracotta font-bold">DASI 아날로그</span>
+                <span className="text-vintage-300">|</span>
                 <span>써보고 반하면 소장하는 Rent-to-Own 마켓</span>
               </div>
 
