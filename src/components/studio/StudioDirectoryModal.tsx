@@ -103,10 +103,16 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
   };
 
   return (
-    <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-5 bg-stone-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-[#FAF8F5] rounded-3xl border border-vintage-300 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-vintage-200 bg-white sticky top-0 z-20">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-stone-950/80 backdrop-blur-md overflow-y-auto animate-fadeIn"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-4xl bg-white rounded-3xl border border-vintage-300 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto"
+      >
+        {/* Header (Always pinned & prominent) */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-vintage-200 bg-white sticky top-0 z-30 shadow-xs">
           <div>
             <div className="flex items-center gap-2">
               <span className="p-1.5 rounded-lg bg-terracotta/10 text-terracotta">
@@ -125,8 +131,9 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-vintage-400 hover:text-vintage-900 hover:bg-vintage-100 transition"
+            className="w-9 h-9 rounded-full bg-vintage-100 hover:bg-vintage-200 text-vintage-700 hover:text-vintage-950 flex items-center justify-center transition shadow-xs"
             aria-label="닫기"
+            title="창 닫기 (ESC)"
           >
             <X className="w-5 h-5" />
           </button>

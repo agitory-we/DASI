@@ -415,7 +415,21 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
         </div>
       </div>
 
-      {/* Main Map & List Grid */}
+      {/* 1. Full-Width Interactive Multi-Spot Panorama Map */}
+      <div className="rounded-3xl bg-stone-900 border border-vintage-200 overflow-hidden shadow-sm">
+        <GoogleMapCanvas
+          activeSpot={activeSpot}
+          spots={sortedSpots}
+          onSelectSpot={(spot) => {
+            setActiveSpotId(spot.id);
+            const el = document.getElementById(`spot-card-${spot.id}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }}
+          onOpenNavigation={openNavigation}
+        />
+      </div>
+
+      {/* 2. Main 2-Column Content Grid: List (5 cols) & Active Detail (7 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT: Spot Cards List */}
         <div className="lg:col-span-5 space-y-4 max-h-[750px] overflow-y-auto pr-2">
@@ -569,18 +583,10 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
           )}
         </div>
 
-        {/* RIGHT: Active Spot Detail & Interactive Viewport */}
+        {/* RIGHT: Active Spot Detail */}
         <div className="lg:col-span-7 space-y-6">
           {activeSpot && (
             <div className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs space-y-6">
-              {/* Live Interactive Multi-Spot Google Map Canvas */}
-              <GoogleMapCanvas
-                activeSpot={activeSpot}
-                spots={sortedSpots}
-                onSelectSpot={(spot) => setActiveSpotId(spot.id)}
-                onOpenNavigation={openNavigation}
-              />
-
               {/* Spot Body Details */}
               <div className="p-6 sm:p-8 space-y-6">
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-vintage-100 pb-4">
