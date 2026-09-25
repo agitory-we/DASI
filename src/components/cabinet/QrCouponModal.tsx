@@ -41,8 +41,8 @@ export const QrCouponModal: React.FC<QrCouponModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-      <div className="relative w-full max-w-sm rounded-3xl bg-[#FAF8F5] border border-vintage-200 shadow-2xl overflow-hidden animate-scale-up">
+    <div className="fixed inset-0 z-[70] overflow-y-auto p-4 sm:p-6 flex min-h-full items-center justify-center bg-black/65 backdrop-blur-xs animate-fade-in">
+      <div className="relative w-full max-w-sm my-auto max-h-[92vh] flex flex-col rounded-3xl bg-[#FAF8F5] border border-vintage-200 shadow-2xl overflow-hidden animate-scale-up">
         {/* Top Header */}
         <div className="bg-[#2D241E] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -63,7 +63,7 @@ export const QrCouponModal: React.FC<QrCouponModalProps> = ({
         </div>
 
         {/* Ticket Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto">
           {/* Shop & Benefit Badge */}
           <div className="text-center space-y-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">

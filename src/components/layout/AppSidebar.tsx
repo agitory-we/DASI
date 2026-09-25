@@ -93,7 +93,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         },
         {
           title: '골든아워 실시간 예보',
-          href: '/explore#golden',
+          href: '/golden-hour',
           icon: Sun,
           badge: 'LIVE',
           badgeColor: 'bg-amber-100 text-amber-700 animate-pulse',
@@ -129,10 +129,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         },
         {
           title: '필름 주문 & 대량 벌크샵',
-          href: '/rent#film',
+          href: '/films',
           icon: Film,
           badge: '12%↓',
           badgeColor: 'bg-rose-100 text-rose-700 font-bold',
+        },
+        {
+          title: '서울 제휴 현상소 & 사진관',
+          href: '/studios',
+          icon: Store,
+          badge: 'QR 20%↓',
+          badgeColor: 'bg-amber-100 text-amber-800 font-bold',
         },
       ],
     },

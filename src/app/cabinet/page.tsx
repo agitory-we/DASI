@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Camera,
   Sparkles,
@@ -159,7 +160,16 @@ export default function CabinetPage() {
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const { triggerHaptic } = useDevicePlatform();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
+
+  // URL 쿼리 파라미터 (?tab=coupons 등) 기반 탭 자동 동기화
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['camera', 'tickets', 'repairs', 'pro', 'coupons', 'points', 'passport'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);

@@ -80,15 +80,19 @@ export async function fetchFestivals(options?: {
   arrange?: 'A' | 'C' | 'D' | 'O' | 'Q' | 'R'; // A:제목순, C:수정일순, D:생성일순, O:사진있는목록
 }): Promise<TourApiItem[]> {
   try {
-    const today = new Date();
+    // 팩트 기반 방어 로직:
+    // TourAPI searchFestival2의 eventStartDate는 "행사 시작일"을 뜻하므로,
+    // 오늘 날짜로 조회하면 이미 시작해 현재 성황리에 진행 중인 축제들이 전부 누락됩니다.
+    // 따라서 기본 조회 시작일을 60일 전으로 설정하여 현재 진행 중인 축제를 온전히 포함합니다.
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
     const toYMD = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '');
-    const defaultStart = toYMD(today);
+    const defaultStart = toYMD(sixtyDaysAgo);
 
     const params = createBaseParams({
       eventStartDate: options?.eventStartDate || defaultStart,
-      numOfRows: String(options?.numOfRows || 30),
+      numOfRows: String(options?.numOfRows || 100),
       pageNo: String(options?.pageNo || 1),
-      arrange: options?.arrange || 'A',
+      arrange: options?.arrange || 'C',
       ...(options?.areaCode ? { areaCode: options.areaCode } : {}),
       ...(options?.eventEndDate ? { eventEndDate: options.eventEndDate } : {}),
     });

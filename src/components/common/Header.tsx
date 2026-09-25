@@ -326,7 +326,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 전국 아날로그 스팟 & 당일 현상소 팝업 지도 런처 */}
             <button
               onClick={() => openMapModal()}
-              className="px-2.5 py-1.5 rounded-xl bg-terracotta/10 hover:bg-terracotta/20 text-terracotta border border-terracotta/30 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              className="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-terracotta/10 hover:bg-terracotta/20 text-terracotta border border-terracotta/30 items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
               title="전국 아날로그 스팟 & 당일 현상소 팝업 지도 (X 누르면 웹으로 복귀)"
             >
               <MapPin className="w-3.5 h-3.5 text-terracotta" />
@@ -337,7 +337,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 전역 큰글씨 접근성 모드 토글 (노안/시니어 배려) */}
             <button
               onClick={toggleAccessibilityMode}
-              className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold ${
+              className={`hidden sm:flex px-2.5 py-1.5 rounded-xl border items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold ${
                 isAccessibilityMode
                   ? 'bg-amber-400 text-vintage-950 border-amber-300 ring-2 ring-amber-300'
                   : 'bg-white hover:bg-vintage-100 text-vintage-800 border-vintage-200'
@@ -345,14 +345,14 @@ export const Header: React.FC<HeaderProps> = ({
               title={isAccessibilityMode ? '표준 글씨 크기로 복귀' : '어르신·노안을 위한 큰글씨 모드 켜기'}
             >
               <span>👓</span>
-              <span className="hidden sm:inline-block">큰글씨</span>
+              <span className="hidden md:inline-block">큰글씨</span>
               {isAccessibilityMode && <span className="text-[9px] bg-vintage-950 text-amber-300 px-1 py-0.2 rounded font-bold">ON</span>}
             </button>
 
             {/* 서울 사진관 & 제휴 현상소 디렉토리 런처 */}
             <button
               onClick={() => setIsStudioOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              className="hidden md:flex px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
               title="서울시 사진관 & DASI 제휴 현상소 (20% 할인 QR & 노포 헤리티지)"
             >
               <Store className="w-3.5 h-3.5 text-terracotta" />
@@ -362,27 +362,27 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 을지로 24시 필름 자판기 가챠 런처 */}
             <button
               onClick={() => setIsVendingOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/25 hover:from-amber-500/25 hover:to-amber-600/35 text-amber-900 border border-amber-300/80 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              className="hidden lg:flex px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/25 hover:from-amber-500/25 hover:to-amber-600/35 text-amber-900 border border-amber-300/80 items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
               title="을지로 24시 필름 가챠 자판기 (쿠폰 & 한정판 스티커)"
             >
               <Gift className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              <span className="hidden lg:inline-block">필름 자판기</span>
+              <span className="hidden xl:inline-block">필름 자판기</span>
             </button>
 
             {/* 찰칵-치익 가상 뷰파인더 토이 런처 */}
             <button
               onClick={() => setIsViewfinderOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              className="hidden lg:flex px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
               title="가상 뷰파인더 & 와인딩 레버 (기계식 손맛)"
             >
               <Camera className="w-3.5 h-3.5 text-stone-700" />
-              <span className="hidden lg:inline-block">뷰파인더</span>
+              <span className="hidden xl:inline-block">뷰파인더</span>
             </button>
 
             {/* Shutter Sound Mute Toggle */}
             <button
               onClick={handleToggleSound}
-              className={`p-2 rounded-xl border transition-all shadow-2xs ${
+              className={`hidden sm:flex p-2 rounded-xl border transition-all shadow-2xs ${
                 muted
                   ? 'bg-vintage-100 text-vintage-400 border-vintage-300'
                   : 'bg-white hover:bg-vintage-100 text-terracotta border-vintage-200'

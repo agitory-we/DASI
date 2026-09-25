@@ -379,8 +379,8 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
 
       {/* DASI 공식 제휴 현장 할인 QR 바우처 모달 */}
       {selectedStudioForQr && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-stone-950/85 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-sm bg-white rounded-3xl border-2 border-amber-400 shadow-2xl p-6 text-center space-y-4">
+        <div className="fixed inset-0 z-[10000] overflow-y-auto p-4 sm:p-6 flex min-h-screen items-center justify-center bg-stone-950/90 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-sm my-auto max-h-[92vh] overflow-y-auto bg-white rounded-3xl border-2 border-amber-400 shadow-2xl p-6 text-center space-y-4">
             <button
               onClick={() => setSelectedStudioForQr(null)}
               className="absolute top-4 right-4 p-1.5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"

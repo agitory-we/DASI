@@ -262,6 +262,10 @@ export default function ExplorePage() {
     return active.filter(i => i.type === filterType);
   }, [allItems, filterType, savedSpotIds]);
 
+  const festivalCount = useMemo(() => {
+    return allItems.filter(i => i.type === 'festival' && !isExpired(i)).length;
+  }, [allItems]);
+
 
 
   return (
@@ -367,7 +371,7 @@ export default function ExplorePage() {
           { id: 'all', label: '🌐 전체 둘러보기' },
           { id: 'top100', label: '🏅 한국관광 100선 명품 출사지' },
           { id: 'knto_gallery', label: `📸 관광공사 사진작가 갤러리 (${kntoGalleryPhotos.length || 16})` },
-          { id: 'festival', label: '🎉 서울·전국 실시간 축제' },
+          { id: 'festival', label: `🎉 서울·전국 실시간 축제 (${festivalCount})` },
           { id: 'hotspot', label: '📷 골목길 출사 핫스팟' },
           { id: 'guidebooks', label: '📚 공식 여행 가이드북 & 매거진' },
           { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
@@ -849,14 +853,26 @@ export default function ExplorePage() {
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-3 left-3 flex gap-2">
+                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                   <span className={`px-2.5 py-1 rounded-full backdrop-blur-md text-white text-[10px] font-medium ${TYPE_COLORS[item.type]}`}>
                     {TYPE_LABELS[item.type]}
                   </span>
                   {item.source === 'tourapi' && (
-                    <span className="px-2 py-1 rounded-full bg-blue-600/70 backdrop-blur-md text-white text-[10px] font-medium">
-                      공식 행사
+                    <span className="px-2 py-1 rounded-full bg-blue-600/80 backdrop-blur-md text-white text-[10px] font-medium">
+                      공식 축제
                     </span>
+                  )}
+                  {item.type === 'festival' && item.startDate && (
+                    item.startDate <= new Date().toISOString().slice(0, 10).replace(/-/g, '') ? (
+                      <span className="px-2 py-1 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        <span>진행 중</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full bg-amber-600/90 backdrop-blur-md text-white text-[10px] font-medium">
+                        개막 예정
+                      </span>
+                    )
                   )}
                 </div>
                 <div className="absolute top-3 right-3">

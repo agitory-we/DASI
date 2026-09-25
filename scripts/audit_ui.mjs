@@ -30,13 +30,16 @@ async function run() {
     { name: '10_ai_appraisal', url: 'http://localhost:3000/ai-appraisal' },
     { name: '11_meter', url: 'http://localhost:3000/meter' },
     { name: '12_partner', url: 'http://localhost:3000/partner' },
+    { name: '13_films', url: 'http://localhost:3000/films' },
+    { name: '14_studios', url: 'http://localhost:3000/studios' },
+    { name: '15_golden_hour', url: 'http://localhost:3000/golden-hour' },
   ];
 
   for (const item of pagesToTest) {
     try {
       console.log('Auditing: ' + item.name + ' (' + item.url + ')');
-      await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      await page.waitForTimeout(1000);
+      await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 25000 });
+      await page.waitForTimeout(2500);
 
       const overflowInfo = await page.evaluate(() => {
         return {
@@ -88,6 +91,10 @@ async function run() {
 
   console.log('Auditing Mobile Viewport (390x844)...');
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('http://localhost:3000/', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'mobile_home.png') });
+
   await page.goto('http://localhost:3000/map', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
   await page.screenshot({ path: path.join(outDir, 'mobile_map.png') });
@@ -95,6 +102,18 @@ async function run() {
   await page.goto('http://localhost:3000/rent', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
   await page.screenshot({ path: path.join(outDir, 'mobile_rent.png') });
+
+  await page.goto('http://localhost:3000/films', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'mobile_films.png') });
+
+  await page.goto('http://localhost:3000/studios', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'mobile_studios.png') });
+
+  await page.goto('http://localhost:3000/golden-hour', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'mobile_golden_hour.png') });
 
   await browser.close();
   fs.writeFileSync(path.join(outDir, 'audit_report.json'), JSON.stringify(auditLogs, null, 2));
