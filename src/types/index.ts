@@ -71,6 +71,14 @@ export interface AnalogSpot {
   subTags?: string[]; // 서브 필터 태그 (예: '당일스캔', '노리츠', '후지', '24시자판기', '오버홀')
   rating: number;
   reviewsCount: number;
+  // ── 가동성 및 소요시간 정보 ──
+  sameDayAvailable?: boolean; // 당일 즉시 가능 여부
+  availabilityStatus?: 'immediate' | 'within_hours' | 'next_day'; // 즉시 / 수시간 내 / 익일
+  filmDevelopLeadTime?: string; // 예: "당일 3시간 (17시 이전 접수)" 또는 "익일 24시간"
+  repairLeadTime?: string; // 예: "현장 30분 기본점검 / 정밀 오버홀 3영업일"
+  quickDeliveryAvailable?: boolean; // 서울 시내 3시간 당일 퀵 배송 지원
+  hasQrDiscount?: boolean; // DASI 제휴 QR 10% 현장 할인 가능
+  qrDiscountRate?: string; // 예: "현장 전 품목 10% 즉시 할인"
 }
 
 export type GigCategory = 'foreigner_tour' | 'sub_wedding' | 'daily_snap' | 'pet_walk';
@@ -117,7 +125,8 @@ export interface UserCoupon {
   issuerName: string;
   discountText: string;
   validUntil: string;
-  category: 'lab' | 'repair' | 'film';
+  category: 'lab' | 'repair' | 'film' | 'rental';
+  barcode?: string;
   isUsed: boolean;
 }
 
@@ -186,5 +195,31 @@ export interface CommunityPhoto {
   likesCount: number;
   location?: string;
   createdAt: string;
+}
+
+export interface PhotoStudio {
+  id: string;
+  name: string;
+  category: 'lab' | 'heritage' | 'studio' | 'darkroom';
+  address: string;
+  jibunAddress?: string;
+  lat: number;
+  lng: number;
+  tel?: string;
+  openYear?: number;
+  yearsInBusiness?: number;
+  isHeritage: boolean;
+  heritageTier?: 'master' | 'veteran';
+  status: 'active' | 'closed';
+  isPartner: boolean;
+  partnerBenefit?: {
+    discountText: string;
+    perk: string;
+    couponCode: string;
+  };
+  specialties: string[];
+  commercialDistrict?: string;     // 국토부/V-World 주요상권 (예: '충무로 상권', '을지로 골목')
+  dropoffAvailable?: boolean;      // 24시 편의점 무인 드롭오프 연계 가능 여부
+  dropoffStoreName?: string;       // 인근 편의점 거점명 (예: 'GS25 충무로역점')
 }
 

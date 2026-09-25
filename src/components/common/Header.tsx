@@ -39,19 +39,30 @@ import {
 } from '@/utils/webPush';
 import { FilmVendingMachineModal } from '@/components/fun/FilmVendingMachineModal';
 import { ViewfinderToyModal } from '@/components/fun/ViewfinderToyModal';
+import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
 import { Gift } from 'lucide-react';
 
-export const Header: React.FC = () => {
+export interface HeaderProps {
+  onOpenMobileSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebarCollapse?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  onOpenMobileSidebar,
+  isSidebarCollapsed,
+  onToggleSidebarCollapse,
+}) => {
   const pathname = usePathname();
   const { triggerHaptic } = useDevicePlatform();
   const { rentingItems, ownedItems, bookedGigs, bookedExperiences, repairEstimates, proConsultations, showToast } = useDasi();
   const { user, profile } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isVendingOpen, setIsVendingOpen] = useState(false);
   const [isViewfinderOpen, setIsViewfinderOpen] = useState(false);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [muted, setMuted] = useState(false);
   const [pushPerm, setPushPerm] = useState<string>('default');
 
@@ -118,7 +129,6 @@ export const Header: React.FC = () => {
   // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsMoreDropdownOpen(false);
   }, [pathname]);
 
   const coreNavItems = [
@@ -149,81 +159,42 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Logo & Core Nav */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-terracotta text-white flex items-center justify-center font-serif text-base font-bold shadow-xs group-hover:bg-terracotta-dark transition-colors">
+        <div className="flex items-center justify-between h-14">
+          {/* Left: Mobile Drawer Trigger + Desktop Quick Path */}
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Trigger */}
+            <button
+              onClick={() => {
+                if (onOpenMobileSidebar) {
+                  onOpenMobileSidebar();
+                } else {
+                  setIsMobileMenuOpen((prev) => !prev);
+                }
+              }}
+              className="lg:hidden p-2 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 transition-colors shadow-2xs"
+              aria-label="메뉴 열기"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Mobile Brand Logo */}
+            <Link href="/" className="lg:hidden flex items-center gap-2 group">
+              <div className="w-7 h-7 rounded-lg bg-terracotta text-white flex items-center justify-center font-serif text-sm font-bold shadow-xs">
                 다
               </div>
-              <div className="flex flex-col">
-                <span className="font-serif font-bold text-lg text-vintage-900 tracking-tight leading-none">
-                  다시 <span className="text-[11px] font-sans font-normal text-vintage-500">DASI</span>
-                </span>
-                <span className="text-[9px] text-vintage-500 font-medium tracking-wide">그때 그 취미, 다시</span>
-              </div>
+              <span className="font-serif font-bold text-base text-vintage-900 tracking-tight">
+                DASI
+              </span>
             </Link>
 
-            {/* Desktop Core Nav (Clean & Spaced) */}
-            <nav className="hidden md:flex items-center gap-1">
-              {coreNavItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-vintage-200/80 text-vintage-900 shadow-2xs'
-                        : 'text-vintage-700 hover:text-vintage-900 hover:bg-vintage-100/70'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-
-              {/* More Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsMoreDropdownOpen((prev) => !prev)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all ${
-                    isMoreDropdownOpen
-                      ? 'bg-vintage-200 text-vintage-900'
-                      : 'text-vintage-700 hover:text-vintage-900 hover:bg-vintage-100/70'
-                  }`}
-                >
-                  <span>더보기</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isMoreDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isMoreDropdownOpen && (
-                  <div
-                    className="absolute top-full left-0 mt-2 w-72 rounded-2xl bg-white border border-vintage-200 shadow-xl p-2 z-50 animate-fadeIn"
-                    onMouseLeave={() => setIsMoreDropdownOpen(false)}
-                  >
-                    {moreNavItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-vintage-50 transition-colors group"
-                        >
-                          <div className="p-2 rounded-lg bg-vintage-100 text-terracotta group-hover:bg-terracotta group-hover:text-white transition-colors">
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-vintage-900">{item.label}</div>
-                            <div className="text-[10px] text-vintage-500 leading-snug">{item.desc}</div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </nav>
+            {/* Desktop Section Indicator & Quick Shortcut */}
+            <div className="hidden lg:flex items-center gap-2 text-xs text-vintage-600">
+              <span className="font-semibold text-vintage-900">DASI 아날로그 허브</span>
+              <span className="text-vintage-300">/</span>
+              <span className="px-2 py-0.5 rounded-full bg-vintage-100 font-medium text-vintage-700">
+                {pathname === '/' ? '홈 피드' : pathname.replace('/', '').toUpperCase()}
+              </span>
+            </div>
           </div>
 
           {/* Right Action Bar */}
@@ -336,6 +307,16 @@ export const Header: React.FC = () => {
                 )}
               </div>
             )}
+
+            {/* 서울 사진관 & 제휴 현상소 디렉토리 런처 */}
+            <button
+              onClick={() => setIsStudioOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 text-xs font-bold"
+              title="서울시 사진관 & DASI 제휴 현상소 (20% 할인 QR & 노포 헤리티지)"
+            >
+              <Store className="w-3.5 h-3.5 text-terracotta" />
+              <span className="hidden xl:inline-block">사진관·현상소</span>
+            </button>
 
             {/* 을지로 24시 필름 자판기 가챠 런처 */}
             <button
@@ -461,27 +442,46 @@ export const Header: React.FC = () => {
               );
             })}
             {/* 모바일 전용 인터랙티브 토이 바로가기 */}
-            <div className="pt-2 border-t border-vintage-100 grid grid-cols-2 gap-2">
+            {/* 모바일 전용 인터랙티브 토이 & 사진관 바로가기 */}
+            <div className="pt-2 border-t border-vintage-100 space-y-2">
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);
-                  setIsVendingOpen(true);
+                  setIsStudioOpen(true);
                 }}
-                className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-amber-900 text-xs font-bold flex items-center justify-between shadow-xs"
               >
-                <Gift className="w-4 h-4 text-amber-600" />
-                <span>🎰 필름 자판기</span>
+                <div className="flex items-center gap-2">
+                  <Store className="w-4 h-4 text-terracotta" />
+                  <span>서울 사진관 &amp; DASI 제휴 현상소</span>
+                </div>
+                <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">
+                  20% 할인 QR
+                </span>
               </button>
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsViewfinderOpen(true);
-                }}
-                className="p-2.5 rounded-xl bg-stone-100 border border-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
-              >
-                <Camera className="w-4 h-4 text-stone-700" />
-                <span>📸 뷰파인더 토이</span>
-              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsVendingOpen(true);
+                  }}
+                  className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Gift className="w-4 h-4 text-amber-600" />
+                  <span>🎰 필름 자판기</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsViewfinderOpen(true);
+                  }}
+                  className="p-2.5 rounded-xl bg-stone-100 border border-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Camera className="w-4 h-4 text-stone-700" />
+                  <span>📸 뷰파인더 토이</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -495,6 +495,9 @@ export const Header: React.FC = () => {
 
       {/* Viewfinder Toy Modal */}
       <ViewfinderToyModal isOpen={isViewfinderOpen} onClose={() => setIsViewfinderOpen(false)} />
+
+      {/* Seoul Photo Studio & Partner Lab Directory Modal */}
+      <StudioDirectoryModal isOpen={isStudioOpen} onClose={() => setIsStudioOpen(false)} />
     </header>
   );
 };

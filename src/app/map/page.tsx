@@ -20,12 +20,16 @@ import {
   ExternalLink,
   Compass,
   QrCode,
-  Award
+  Award,
+  Zap,
+  Ticket,
+  Wrench
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
+import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
 import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 
 export default function MapPage() {
@@ -37,6 +41,9 @@ export default function MapPage() {
   const [isSpotReviewModalOpen, setIsSpotReviewModalOpen] = useState<boolean>(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState<boolean>(false);
   const [isSpotCheckInOpen, setIsSpotCheckInOpen] = useState<boolean>(false);
+  const [selectedCouponSpot, setSelectedCouponSpot] = useState<AnalogSpot | null>(null);
+  const [filterSameDayOnly, setFilterSameDayOnly] = useState<boolean>(false);
+  const [filterQrDiscountOnly, setFilterQrDiscountOnly] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [sortByNearest, setSortByNearest] = useState<boolean>(false);
@@ -163,14 +170,16 @@ export default function MapPage() {
     return [...combinedSpots].filter((spot) => {
       const matchCategory = selectedCategory === 'all' || spot.category === selectedCategory;
       const matchArea = selectedArea === 'all' || spot.area === selectedArea;
-      return matchCategory && matchArea;
+      const matchSameDay = !filterSameDayOnly || spot.sameDayAvailable;
+      const matchQrDiscount = !filterQrDiscountOnly || spot.hasQrDiscount;
+      return matchCategory && matchArea && matchSameDay && matchQrDiscount;
     }).sort((a, b) => {
       if (!sortByNearest || !userLocation) return 0;
       const distA = getDistanceKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
       const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
       return distA - distB;
     });
-  }, [combinedSpots, selectedCategory, selectedArea, sortByNearest, userLocation]);
+  }, [combinedSpots, selectedCategory, selectedArea, filterSameDayOnly, filterQrDiscountOnly, sortByNearest, userLocation]);
 
   const activeSpot = useMemo(() => {
     return sortedSpots.find((s) => s.id === activeSpotId) || sortedSpots[0] || combinedSpots[0];
@@ -290,6 +299,34 @@ export default function MapPage() {
             </button>
           ))}
         </div>
+
+        {/* Instant & QR Benefit Quick Filter Chips */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-vintage-200/60 w-full">
+          <span className="text-vintage-500 text-xs font-semibold">조건별 모아보기:</span>
+          <button
+            onClick={() => setFilterSameDayOnly((prev) => !prev)}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              filterSameDayOnly
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+            }`}
+          >
+            <span>⚡ 당일 즉시 가능 매장만</span>
+            {filterSameDayOnly && <CheckCircle2 className="w-3.5 h-3.5" />}
+          </button>
+
+          <button
+            onClick={() => setFilterQrDiscountOnly((prev) => !prev)}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              filterQrDiscountOnly
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
+            }`}
+          >
+            <span>🎟️ DASI 제휴 QR 할인 매장만</span>
+            {filterQrDiscountOnly && <CheckCircle2 className="w-3.5 h-3.5" />}
+          </button>
+        </div>
       </div>
 
       {/* Main Map & List Grid */}
@@ -363,6 +400,34 @@ export default function MapPage() {
                     )}
                   </p>
 
+                  {/* Availability & Lead Time Specs */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {spot.sameDayAvailable && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 text-[10px] font-bold">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        당일 즉시 가능
+                      </span>
+                    )}
+                    {spot.filmDevelopLeadTime && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-[10px] font-medium border border-purple-200/50">
+                        <Clock className="w-3 h-3 text-purple-500" />
+                        현상: {spot.filmDevelopLeadTime}
+                      </span>
+                    )}
+                    {spot.repairLeadTime && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[10px] font-medium border border-amber-200/50">
+                        <Wrench className="w-3 h-3 text-amber-600" />
+                        점검: {spot.repairLeadTime}
+                      </span>
+                    )}
+                    {spot.quickDeliveryAvailable && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-medium border border-blue-200/50">
+                        <Zap className="w-3 h-3 text-blue-500" />
+                        3시간 퀵 가능
+                      </span>
+                    )}
+                  </div>
+
                   {/* Highlights (당일 스캔 or 필름 재고) */}
                   {spot.todayScanCutoff && (
                     <div className="p-2 rounded-xl bg-emerald-50 text-emerald-900 text-[11px] font-medium flex items-center gap-1.5">
@@ -377,7 +442,26 @@ export default function MapPage() {
                     </div>
                   )}
 
-                  {spot.promoNotice && (
+                  {/* QR Discount Badge & Quick Action */}
+                  {spot.hasQrDiscount && (
+                    <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-rose-800 text-[11px] font-bold">
+                        <QrCode className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                        <span>{spot.qrDiscountRate || 'DASI 제휴 10% 즉시 할인'}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCouponSpot(spot);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold transition-colors shadow-2xs shrink-0"
+                      >
+                        QR 발급
+                      </button>
+                    </div>
+                  )}
+
+                  {spot.promoNotice && !spot.hasQrDiscount && (
                     <div className="text-[11px] text-terracotta font-semibold">
                       🎁 {spot.promoNotice}
                     </div>
@@ -484,6 +568,58 @@ export default function MapPage() {
                     </a>
                   </div>
 
+                </div>
+
+                {/* 실시간 가동성 & 소요 시간 스펙 박스 */}
+                <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-vintage-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-emerald-600" />
+                      실시간 가동 현황 &amp; 작업 소요 시간
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                      {activeSpot.sameDayAvailable ? '🟢 당일 작업 즉시 가능' : '🟡 순차 처리 중'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                    <div className="p-3 rounded-xl bg-white border border-vintage-100 space-y-1">
+                      <div className="text-[11px] text-vintage-500 font-medium">현상·스캔 소요 시간</div>
+                      <div className="font-bold text-vintage-900">{activeSpot.filmDevelopLeadTime || '당일 3~4시간 (17시 이전 접수 시)'}</div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-vintage-100 space-y-1">
+                      <div className="text-[11px] text-vintage-500 font-medium">카메라 점검·수리 소요</div>
+                      <div className="font-bold text-vintage-900">{activeSpot.repairLeadTime || '현장 30분 기본점검 (정밀 3일)'}</div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-vintage-100 space-y-1">
+                      <div className="text-[11px] text-vintage-500 font-medium">배송 / 퀵 서비스</div>
+                      <div className="font-bold text-emerald-700">{activeSpot.quickDeliveryAvailable ? '서울 전역 3시간 퀵 가능' : '현장 방문 수령 전용'}</div>
+                    </div>
+                  </div>
+
+                  {/* DASI 제휴 현장 할인 QR 발급 배너 */}
+                  {activeSpot.hasQrDiscount && (
+                    <div className="mt-2 p-3.5 rounded-xl bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
+                          <Ticket className="w-4 h-4 text-rose-600" />
+                          <span>DASI 회원 현장 즉시 할인 제휴처</span>
+                        </div>
+                        <p className="text-[11px] text-rose-700 mt-0.5">
+                          {activeSpot.qrDiscountRate || '방문 시 현장 전 품목 10% 즉시 할인 혜택 제공'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedCouponSpot(activeSpot)}
+                        className="w-full sm:w-auto px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
+                      >
+                        <QrCode className="w-4 h-4" />
+                        <span>현장 제시용 할인 QR 발급</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Scanner Color Tone Showcase (현상소일 경우) */}
@@ -688,6 +824,18 @@ export default function MapPage() {
           onSuccess={() => {
             showToast(`${activeSpot.name} 현장 체크인이 완료되었습니다! (+200P 적립)`, 'success');
           }}
+        />
+      )}
+
+      {/* DASI 공식 제휴 현장 즉시 할인 QR 쿠폰 모달 */}
+      {selectedCouponSpot && (
+        <QrCouponModal
+          isOpen={!!selectedCouponSpot}
+          onClose={() => setSelectedCouponSpot(null)}
+          shopName={selectedCouponSpot.name}
+          discountText={selectedCouponSpot.qrDiscountRate || 'DASI 공식 제휴 10% 현장 즉시 할인'}
+          categoryName={selectedCouponSpot.category === 'lab' ? '당일 현상·스캔 제휴처' : selectedCouponSpot.category === 'repair' ? '명장 정밀 수리실' : '필름 & 카메라 전문점'}
+          leadTime={selectedCouponSpot.filmDevelopLeadTime || selectedCouponSpot.repairLeadTime || '당일 현장 즉시 적용'}
         />
       )}
     </div>

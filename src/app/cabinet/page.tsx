@@ -34,6 +34,7 @@ import { SpotReportModal } from '@/components/explore/SpotReportModal';
 import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { AnalogMasterCertificateModal } from '@/components/cabinet/AnalogMasterCertificateModal';
+import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
 
 // 아날로그 성지순례 스팟별 공식 실측 인증 컷 프리뷰 (스탬프 날인 시 자동 박제 아카이빙)
 const SPOT_PREVIEWS: Record<string, string> = {
@@ -61,6 +62,7 @@ export default function CabinetPage() {
     proConsultations,
     coupons,
     useCoupon,
+    addCoupon,
     showToast
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
@@ -1161,26 +1163,48 @@ export default function CabinetPage() {
               차곡차곡 모은 포인트는 아래 전용 바우처로 언제든 즉시 교환하여 실결제 시 사용할 수 있습니다.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
               {[
                 {
-                  title: '카메라 렌탈 1,000원 즉시 할인권',
-                  cost: 1000,
-                  desc: '주말 렌탈 결제 시 즉시 차감 적용',
-                  badge: '렌탈 전용'
-                },
-                {
-                  title: '을지로/충무로 현상소 고화질 무료 스캔권',
-                  cost: 2000,
-                  desc: '노리츠/후지 3000dpi 스캔 1롤 전액 지원',
-                  badge: '현상소 제휴'
-                },
-                {
-                  title: 'DASI 안심 케어(파손 보험) 1회 무료',
+                  id: 'voucher-repair-free',
+                  title: '신성카메라 명장 무료 30분 정밀 점검권',
                   cost: 3000,
-                  desc: '렌탈 시 3,000원 안심 보험료 전액 면제',
-                  badge: '케어 혜택'
-                }
+                  desc: '셔터스피드 오차·노출계·렌즈 조리개 점검 전액 지원',
+                  badge: '명장 무료 정비',
+                  category: 'repair' as const,
+                  issuerName: '을지로 신성카메라 (명장 이진호)',
+                  discountText: '정밀 점검 30분 무료 (30,000원 상당)',
+                },
+                {
+                  id: 'voucher-scan-free',
+                  title: '망우삼림 무료 1롤 고화질 현상·스캔권',
+                  cost: 2000,
+                  desc: '노리츠/후지 3000dpi 스캔 1롤 전액 지원 (당일 3시간 완성)',
+                  badge: '무료 현상·인화',
+                  category: 'lab' as const,
+                  issuerName: '을지로 망우삼림',
+                  discountText: '현상+스캔 1롤 전액 무료 (8,000원 상당)',
+                },
+                {
+                  id: 'voucher-repair-discount',
+                  title: '충무로 보성광학 5,000원 수리 할인권',
+                  cost: 1500,
+                  desc: '클래식 SLR 셔터막 교체 & 곰팡이 클리닝 공임 할인',
+                  badge: '명장 수리 할인',
+                  category: 'repair' as const,
+                  issuerName: '충무로 보성광학 (명장 강보성)',
+                  discountText: '수리 공임비 5,000원 즉시 할인',
+                },
+                {
+                  id: 'voucher-damage-care',
+                  title: 'DASI 안심 케어(파손 보험) 1회 면제권',
+                  cost: 1000,
+                  desc: '카메라 주말 렌탈 시 3,000원 안심 보험료 전액 면제',
+                  badge: '케어 혜택',
+                  category: 'rental' as const,
+                  issuerName: 'DASI 케어 센터',
+                  discountText: '안심 보험료 3,000원 전액 면제',
+                },
               ].map((voucher, idx) => (
                 <div key={idx} className="p-5 rounded-2xl border-2 border-dashed border-vintage-300 bg-[#FAF8F5] flex flex-col justify-between space-y-4 text-center">
                   <div className="space-y-1.5">
@@ -1188,23 +1212,45 @@ export default function CabinetPage() {
                       {voucher.badge}
                     </span>
                     <h4 className="font-serif text-sm font-bold text-vintage-900 leading-snug">{voucher.title}</h4>
-                    <p className="text-[11px] text-vintage-500">{voucher.desc}</p>
+                    <p className="text-[11px] text-vintage-500 leading-relaxed">{voucher.desc}</p>
                   </div>
                   <div className="space-y-2">
                     <div className="font-serif text-lg font-bold text-terracotta">{voucher.cost.toLocaleString()}P</div>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (!user) {
                           openLoginModal();
                           return;
                         }
                         if ((profile?.total_points || 0) < voucher.cost) {
-                          showToast(`포인트가 부족합니다. (${voucher.cost}P 필요)`, 'warning');
+                          showToast(`포인트가 부족합니다. (${voucher.cost}P 필요 / 보유 ${(profile?.total_points || 0).toLocaleString()}P)`, 'warning');
                           return;
                         }
-                        showToast(`[${voucher.title}] 교환이 완료되었습니다! [멤버십 & 쿠폰팩] 탭에 보관되었습니다.`, 'success');
+
+                        try {
+                          await awardPoints('redeem', voucher.id);
+                        } catch (e) {
+                          console.error(e);
+                        }
+
+                        // 사용자 쿠폰함에 신규 쿠폰 즉시 발행
+                        const expiry = new Date();
+                        expiry.setDate(expiry.getDate() + 90);
+                        const newCoupon = {
+                          id: `coupon-${Date.now()}`,
+                          title: voucher.title,
+                          discountText: voucher.discountText,
+                          issuerName: voucher.issuerName,
+                          category: voucher.category,
+                          validUntil: expiry.toISOString().slice(0, 10),
+                          barcode: `DASI-${Math.floor(100000000 + Math.random() * 900000000)}`,
+                          isUsed: false,
+                        };
+                        addCoupon(newCoupon);
+
+                        showToast(`🎉 [${voucher.title}] 교환 완료! [멤버십 & 쿠폰팩] 보관함에 QR/바코드가 저장되었습니다.`, 'success');
                       }}
-                      className="w-full py-2 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-2xs"
+                      className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs active:scale-95"
                     >
                       교환하기
                     </button>
@@ -2186,21 +2232,48 @@ export default function CabinetPage() {
               </p>
             </div>
 
-            {/* BARCODE GRAPHIC */}
+            {/* BARCODE & QR DUAL PASS GRAPHIC */}
             <div className="bg-white p-5 rounded-2xl border border-vintage-200 shadow-inner space-y-3">
-              <div className="flex justify-center items-center h-16 gap-1 px-4 py-2 bg-white rounded-lg">
-                {[4, 2, 6, 2, 4, 3, 2, 5, 2, 3, 4, 2, 5, 3, 2, 4, 3, 2, 5, 2, 4, 2, 3, 5, 2, 4, 3].map((w, idx) => (
-                  <div
-                    key={idx}
-                    className="h-full bg-vintage-900 rounded-[1px]"
-                    style={{ width: `${w}px` }}
-                  />
-                ))}
+              <div className="flex items-center justify-center gap-4">
+                {/* QR Vector Pattern */}
+                <div className="w-20 h-20 bg-vintage-900 rounded-xl p-1.5 flex flex-col justify-between shrink-0 shadow-xs">
+                  <div className="flex justify-between">
+                    <div className="w-5 h-5 bg-white rounded-xs p-1 flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 bg-vintage-900 rounded-2xs" />
+                    </div>
+                    <div className="w-5 h-5 bg-white rounded-xs p-1 flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 bg-vintage-900 rounded-2xs" />
+                    </div>
+                  </div>
+                  <div className="flex justify-center items-center py-0.5">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-ping" />
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="w-5 h-5 bg-white rounded-xs p-1 flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 bg-vintage-900 rounded-2xs" />
+                    </div>
+                    <div className="w-3.5 h-3.5 bg-amber-400 rounded-xs" />
+                  </div>
+                </div>
+
+                {/* Barcode Strip */}
+                <div className="flex-1 space-y-1">
+                  <div className="flex justify-between items-center h-14 gap-0.5 px-2 bg-white rounded-lg overflow-hidden">
+                    {[4, 2, 5, 2, 3, 2, 4, 3, 2, 5, 2, 3, 4, 2, 5, 3, 2, 4, 3, 2, 5, 2, 4, 2, 3, 5, 2, 4, 3].map((w, idx) => (
+                      <div
+                        key={idx}
+                        className="h-full bg-vintage-900 rounded-[0.5px]"
+                        style={{ width: `${w}px` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-[10px] font-mono tracking-wider text-vintage-500 font-bold truncate">
+                    {selectedBarcodeCoupon.barcode || `DASI-${selectedBarcodeCoupon.id.toUpperCase()}`}
+                  </div>
+                </div>
               </div>
-              <div className="text-[11px] font-mono tracking-widest text-vintage-600 font-bold">
-                DASI-{selectedBarcodeCoupon.id.toUpperCase()}-7721
-              </div>
-              <div className="text-xs text-terracotta font-bold">
+
+              <div className="text-xs text-terracotta font-bold border-t border-vintage-150 pt-2">
                 혜택: {selectedBarcodeCoupon.discountText}
               </div>
             </div>

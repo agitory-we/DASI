@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Header } from '@/components/common/Header';
-import { Footer } from '@/components/common/Footer';
+import { AppSidebarLayout } from '@/components/layout/AppSidebarLayout';
 import { BottomNav } from '@/components/common/BottomNav';
 import { DasiProvider } from '@/context/DasiContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -64,12 +63,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen flex flex-col bg-vintage-50 text-vintage-900 font-sans antialiased selection:bg-terracotta selection:text-white">
+      <body className="min-h-screen bg-vintage-50 text-vintage-900 font-sans antialiased selection:bg-terracotta selection:text-white">
         <AuthProvider>
           <DasiProvider>
-            <Header />
-            <main className="flex-1 pb-24 xl:pb-0">{children}</main>
-            <Footer />
+            <AppSidebarLayout>
+              {children}
+            </AppSidebarLayout>
             <BottomNav />
             {/* 전역 로그인 모달 — useAuth().openLoginModal()로 어디서나 호출 가능 */}
             <LoginModal />

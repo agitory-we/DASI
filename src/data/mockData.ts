@@ -227,6 +227,12 @@ export const mockAnalogSpots: AnalogSpot[] = [
     promoNotice: 'DASI 카메라 대여 회원 방문 시 롤당 1,000원 즉시 할인 + 고화질 무료 업그레이드',
     rating: 4.92,
     reviewsCount: 420,
+    sameDayAvailable: true,
+    availabilityStatus: 'within_hours',
+    filmDevelopLeadTime: '당일 3시간 (17:30 이전 접수 시)',
+    quickDeliveryAvailable: true,
+    hasQrDiscount: true,
+    qrDiscountRate: '현장 스캔 전 품목 10% 즉시 할인',
   },
   {
     id: 'spot-2',
@@ -246,6 +252,12 @@ export const mockAnalogSpots: AnalogSpot[] = [
     promoNotice: '내가 직접 모니터를 보며 색감을 조절하는 셀프 스캔 부스 운영',
     rating: 4.88,
     reviewsCount: 310,
+    sameDayAvailable: true,
+    availabilityStatus: 'immediate',
+    filmDevelopLeadTime: '현장 셀프 스캔 1시간 내 다운로드',
+    quickDeliveryAvailable: false,
+    hasQrDiscount: true,
+    qrDiscountRate: '셀프 스캔 1롤 15% 현장 할인',
   },
   {
     id: 'spot-3',
@@ -262,6 +274,11 @@ export const mockAnalogSpots: AnalogSpot[] = [
     promoNotice: '심야 성수동 야간 출사 시 필름이 떨어졌을 때 즉시 구매 가능',
     rating: 4.75,
     reviewsCount: 88,
+    sameDayAvailable: true,
+    availabilityStatus: 'immediate',
+    filmDevelopLeadTime: '24시간 무인 수거함 투입 시 익일 12시 스캔',
+    quickDeliveryAvailable: false,
+    hasQrDiscount: false,
   },
   {
     id: 'spot-4',
@@ -278,6 +295,12 @@ export const mockAnalogSpots: AnalogSpot[] = [
     promoNotice: 'DASI 회원 접수 시 바디 무료 클리닝 및 노출계 무료 정밀 점검',
     rating: 4.96,
     reviewsCount: 185,
+    sameDayAvailable: true,
+    availabilityStatus: 'immediate',
+    repairLeadTime: '현장 30분 기본 건강검진 / 정밀 오버홀 3영업일',
+    quickDeliveryAvailable: true,
+    hasQrDiscount: true,
+    qrDiscountRate: '공임비 10,000원 즉시 할인 QR',
   }
 ];
 

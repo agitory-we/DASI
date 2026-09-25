@@ -21,13 +21,68 @@ import {
   CreditCard,
   Camera as CameraIcon,
   Coins,
-  Star
+  Star,
+  Film,
+  Truck,
+  PackageCheck
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
 import { sendLocalNotification, requestNotificationPermission, PUSH_SCENARIOS } from '@/utils/webPush';
+
+interface BulkFilmPack {
+  id: string;
+  title: string;
+  rolls: number;
+  originalPrice: number;
+  price: number;
+  discountRate: string;
+  filmType: string;
+  desc: string;
+  deliveryBenefit: string;
+  badge: string;
+}
+
+const BULK_FILM_PACKS: BulkFilmPack[] = [
+  {
+    id: 'pack-3',
+    title: '주말 3롤 출사 스타터팩',
+    rolls: 3,
+    originalPrice: 42000,
+    price: 39900,
+    discountRate: '5% OFF',
+    filmType: '코닥 컬러플러스 200 (3롤)',
+    desc: '1박 2일 근교 출사나 주말 출사에 가장 부담 없는 실속 패키지',
+    deliveryBenefit: '을지로/충무로 당일 매장 즉시 수령',
+    badge: '실속'
+  },
+  {
+    id: 'pack-5',
+    title: '성지순례 5롤 로드트립팩',
+    rolls: 5,
+    originalPrice: 70000,
+    price: 64400,
+    discountRate: '8% OFF',
+    filmType: '코닥 200 (3롤) + 울트라맥스 400 (2롤)',
+    desc: '낮과 밤, 실내와 야외를 모두 커버하는 감도별 하이브리드 구성',
+    deliveryBenefit: '서울 전역 3시간 당일 퀵 3,000원 지원',
+    badge: '강력 추천'
+  },
+  {
+    id: 'pack-10',
+    title: '마스터 10롤 대량 벌크팩',
+    rolls: 10,
+    originalPrice: 140000,
+    price: 123200,
+    discountRate: '12% OFF',
+    filmType: '코닥/후지 10롤 풀패키지 + 전용 방습 틴케이스',
+    desc: '대규모 출사 크루 및 장기 여행용 최저가 벌크 구성',
+    deliveryBenefit: '서울 전역 당일 3시간 무료 퀵 배송 전액 지원',
+    badge: '최대 혜택'
+  }
+];
 
 export default function RentPage() {
   const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos } = useDasi();
@@ -51,6 +106,7 @@ export default function RentPage() {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'toss' | 'kakao'>('card');
   const [selectedShopId, setSelectedShopId] = useState<string>('shop-1');
   const [includeFilm, setIncludeFilm] = useState<boolean>(false);
+  const [filmRollCount, setFilmRollCount] = useState<number>(1);
   const [includeCleaningKit, setIncludeCleaningKit] = useState<boolean>(false);
   const [includeDamageCare, setIncludeDamageCare] = useState<boolean>(true);
   const [isBundleSelected, setIsBundleSelected] = useState<boolean>(false);
@@ -58,11 +114,34 @@ export default function RentPage() {
   const [isBooked, setIsBooked] = useState<boolean>(false);
   const [bookedTicketCode, setBookedTicketCode] = useState<string>('');
 
+  // 대량 구매(벌크) 필름 전용 주문 모달 상태
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false);
+  const [selectedBulkPack, setSelectedBulkPack] = useState<any | null>(null);
+  const [bulkDeliveryMethod, setBulkDeliveryMethod] = useState<'quick' | 'pickup'>('quick');
+  const [bulkAddress, setBulkAddress] = useState<string>('서울 중구 세종대로 110 (서울시청)');
+  const [isBulkOrdered, setIsBulkOrdered] = useState<boolean>(false);
+  const [bulkTicketCode, setBulkTicketCode] = useState<string>('');
+
+  // 벌크 필름 가격 계산 헬퍼 (수량별 대량 할인율 적용)
+  const getFilmCost = (count: number) => {
+    switch (count) {
+      case 3:
+        return 39900; // 5% 할인
+      case 5:
+        return 64400; // 8% 할인
+      case 10:
+        return 123200; // 12% 대량 할인 + 무료 퀵배송
+      default:
+        return 14000; // 1롤 정가
+    }
+  };
+
   const handleToggleBundle = () => {
     const next = !isBundleSelected;
     setIsBundleSelected(next);
     if (next) {
       setIncludeFilm(true);
+      setFilmRollCount(1);
       setIncludeCleaningKit(true);
       setIncludeDamageCare(true);
       showToast('✨ 올인원 스타터 번들 혜택 적용! (필름+클리닝+보험 패키지 6,000원 할인)', 'success');
@@ -90,6 +169,7 @@ export default function RentPage() {
     setSelectedCamera(camera);
     setSelectedShopId(camera.shopId || pickupShops[0]?.id || 'shop-1');
     setIncludeFilm(false);
+    setFilmRollCount(1);
     setIncludeCleaningKit(false);
     setIncludeDamageCare(true);
     setIsBundleSelected(false);
@@ -193,6 +273,99 @@ export default function RentPage() {
             <div className="text-xs font-bold text-vintage-900">Rent-to-Own 100% 공제</div>
             <div className="text-[11px] text-vintage-500">대여료 차감 후 잔금만 결제 소장</div>
           </div>
+        </div>
+      </div>
+
+      {/* BULK FILM PACKAGES SECTION (대량 구매 할인 & 당일 퀵 배송) */}
+      <div className="rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-white border border-amber-200/90 p-5 sm:p-7 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                BULK SAVINGS
+              </span>
+              <span className="text-xs font-bold text-amber-900 flex items-center gap-1">
+                <Truck className="w-3.5 h-3.5 text-amber-700" />
+                서울 전역 3시간 당일 퀵 &amp; 명장 매장 즉시 픽업
+              </span>
+            </div>
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 flex items-center gap-2">
+              <Film className="w-5 h-5 text-terracotta" />
+              <span>출사용 필름 대량 구매(벌크) 할인 &amp; 즉시 공급</span>
+            </h2>
+            <p className="text-xs text-vintage-600">
+              카메라 대여 없이 필름만 필요하신가요? 3롤 이상 묶음 구매 시 최대 12% 할인 및 서울 시내 당일 퀵 배송 혜택을 드립니다.
+            </p>
+          </div>
+
+          <div className="shrink-0 text-right">
+            <span className="text-[11px] text-vintage-500">당일 배송 마감</span>
+            <div className="text-xs font-mono font-bold text-terracotta">오늘 16:30 주문 건까지</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          {BULK_FILM_PACKS.map((pack) => (
+            <div
+              key={pack.id}
+              className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200 hover:border-amber-400 hover:shadow-md transition-all flex flex-col justify-between space-y-4 relative group"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-bold">
+                    {pack.badge}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-terracotta text-white text-[10px] font-extrabold">
+                    {pack.discountRate}
+                  </span>
+                </div>
+
+                <h3 className="font-serif text-base font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                  {pack.title}
+                </h3>
+                <div className="text-xs font-semibold text-vintage-700">
+                  {pack.filmType}
+                </div>
+                <p className="text-[11px] text-vintage-500 leading-relaxed">
+                  {pack.desc}
+                </p>
+
+                <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-150 text-[11px] text-emerald-800 font-medium flex items-center gap-1.5">
+                  <PackageCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{pack.deliveryBenefit}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2 border-t border-vintage-100">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[11px] text-vintage-400 line-through">
+                    {pack.originalPrice.toLocaleString()}원
+                  </span>
+                  <div className="text-right">
+                    <span className="font-serif text-xl font-bold text-terracotta">
+                      {pack.price.toLocaleString()}원
+                    </span>
+                    <span className="text-[10px] text-vintage-500 block">
+                      (롤당 {Math.round(pack.price / pack.rolls).toLocaleString()}원)
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBulkPack(pack);
+                    setIsBulkModalOpen(true);
+                    setIsBulkOrdered(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>{pack.rolls}롤 벌크 즉시 신청</span>
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -388,7 +561,7 @@ export default function RentPage() {
                           {Math.max(
                             0,
                             selectedCamera.rentalPricePerDay * rentalDays +
-                            (includeFilm ? 14000 : 0) +
+                            (includeFilm ? getFilmCost(filmRollCount) : 0) +
                             (includeCleaningKit ? 3000 : 0) +
                             (includeDamageCare ? 3000 : 0) -
                             (isBundleSelected ? 6000 : 0) -
@@ -598,25 +771,71 @@ export default function RentPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <label
-                        onClick={() => setIncludeFilm(!includeFilm)}
-                        className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                      <div
+                        className={`p-3 rounded-2xl border transition-all sm:col-span-2 ${
                           includeFilm
                             ? 'border-terracotta bg-terracotta/5 font-semibold text-vintage-900'
                             : 'border-vintage-200 hover:bg-vintage-50 text-vintage-700'
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={includeFilm}
-                            onChange={() => {}}
-                            className="rounded text-terracotta focus:ring-terracotta"
-                          />
-                          <span>코닥 컬러플러스 200 (1롤)</span>
+                        <div
+                          onClick={() => setIncludeFilm(!includeFilm)}
+                          className="flex items-center justify-between cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={includeFilm}
+                              onChange={() => {}}
+                              className="rounded text-terracotta focus:ring-terracotta"
+                            />
+                            <span>코닥 컬러플러스 200 필름 추가</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">
+                              대량 구매 시 최대 12% 할인
+                            </span>
+                          </div>
+                          <span className="text-terracotta font-bold">
+                            +{getFilmCost(filmRollCount).toLocaleString()}원
+                          </span>
                         </div>
-                        <span className="text-terracotta font-bold">+14,000원</span>
-                      </label>
+
+                        {includeFilm && (
+                          <div className="mt-3 pt-3 border-t border-terracotta/20 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                              { count: 1, label: '1롤 (단품)', discount: null, price: 14000 },
+                              { count: 3, label: '3롤 (스타터)', discount: '5% OFF', price: 39900 },
+                              { count: 5, label: '5롤 (출사팩)', discount: '8% OFF', price: 64400 },
+                              { count: 10, label: '10롤 (마스터)', discount: '12% OFF+무료퀵', price: 123200 },
+                            ].map((tier) => (
+                              <button
+                                key={tier.count}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFilmRollCount(tier.count);
+                                }}
+                                className={`px-2.5 py-2 rounded-xl text-left border transition-all flex flex-col justify-between ${
+                                  filmRollCount === tier.count
+                                    ? 'border-terracotta bg-white shadow-xs text-vintage-900 font-bold ring-2 ring-terracotta/30'
+                                    : 'border-vintage-200 bg-white/70 hover:bg-white text-vintage-600'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="text-[11px]">{tier.label}</span>
+                                  {tier.discount && (
+                                    <span className="text-[9px] px-1 py-0.2 rounded bg-terracotta text-white font-bold">
+                                      {tier.discount}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs font-mono font-bold text-terracotta mt-1">
+                                  {tier.price.toLocaleString()}원
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
                       <label
                         onClick={() => setIncludeCleaningKit(!includeCleaningKit)}
@@ -697,12 +916,12 @@ export default function RentPage() {
                           <input
                             type="number"
                             min="0"
-                            max={Math.min(profile.total_points, (selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0)))}
+                            max={Math.min(profile.total_points, (selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? getFilmCost(filmRollCount) : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0)))}
                             step="1000"
                             value={usedPoints}
                             onChange={(e) => {
                               const val = Math.max(0, parseInt(e.target.value) || 0);
-                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
+                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? getFilmCost(filmRollCount) : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
                               setUsedPoints(Math.min(val, profile.total_points, maxAffordable));
                             }}
                             className="w-28 px-3 py-1.5 text-xs rounded-xl border border-amber-300 bg-white font-mono font-bold text-amber-900 focus:outline-none focus:border-terracotta"
@@ -713,7 +932,7 @@ export default function RentPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? 14000 : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
+                              const maxAffordable = selectedCamera.rentalPricePerDay * rentalDays + (includeFilm ? getFilmCost(filmRollCount) : 0) + (includeCleaningKit ? 3000 : 0) + (includeDamageCare ? 3000 : 0);
                               const available = Math.floor(Math.min(profile.total_points, maxAffordable) / 1000) * 1000;
                               setUsedPoints(available);
                             }}
@@ -856,7 +1075,7 @@ export default function RentPage() {
                       {Math.max(
                         0,
                         selectedCamera.rentalPricePerDay * rentalDays +
-                        (includeFilm ? 14000 : 0) +
+                        (includeFilm ? getFilmCost(filmRollCount) : 0) +
                         (includeCleaningKit ? 3000 : 0) +
                         (includeDamageCare ? 3000 : 0) -
                         (isBundleSelected ? 6000 : 0) -
@@ -867,7 +1086,7 @@ export default function RentPage() {
                       <span className="text-xs text-vintage-400 line-through">
                         {(
                           selectedCamera.rentalPricePerDay * rentalDays +
-                          (includeFilm ? 14000 : 0) +
+                          (includeFilm ? getFilmCost(filmRollCount) : 0) +
                           (includeCleaningKit ? 3000 : 0) +
                           (includeDamageCare ? 3000 : 0) -
                           (isBundleSelected ? 6000 : 0)
@@ -889,7 +1108,7 @@ export default function RentPage() {
                       playShutterSound(selectedCamera.category === 'film' ? 'slr' : 'compact');
                       const rawTotal =
                         selectedCamera.rentalPricePerDay * rentalDays +
-                        (includeFilm ? 14000 : 0) +
+                        (includeFilm ? getFilmCost(filmRollCount) : 0) +
                         (includeCleaningKit ? 3000 : 0) +
                         (includeDamageCare ? 3000 : 0) -
                         (isBundleSelected ? 6000 : 0);
@@ -950,6 +1169,200 @@ export default function RentPage() {
             showToast(`${reviewTargetCamera.name} 리뷰가 정상 등록되었습니다! (+100P 적립)`, 'success');
           }}
         />
+      )}
+
+      {/* 필름 대량(벌크) 주문 모달 */}
+      {isBulkModalOpen && selectedBulkPack && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-vintage-200 p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-vintage-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+                  <Film className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-vintage-900">
+                    필름 대량(벌크) 즉시 주문
+                  </h3>
+                  <p className="text-xs text-vintage-500">
+                    {selectedBulkPack.title} ({selectedBulkPack.discountRate})
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkModalOpen(false);
+                  setIsBulkOrdered(false);
+                }}
+                className="w-8 h-8 rounded-full bg-vintage-100 hover:bg-vintage-200 flex items-center justify-center text-vintage-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {isBulkOrdered ? (
+              <div className="text-center py-6 space-y-5">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl font-bold">
+                  ✓
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-serif text-xl font-bold text-vintage-900">
+                    필름 벌크 패키지 주문이 완료되었습니다!
+                  </h4>
+                  <p className="text-xs text-vintage-600">
+                    {bulkDeliveryMethod === 'quick'
+                      ? '서울 3시간 당일 퀵 배차가 시작되었습니다. 기사님 출발 시 안심 알림톡이 전송됩니다.'
+                      : '선택하신 매장 카운터에 아래 수령 바코드를 제시하고 즉시 픽업하세요.'}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200 max-w-sm mx-auto space-y-2 text-xs text-left">
+                  <div className="flex justify-between py-1 border-b border-vintage-200">
+                    <span className="text-vintage-500">주문 번호</span>
+                    <span className="font-mono font-bold text-vintage-900">{bulkTicketCode}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-vintage-200">
+                    <span className="text-vintage-500">주문 상품</span>
+                    <span className="font-bold text-vintage-900">{selectedBulkPack.title} ({selectedBulkPack.rolls}롤)</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-vintage-200">
+                    <span className="text-vintage-500">수령 방식</span>
+                    <span className="font-bold text-terracotta">
+                      {bulkDeliveryMethod === 'quick' ? '서울 당일 3시간 퀵 배송' : '을지로/충무로 현장 픽업'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-vintage-500">최종 결제액</span>
+                    <span className="font-bold text-vintage-900">{selectedBulkPack.price.toLocaleString()}원</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsBulkModalOpen(false);
+                      setIsBulkOrdered(false);
+                    }}
+                    className="w-full py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors"
+                  >
+                    확인 및 닫기
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Pack Detail */}
+                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-amber-950">{selectedBulkPack.title}</div>
+                    <div className="text-[11px] text-amber-800">{selectedBulkPack.filmType}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[11px] text-vintage-400 line-through">
+                      {selectedBulkPack.originalPrice.toLocaleString()}원
+                    </div>
+                    <div className="font-serif text-lg font-bold text-terracotta">
+                      {selectedBulkPack.price.toLocaleString()}원
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Options */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-vintage-900 block">수령 방식 선택</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setBulkDeliveryMethod('quick')}
+                      className={`p-3 rounded-2xl border text-left transition-all ${
+                        bulkDeliveryMethod === 'quick'
+                          ? 'border-terracotta bg-terracotta/5 ring-2 ring-terracotta/20 text-vintage-900 font-bold'
+                          : 'border-vintage-200 hover:bg-vintage-50 text-vintage-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <Truck className="w-4 h-4 text-terracotta" />
+                        <span>당일 3시간 퀵</span>
+                      </div>
+                      <div className="text-[10px] text-vintage-500 mt-1">
+                        {selectedBulkPack.rolls === 10 ? '무료 퀵 지원' : '서울 시내 3,000원'}
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setBulkDeliveryMethod('pickup')}
+                      className={`p-3 rounded-2xl border text-left transition-all ${
+                        bulkDeliveryMethod === 'pickup'
+                          ? 'border-terracotta bg-terracotta/5 ring-2 ring-terracotta/20 text-vintage-900 font-bold'
+                          : 'border-vintage-200 hover:bg-vintage-50 text-vintage-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <MapPin className="w-4 h-4 text-terracotta" />
+                        <span>장인 매장 픽업</span>
+                      </div>
+                      <div className="text-[10px] text-vintage-500 mt-1">
+                        을지로·충무로 즉시 수령
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Address or Shop Select */}
+                {bulkDeliveryMethod === 'quick' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-vintage-900 block">
+                      배송받으실 주소 (서울 시내 한정)
+                    </label>
+                    <input
+                      type="text"
+                      value={bulkAddress}
+                      onChange={(e) => setBulkAddress(e.target.value)}
+                      placeholder="도로명 주소와 상세주소를 입력하세요"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta"
+                    />
+                    <p className="text-[10px] text-vintage-500">
+                      * 접수 후 3시간 내 라이더 배차가 완료됩니다.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-vintage-900 block">
+                      픽업 희망 장인 매장
+                    </label>
+                    <select
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta bg-white"
+                    >
+                      <option>을지로 신성카메라 (을지로3가역 4번출구 앞)</option>
+                      <option>충무로 보성광학 (충무로역 인쇄골목)</option>
+                      <option>을지로 망우삼림 (을지로3가 현상소)</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playShutterSound('compact');
+                      const code = `DASI-BULK-${Math.floor(100000 + Math.random() * 900000)}`;
+                      setBulkTicketCode(code);
+                      setIsBulkOrdered(true);
+                      showToast(`${selectedBulkPack.title} 주문이 정상 완료되었습니다!`, 'success');
+                    }}
+                    className="w-full py-3 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <span>{selectedBulkPack.price.toLocaleString()}원 벌크 결제 주문하기</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
