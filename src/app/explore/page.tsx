@@ -942,6 +942,24 @@ export default function ExplorePage() {
                   ))}
                 </div>
 
+                {/* 52주 취미 생태계 연결: 골든아워 & 추천 기종 */}
+                <div className="flex items-center gap-2 pt-2 border-t border-vintage-100/70 text-[11px]">
+                  <Link
+                    href="/golden-hour"
+                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-semibold flex items-center justify-center gap-1 transition-colors"
+                  >
+                    <Sun className="w-3 h-3 text-amber-600" />
+                    <span>실시간 일몰 예보</span>
+                  </Link>
+                  <Link
+                    href="/rent"
+                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-vintage-100/70 hover:bg-vintage-200 text-vintage-700 border border-vintage-200 font-semibold flex items-center justify-center gap-1 transition-colors"
+                    title="장비가 없다면? 명장 정밀 점검 기기로 가볍게 시작"
+                  >
+                    <Camera className="w-3 h-3 text-terracotta" />
+                    <span>추천 기종 둘러보기</span>
+                  </Link>
+                </div>
               </div>
             </div>
 

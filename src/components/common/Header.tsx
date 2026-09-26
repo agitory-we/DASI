@@ -43,7 +43,6 @@ import {
 import { FilmVendingMachineModal } from '@/components/fun/FilmVendingMachineModal';
 import { ViewfinderToyModal } from '@/components/fun/ViewfinderToyModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
-import { Gift } from 'lucide-react';
 
 export interface HeaderProps {
   onOpenMobileSidebar?: () => void;

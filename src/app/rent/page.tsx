@@ -199,20 +199,56 @@ export default function RentPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      {/* Header Banner */}
-      <div className="space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Rent-to-Own 체험 후 소장 시스템</span>
+      {/* Header Banner - 52주 취미 플레이그라운드 관점 */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>52주 아날로그 라이프스타일 장비 서포트</span>
+          </div>
+          <span className="text-xs text-vintage-400">·</span>
+          <span className="text-xs text-vintage-600">써보고 마음에 들면 대여료 100% 공제 후 소장</span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-          카메라 주말 렌탈 &amp; 소장 전환
+
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
+          이번 주말 내 손에 꼭 맞는 아날로그 카메라 찾기
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
-          고가의 클래식 필름카메라와 하이엔드 디카를 부담 없이 주말 동안 대여해 보세요.
-          충무로·을지로 장인 매장에서 직접 픽업하고 <strong>10분 온보딩 강습</strong>을 받을 수 있으며, 
-          써보고 마음에 들면 <strong>이미 결제한 대여료를 전액 공제하고 잔금만으로 소장</strong>할 수 있습니다.
+          고가의 클래식 필름카메라를 무턱대고 구입하기 부담스러우셨나요?
+          충무로·을지로 40년 명장의 손을 거쳐 완벽하게 오버홀된 기기를 주말 동안 편안하게 체험해 보세요.
+          매장에서 <strong>장인의 10분 온보딩 강습</strong>을 듣고 손맛을 만끽한 뒤, 반하면 <strong>대여료 전액을 공제받고 잔금만으로 소장</strong>할 수 있습니다.
         </p>
+
+        {/* 52주 취미 탐색 & 필름 동시 공급 퀵 배너 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <Link
+            href="/explore"
+            className="p-3.5 rounded-2xl bg-purple-50/80 hover:bg-purple-100/90 border border-purple-200/80 text-purple-950 flex items-center justify-between group transition-all"
+          >
+            <div className="flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-purple-700" />
+              <div>
+                <div className="text-xs font-bold">이번 주말 어디로 떠날까요?</div>
+                <div className="text-[11px] text-purple-700">서울 52주 축제 &amp; 골목 출사지 둘러보기</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <Link
+            href="/films"
+            className="p-3.5 rounded-2xl bg-rose-50/80 hover:bg-rose-100/90 border border-rose-200/80 text-rose-950 flex items-center justify-between group transition-all"
+          >
+            <div className="flex items-center gap-2.5">
+              <Film className="w-4 h-4 text-rose-700" />
+              <div>
+                <div className="text-xs font-bold">출사용 필름이 필요하신가요?</div>
+                <div className="text-[11px] text-rose-700">서울 3시간 당일 퀵 &amp; 대량 벌크샵 바로가기</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
       </div>
 
       {/* FRIDAY LIMITED RENTAL DROP BANNER */}

@@ -716,13 +716,13 @@ function CabinetContent() {
             {bookedExperiences.length === 0 ? (
               <div className="rounded-3xl bg-white border border-vintage-200 p-10 text-center space-y-3">
                 <p className="text-xs text-vintage-500">예약된 출사 또는 암실 클래스가 없습니다.</p>
-                <a
+                <Link
                   href="/experiences"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
                 >
-                  <span>주말 골목 출사 & 암실 클래스 둘러보기</span>
+                  <span>주말 골목 출사 &amp; 암실 클래스 둘러보기</span>
                   <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -930,12 +930,12 @@ function CabinetContent() {
                     </button>
 
                     <div className="flex gap-2">
-                      <a
+                      <Link
                         href="/frame"
                         className="flex-1 py-2 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-xs font-semibold text-center transition-colors"
                       >
                         감성 프레임 입히기
-                      </a>
+                      </Link>
                       <button
                         onClick={() => showToast(`[${roll.title}] 원본 압축 ZIP 파일 다운로드가 시작되었습니다.`, 'info')}
                         className="px-4 py-2 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-700 text-xs font-semibold flex items-center gap-1.5"
@@ -974,12 +974,12 @@ function CabinetContent() {
                     <span className="text-2xl">🏆</span>
                   </div>
                   <p className="text-xs text-vintage-500">접수된 VIP 상담이 없습니다.</p>
-                  <a
+                  <Link
                     href="/pro"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-vintage-950 text-xs font-bold hover:bg-amber-400 transition-colors"
                   >
                     <span>하이엔드 Pro 스튜디오 갤러리 보기</span>
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1033,12 +1033,12 @@ function CabinetContent() {
             </div>
 
             <div className="p-6 pt-0 border-t border-vintage-100">
-              <a
+              <Link
                 href="/pro"
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs"
               >
                 <span>DASI Pro 스튜디오 추가 예약</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -1071,13 +1071,13 @@ function CabinetContent() {
                     <Ticket className="w-7 h-7" />
                   </div>
                   <p className="text-xs text-vintage-500">보유 중인 쿠폰이 없습니다. 장인 클리닉에서 웰컴 쿠폰팩을 받아보세요!</p>
-                  <a
+                  <Link
                     href="/clinic"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-terracotta text-white text-xs font-semibold hover:bg-terracotta-light transition-colors"
                   >
                     <span>웰컴 쿠폰팩 받으러 가기</span>
                     <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -1120,13 +1120,22 @@ function CabinetContent() {
                             사용 완료됨
                           </div>
                         ) : (
-                          <button
-                            onClick={() => setSelectedBarcodeCoupon(coupon)}
-                            className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5"
-                          >
-                            <QrCode className="w-3.5 h-3.5" />
-                            <span>현장 사용 (바코드)</span>
-                          </button>
+                          <div className="space-y-1.5">
+                            <button
+                              onClick={() => setSelectedBarcodeCoupon(coupon)}
+                              className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                            >
+                              <QrCode className="w-3.5 h-3.5" />
+                              <span>현장 사용 (바코드)</span>
+                            </button>
+                            <Link
+                              href={coupon.category === 'repair' ? '/clinic' : '/studios'}
+                              className="w-full py-1.5 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-700 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1"
+                            >
+                              <MapPin className="w-3 h-3 text-terracotta" />
+                              <span>{coupon.category === 'repair' ? '명장 수리실 안내' : '제휴 현상소 위치 안내'}</span>
+                            </Link>
+                          </div>
                         )}
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -16,6 +16,9 @@ import {
   Info,
   X,
   CreditCard,
+  Store,
+  Camera,
+  Calendar,
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
@@ -175,6 +178,41 @@ export default function FilmsPage() {
             <div className="text-[11px] text-purple-700">보유 포인트 최대 5,000P 즉시 차감</div>
           </div>
         </div>
+      </div>
+
+      {/* 52주 취미 연결 브릿지: 출사지 탐색 & 촬영 후 제휴 현상소 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Link
+          href="/studios"
+          className="p-4 rounded-2xl bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200 text-amber-950 flex items-center justify-between group transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+              <Store className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold">다 찍은 필름은 어디에 맡길까요?</div>
+              <div className="text-[11px] text-amber-800">서울 40년 노포 &amp; 제휴 현상소 20% 할인 QR 받기</div>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+
+        <Link
+          href="/explore"
+          className="p-4 rounded-2xl bg-purple-50/70 hover:bg-purple-100/80 border border-purple-200 text-purple-950 flex items-center justify-between group transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold">필름 들고 어디로 떠날까요?</div>
+              <div className="text-[11px] text-purple-800">서울 52주 축제 &amp; 골목길 출사 핫스팟 가이드</div>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-purple-600 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
       </div>
 
       {/* Film Catalog Grid */}
