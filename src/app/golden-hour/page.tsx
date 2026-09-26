@@ -15,6 +15,7 @@ import {
   Calendar,
   AlertCircle,
   ChevronRight,
+  Users,
 } from 'lucide-react';
 import * as SunCalc from 'suncalc';
 import { shareViaKakaoTalk } from '@/utils/kakaoShare';
@@ -364,6 +365,14 @@ export default function GoldenHourPage() {
                     <Share2 className="w-4 h-4" />
                   </button>
                 </div>
+
+                <Link
+                  href={`/experiences?action=create&spotTitle=${encodeURIComponent(spot.name)}&type=golden_hour`}
+                  className="w-full py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300/80 font-bold text-xs text-center transition-all flex items-center justify-center gap-1.5 shadow-2xs"
+                >
+                  <Users className="w-3.5 h-3.5 text-amber-700" />
+                  <span>이 스팟으로 노을 번개 모임 만들기 (+300P)</span>
+                </Link>
               </div>
             </div>
           ))}

@@ -31,7 +31,8 @@ import {
   Leaf,
   QrCode,
   Film,
-  ShoppingBag
+  ShoppingBag,
+  Users
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { SpotReportModal } from '@/components/explore/SpotReportModal';
@@ -1127,7 +1128,7 @@ function ExploreContent() {
                 <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider">
                   연계 서비스 바로가기
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <a
                     href="/rent"
                     className="p-2.5 rounded-xl border border-vintage-200 hover:border-terracotta bg-vintage-50 hover:bg-white text-center transition-all group"
@@ -1159,6 +1160,16 @@ function ExploreContent() {
                       인근 제휴 현상소
                     </div>
                   </button>
+                  <Link
+                    href={`/experiences?action=create&spotTitle=${encodeURIComponent(selectedSpot.title)}&type=flash_walk`}
+                    onClick={() => setSelectedSpot(null)}
+                    className="p-2.5 rounded-xl border border-vintage-200 hover:border-amber-500 bg-amber-50/40 hover:bg-amber-50 text-center transition-all group"
+                  >
+                    <div className="text-sm">⚡</div>
+                    <div className="text-[11px] font-bold text-vintage-900 group-hover:text-amber-800">
+                      출사 번개 (+300P)
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -1413,7 +1424,7 @@ function ExploreContent() {
             </div>
 
             {/* 하단 CTA 버튼 */}
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
               <Link
                 href="/rent"
                 onClick={() => setSelectedShotToRent(null)}
@@ -1421,6 +1432,14 @@ function ExploreContent() {
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>주말 렌탈 바로 예약하기 (대여료 100% 소장 공제)</span>
+              </Link>
+              <Link
+                href={`/experiences?action=create&spotTitle=${encodeURIComponent(selectedShotToRent.title)}&type=flash_walk`}
+                onClick={() => setSelectedShotToRent(null)}
+                className="py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-vintage-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95 text-center"
+              >
+                <Users className="w-4 h-4" />
+                <span>번개 모임 열기 (+300P)</span>
               </Link>
             </div>
           </div>

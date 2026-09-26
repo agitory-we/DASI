@@ -8,6 +8,7 @@ import {
   RepairMaster,
   PhotoGig,
   Experience,
+  PhotoMeetup,
   UserCoupon,
   ProConsultationItem,
   CommunityPhoto
@@ -20,6 +21,7 @@ import {
   mockMasters,
   mockPhotoGigs,
   mockExperiences,
+  mockPhotoMeetups,
   mockCommunityPhotos
 } from '@/data/mockData';
 import {
@@ -103,6 +105,7 @@ interface DasiContextType {
   repairMasters: RepairMaster[];
   photoGigs: PhotoGig[];
   experiences: Experience[];
+  meetups: PhotoMeetup[];
   isLoadingData: boolean;
   refreshData: () => Promise<void>;
 
@@ -127,6 +130,8 @@ interface DasiContextType {
   isWelcomeClaimed: boolean;
   bookGig: (item: Omit<BookedGigItem, 'id' | 'bookedAt' | 'status'>) => void;
   bookExperience: (item: Omit<BookedExperienceItem, 'id' | 'ticketCode' | 'bookedAt' | 'status'>) => string;
+  createMeetup: (item: Omit<PhotoMeetup, 'id' | 'currentAttendees'>) => string;
+  joinMeetup: (meetupId: string, attendee: { name: string; camera?: string; withRental?: boolean }) => string;
   submitRepairEstimate: (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => string;
   bookProConsultation: (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => string;
   toggleSaveSpot: (spotId: string) => void;
@@ -151,6 +156,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [repairMasters, setRepairMasters] = useState<RepairMaster[]>(mockMasters);
   const [photoGigs, setPhotoGigs] = useState<PhotoGig[]>(mockPhotoGigs);
   const [experiences, setExperiences] = useState<Experience[]>(mockExperiences);
+  const [meetups, setMeetups] = useState<PhotoMeetup[]>(mockPhotoMeetups);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
 
   // User state
@@ -359,6 +365,11 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSavedSpotIds(JSON.parse(savedSpots));
       }
 
+      const savedMeetups = localStorage.getItem('dasi_meetups');
+      if (savedMeetups) {
+        setMeetups(JSON.parse(savedMeetups));
+      }
+
       if (savedWelcome) {
         setIsWelcomeClaimed(JSON.parse(savedWelcome));
       }
@@ -381,10 +392,11 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('dasi_pro_consultations', JSON.stringify(proConsultations));
       localStorage.setItem('dasi_saved_spot_ids', JSON.stringify(savedSpotIds));
       localStorage.setItem('dasi_welcome_claimed', JSON.stringify(isWelcomeClaimed));
+      localStorage.setItem('dasi_meetups', JSON.stringify(meetups));
     } catch (e) {
       console.error('Failed to save dasi storage', e);
     }
-  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, proConsultations, savedSpotIds, isWelcomeClaimed, isHydrated]);
+  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, proConsultations, savedSpotIds, isWelcomeClaimed, meetups, isHydrated]);
 
   const bookCameraRental = (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => {
     const newItem: RentingCameraItem = {
@@ -528,6 +540,64 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return ticketCode;
   };
 
+  const createMeetup = (item: Omit<PhotoMeetup, 'id' | 'currentAttendees'>) => {
+    const newId = `meetup-${Date.now()}`;
+    const newMeetup: PhotoMeetup = {
+      ...item,
+      id: newId,
+      currentAttendees: 1, // 개설자 본인 참여
+      isUserCreated: true,
+    };
+    setMeetups((prev) => [newMeetup, ...prev]);
+
+    // 호스트 본인의 참가 티켓도 마이 캐비닛에 자동 발급
+    const hostTicketCode = `TKT-HOST-${Math.floor(100000 + Math.random() * 900000)}`;
+    const hostExpTicket: BookedExperienceItem = {
+      id: `exp-host-${Date.now()}`,
+      experienceId: newId,
+      title: item.title,
+      hostName: item.hostName,
+      location: item.location,
+      dateTime: item.dateTime,
+      price: 0,
+      hasRentalPackage: false,
+      ticketCode: hostTicketCode,
+      bookedAt: new Date().toISOString().slice(0, 10),
+      status: 'confirmed',
+    };
+    setBookedExperiences((prev) => [hostExpTicket, ...prev]);
+    showToast(`🎉 [${item.title}] 출사 모임이 개설되었습니다! 호스트 보너스 +300P가 적립되었습니다.`, 'success');
+    return newId;
+  };
+
+  const joinMeetup = (meetupId: string, attendee: { name: string; camera?: string; withRental?: boolean }) => {
+    const target = meetups.find((m) => m.id === meetupId);
+    if (!target) return '';
+
+    // 모임 참가 인원 증가
+    setMeetups((prev) =>
+      prev.map((m) => (m.id === meetupId ? { ...m, currentAttendees: Math.min(m.maxAttendees, m.currentAttendees + 1) } : m))
+    );
+
+    const ticketCode = `TKT-MEET-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newExpTicket: BookedExperienceItem = {
+      id: `exp-join-${Date.now()}`,
+      experienceId: target.id,
+      title: target.title,
+      hostName: target.hostName,
+      location: target.location,
+      dateTime: target.dateTime,
+      price: attendee.withRental ? Math.max(0, target.price - 10000) : target.price,
+      hasRentalPackage: !!attendee.withRental,
+      ticketCode,
+      bookedAt: new Date().toISOString().slice(0, 10),
+      status: 'confirmed',
+    };
+    setBookedExperiences((prev) => [newExpTicket, ...prev]);
+    showToast(`🎟️ [${target.title}] 출사 모임 신청이 완료되었습니다! (참가 보너스 +150P 적립)`, 'success');
+    return ticketCode;
+  };
+
   const submitRepairEstimate = (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => {
     const estimateCode = `EST-${Math.floor(100000 + Math.random() * 900000)}`;
     const newEstimate: RepairEstimateItem = {
@@ -606,6 +676,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         repairMasters,
         photoGigs,
         experiences,
+        meetups,
         isLoadingData,
         refreshData,
         rentingItems,
@@ -628,6 +699,8 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isWelcomeClaimed,
         bookGig,
         bookExperience,
+        createMeetup,
+        joinMeetup,
         submitRepairEstimate,
         bookProConsultation,
         toggleSaveSpot,

@@ -195,6 +195,31 @@ export interface Experience {
   included: string[];
 }
 
+export type MeetupCategory = 'flash_walk' | 'golden_hour' | 'theme_walk' | 'master_class';
+
+export interface PhotoMeetup {
+  id: string;
+  category: MeetupCategory;
+  title: string;
+  hostName: string;
+  hostRole: string;
+  hostAvatar: string;
+  location: string;
+  dateTime: string;
+  duration: string;
+  price: number; // 0이면 무료 번개
+  currentAttendees: number;
+  maxAttendees: number;
+  description: string;
+  imageUrl: string;
+  recommendedGear?: string;
+  recommendedFilm?: string;
+  rentalPackageDiscount?: string;
+  included: string[];
+  tags: string[];
+  isUserCreated?: boolean;
+}
+
 export interface ProConsultationItem {
   id: string;
   vipCode: string;
