@@ -19,7 +19,8 @@ import {
   Plus,
   QrCode,
   Check,
-  Coins
+  Coins,
+  Ticket
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -70,14 +71,30 @@ export default function GigsPage() {
           </p>
         </div>
 
-        {/* Register Button */}
-        <button
-          onClick={() => setIsRegisterOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-all shadow-sm shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>내 카메라로 스냅 알바 등록하기</span>
-        </button>
+        {/* Action Buttons Group */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Link
+            href="/explore"
+            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white hover:bg-vintage-50 border border-vintage-300 text-vintage-800 text-xs sm:text-sm font-bold transition-all shadow-xs"
+          >
+            <MapPin className="w-4 h-4 text-terracotta" />
+            <span>52주 출사지 보기</span>
+          </Link>
+          <Link
+            href="/cabinet?tab=tickets"
+            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-vintage-100 hover:bg-vintage-200 border border-vintage-300 text-vintage-900 text-xs sm:text-sm font-bold transition-all shadow-xs"
+          >
+            <Ticket className="w-4 h-4 text-emerald-700" />
+            <span>내 예약 티켓 확인</span>
+          </Link>
+          <button
+            onClick={() => setIsRegisterOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-all shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>내 카메라로 스냅 알바 등록</span>
+          </button>
+        </div>
       </div>
 
       {/* Safety & Escrow Guarantee Bar */}
@@ -355,7 +372,7 @@ export default function GigsPage() {
                     닫기
                   </button>
                   <Link
-                    href="/cabinet"
+                    href="/cabinet?tab=tickets"
                     onClick={() => setSelectedGig(null)}
                     className="flex-1 px-5 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors shadow-xs text-center"
                   >

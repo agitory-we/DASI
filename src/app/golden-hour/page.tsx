@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -23,6 +23,8 @@ interface SunsetSpot {
   id: string;
   name: string;
   district: string;
+  lat: number;
+  lng: number;
   bestAngle: string;
   recommendedFilm: string;
   recommendedLens: string;
@@ -33,9 +35,11 @@ interface SunsetSpot {
 
 const SUNSET_SPOTS: SunsetSpot[] = [
   {
-    id: 'spot-1',
+    id: 'sunset-spot-1',
     name: '응봉산 팔각정',
     district: '성동구 응봉동',
+    lat: 37.5489,
+    lng: 127.0325,
     bestAngle: '동호대교 & 성수대교 S자 한강 물결 뷰',
     recommendedFilm: '후지 벨비아 50 / 코닥 엑타 100',
     recommendedLens: '85mm ~ 135mm 망원계열',
@@ -44,9 +48,11 @@ const SUNSET_SPOTS: SunsetSpot[] = [
     imageUrl: 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&auto=format&fit=crop&q=80',
   },
   {
-    id: 'spot-2',
+    id: 'sunset-spot-2',
     name: '낙산공원 한양도성 성곽길',
     district: '종로구 이화동',
+    lat: 37.5815,
+    lng: 127.0076,
     bestAngle: '도성 성곽 능선 너머 동대문 & 남산타워 실루엣',
     recommendedFilm: '코닥 포트라 400 / 컬러플러스 200',
     recommendedLens: '35mm ~ 50mm 표준 렌즈',
@@ -55,9 +61,11 @@ const SUNSET_SPOTS: SunsetSpot[] = [
     imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
   },
   {
-    id: 'spot-3',
+    id: 'sunset-spot-3',
     name: '선유도공원 선유교',
     district: '영등포구 양평동',
+    lat: 37.5425,
+    lng: 126.9015,
     bestAngle: '선유교 아치형 다리 위 양화대교 & 국회의사당 일몰',
     recommendedFilm: '코닥 골드 200 / 일포드 HP5+ (흑백)',
     recommendedLens: '28mm ~ 35mm 광각 렌즈',
@@ -66,9 +74,11 @@ const SUNSET_SPOTS: SunsetSpot[] = [
     imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
   },
   {
-    id: 'spot-4',
+    id: 'sunset-spot-4',
     name: '노들섬 달빛광장 & 서쪽 잔디밭',
     district: '용산구 이촌동',
+    lat: 37.5175,
+    lng: 126.9580,
     bestAngle: '한강철교 위로 지나가는 1호선 전철과 여의도 63빌딩',
     recommendedFilm: '시네스틸 800T (블루아워/야경 특화)',
     recommendedLens: '50mm F1.4 단렌즈',
@@ -282,14 +292,32 @@ export default function GoldenHourPage() {
                       <span className="font-bold text-vintage-800 shrink-0">추천 앵글:</span>
                       <span className="text-vintage-600">{spot.bestAngle}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="font-bold text-vintage-800 shrink-0">추천 필름:</span>
-                      <span className="text-amber-800 font-semibold">{spot.recommendedFilm}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-start gap-2">
+                        <span className="font-bold text-vintage-800 shrink-0">추천 필름:</span>
+                        <span className="text-amber-800 font-semibold">{spot.recommendedFilm}</span>
+                      </div>
+                      <Link
+                        href="/films"
+                        className="px-2 py-0.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-bold shrink-0 transition-colors"
+                      >
+                        당일 퀵 주문 →
+                      </Link>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="font-bold text-vintage-800 shrink-0">추천 렌즈:</span>
-                      <span className="text-vintage-600">{spot.recommendedLens}</span>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-start gap-2">
+                        <span className="font-bold text-vintage-800 shrink-0">추천 렌즈:</span>
+                        <span className="text-vintage-600">{spot.recommendedLens}</span>
+                      </div>
+                      <Link
+                        href={`/rent?spotTitle=${encodeURIComponent(spot.name)}&recommendedLens=${encodeURIComponent(spot.recommendedLens)}`}
+                        className="px-2 py-0.5 rounded-md bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-[10px] font-bold shrink-0 transition-colors"
+                      >
+                        체험 장비 보기 →
+                      </Link>
                     </div>
+
                     <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-950 font-medium">
                       <Camera className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                       <div>
@@ -301,33 +329,120 @@ export default function GoldenHourPage() {
                 </div>
               </div>
 
-              <div className="p-6 pt-0 flex gap-2">
-                <Link
-                  href={`/map?lat=37.5665&lng=126.978`}
-                  className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1.5"
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>지도로 위치 보기</span>
-                </Link>
+              <div className="p-6 pt-0 space-y-2">
+                <div className="flex gap-2">
+                  <Link
+                    href={`/map?spotId=${spot.id}`}
+                    className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1.5"
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>스팟 지도에서 확인</span>
+                  </Link>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    shareViaKakaoTalk({
-                      title: `${spot.name} - 골든아워 일몰 출사 가이드`,
-                      description: `추천 필름: ${spot.recommendedFilm} · 권장 세팅: ${spot.exposureTip}`,
-                      imageUrl: spot.imageUrl,
-                      buttonTitle: '일몰 예보 & 출사 팁 보기',
-                    })
-                  }
-                  className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold"
-                  title="카카오톡 공유"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
+                  <Link
+                    href="/explore"
+                    className="px-3.5 py-2.5 rounded-xl border border-vintage-200 hover:bg-vintage-50 text-vintage-800 font-bold text-xs text-center transition-all flex items-center justify-center gap-1"
+                    title="52주 출사 코스 전체 가이드"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-terracotta" />
+                    <span>52주 가이드</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      shareViaKakaoTalk({
+                        title: `${spot.name} - 골든아워 일몰 출사 가이드`,
+                        description: `추천 필름: ${spot.recommendedFilm} · 권장 세팅: ${spot.exposureTip}`,
+                        imageUrl: spot.imageUrl,
+                        buttonTitle: '일몰 예보 & 출사 팁 보기',
+                      })
+                    }
+                    className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold"
+                    title="카카오톡 공유"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 52-Week Hobby Flow Bridge Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-vintage-900 to-[#2D241E] text-white space-y-5 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>DASI 아날로그 52주 취미 여정 완주 가이드</span>
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold">
+              일몰 감상에서 사진 현상까지, 자연스러운 아날로그 루틴
+            </h3>
+          </div>
+          <Link
+            href="/explore"
+            className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <span>52주 출사지 전체 보기</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <Link
+            href="/meter"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Sliders className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+              <span>Step 1. 실시간 노출계</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              조도가 급변하는 골든아워, 셔터속도와 조리개를 즉시 측광합니다.
+            </p>
+          </Link>
+
+          <Link
+            href="/films"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>Step 2. 신선 필름 당일 퀵</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              일몰 출사용 포트라 400, 시네스틸 800T를 서울 3시간 퀵으로 수령하세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/studios"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 group-hover:bounce transition-transform" />
+              <span>Step 3. 20% 제휴 현상소</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              촬영 후 가까운 을지로/충무로 현상소에서 당일 고화질 스캔을 완성하세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/rent"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Camera className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span>Step 4. 장비 부담 없는 체험</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              사기 전에 먼저 써보고 대여료 100% 공제받는 Rent-to-Own을 경험하세요.
+            </p>
+          </Link>
         </div>
       </div>
     </div>

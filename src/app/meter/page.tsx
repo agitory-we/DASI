@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -9,12 +9,16 @@ import {
   Cloud,
   Sliders,
   ChevronLeft,
+  ChevronRight,
   Volume2,
   RefreshCw,
   Sparkles,
   Info,
   Check,
-  AlertCircle
+  AlertCircle,
+  MapPin,
+  Film,
+  Compass
 } from 'lucide-react';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { playShutterSound } from '@/utils/shutterAudio';
@@ -380,11 +384,84 @@ export default function LightMeterPage() {
       {/* 5. 하단 셔터 시뮬레이션 및 햅틱 테스트 버튼 */}
       <button
         onClick={handleShutterClick}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-terracotta to-amber-600 text-white font-serif font-bold text-base shadow-lg shadow-terracotta/20 hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2"
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-terracotta to-amber-600 text-white font-serif font-bold text-base shadow-lg shadow-terracotta/20 hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 mb-4"
       >
         <Camera className="w-5 h-5" />
         <span>셔터 햅틱 &amp; 효과음 테스트 (SLR Click)</span>
       </button>
+
+      {/* 6. DASI 52주 취미 생태계 연계 브릿지 */}
+      <div className="bg-[#241f1a] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>측광 완료 후 추천 아날로그 출사 여정</span>
+          </div>
+          <span className="text-[11px] text-white/40">EV {currentEv100} 최적화</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <Link
+            href="/golden-hour"
+            className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div className="text-amber-300 font-bold flex items-center gap-1 text-[11px]">
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>골든아워 예보</span>
+            </div>
+            <div className="text-[10px] text-white/50 mt-1">오늘 서울 일몰 시각과 4대 출사지</div>
+            <div className="text-terracotta text-[10px] font-bold mt-2 flex items-center gap-0.5">
+              <span>일몰 보기</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/films"
+            className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div className="text-amber-300 font-bold flex items-center gap-1 text-[11px]">
+              <Film className="w-3.5 h-3.5 text-amber-400" />
+              <span>ISO {selectedIso} 필름</span>
+            </div>
+            <div className="text-[10px] text-white/50 mt-1">감도에 딱 맞는 신선 필름 당일 퀵</div>
+            <div className="text-terracotta text-[10px] font-bold mt-2 flex items-center gap-0.5">
+              <span>필름 주문</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/explore"
+            className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div className="text-amber-300 font-bold flex items-center gap-1 text-[11px]">
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>52주 출사지</span>
+            </div>
+            <div className="text-[10px] text-white/50 mt-1">이번 주 추천 서울 도심 골목 코스</div>
+            <div className="text-terracotta text-[10px] font-bold mt-2 flex items-center gap-0.5">
+              <span>코스 탐색</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/studios"
+            className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div className="text-amber-300 font-bold flex items-center gap-1 text-[11px]">
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span>20% 제휴 현상소</span>
+            </div>
+            <div className="text-[10px] text-white/50 mt-1">촬영 후 맡길 당일 스캔 랩 찾기</div>
+            <div className="text-terracotta text-[10px] font-bold mt-2 flex items-center gap-0.5">
+              <span>현상소 보기</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

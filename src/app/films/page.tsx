@@ -19,6 +19,8 @@ import {
   Store,
   Camera,
   Calendar,
+  Sun,
+  Compass,
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
@@ -286,6 +288,82 @@ export default function FilmsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 52-Week Hobby Flow Bridge Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-vintage-900 to-[#2D241E] text-white space-y-5 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>DASI 필름러의 52주 취미 완주 루틴</span>
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold">
+              신선한 필름을 장전하고 다음 아날로그 여정으로 떠나보세요
+            </h3>
+          </div>
+          <Link
+            href="/explore"
+            className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <span>52주 출사 코스 보기</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <Link
+            href="/golden-hour"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Sun className="w-4 h-4 group-hover:spin transition-transform" />
+              <span>1. 골든아워 일몰 예보</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              황금빛 노을이 쏟아지는 서울 4대 일몰 스팟과 권장 세팅을 확인하세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/meter"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Camera className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span>2. 실시간 노출계</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              필름 감도에 맞는 최적의 셔터스피드와 조리개값을 스마트폰으로 즉시 측정하세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/explore"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+              <span>3. 52주 도심 출사지</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              을지로, 성수, 한옥마을 등 감성 골목길 가이드와 화각 추천을 둘러보세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/studios"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Store className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>4. 20% 제휴 현상소</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              다 찍은 롤은 당일 스캔 및 고화질 현상 20% 할인 QR로 바로 맡기세요.
+            </p>
+          </Link>
+        </div>
       </div>
 
       {/* Order Modal */}

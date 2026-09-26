@@ -249,7 +249,7 @@ export default function ExperiencesPage() {
 
                 <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto pt-2">
                   <Link
-                    href="/cabinet"
+                    href="/cabinet?tab=tickets"
                     onClick={() => setSelectedExp(null)}
                     className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-xs"
                   >

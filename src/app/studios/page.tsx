@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -14,6 +14,10 @@ import {
   ShieldCheck,
   CheckCircle2,
   Filter,
+  Film,
+  Camera,
+  Compass,
+  ChevronRight,
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
@@ -308,6 +312,82 @@ export default function StudiosPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 52-Week Hobby Flow Bridge Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-vintage-900 to-[#2D241E] text-white space-y-5 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>현상 접수 완료 후 DASI 아날로그 라이프 루틴</span>
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold">
+              스캔본을 기다리는 동안 다음 롤과 출사를 준비해 보세요
+            </h3>
+          </div>
+          <Link
+            href="/explore"
+            className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <span>52주 출사지 보기</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <Link
+            href="/films"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Film className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>1. 다음 롤 필름 퀵 주문</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              현상소 방문 길에 다음 출사를 위한 신선 필름을 특가로 바로 보급하세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/explore"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+              <span>2. 다음 52주 출사지</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              현상소 근처 을지로 인쇄골목부터 세운상가 옥상까지 이어지는 추천 산책로를 걸어보세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/clinic"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Camera className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span>3. 충무로 40년 명장 점검</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              현상 결과물에 빛샘이나 셔터 랙이 보인다면 충무로 명장 수리실에서 무료 진단을 받으세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/cabinet?tab=repairs"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>4. 마이 캐비닛 스캔 보관함</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              웹하드에서 받은 고화질 스캔본을 내 디지털 보관함에 아카이빙하고 인증 포인트를 받으세요.
+            </p>
+          </Link>
+        </div>
       </div>
 
       {/* QR Voucher Modal */}

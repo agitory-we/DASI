@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import * as SunCalc from 'suncalc';
 import { AnalogSpot, SpotCategory } from '@/types';
 import {
@@ -56,6 +57,19 @@ interface ShotToRentPackage {
 
 export interface MapContentProps {
   defaultSpotId?: string;
+}
+
+function MapQuerySync({ onSync }: { onSync: (spotId?: string, lat?: number, lng?: number) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const spotId = searchParams.get('spotId') || undefined;
+    const latStr = searchParams.get('lat');
+    const lngStr = searchParams.get('lng');
+    const lat = latStr ? parseFloat(latStr) : undefined;
+    const lng = lngStr ? parseFloat(lngStr) : undefined;
+    onSync(spotId, lat, lng);
+  }, [searchParams, onSync]);
+  return null;
 }
 
 export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
@@ -125,19 +139,21 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
   const [studiosList, setStudiosList] = useState<AnalogSpot[]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
 
-  // defaultSpotId 전달 시 자동 활성화 및 카드 포커스 스크롤
-  useEffect(() => {
-    if (defaultSpotId) {
-      setActiveSpotId(defaultSpotId);
+  // URL 쿼리 파라미터(spotId, lat, lng) 실시간 동기화
+  const handleQuerySync = useCallback((spotId?: string, lat?: number, lng?: number) => {
+    if (spotId) {
+      setActiveSpotId(spotId);
       const timer = setTimeout(() => {
-        const el = document.getElementById(`spot-card-${defaultSpotId}`);
+        const el = document.getElementById(`spot-card-${spotId}`);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 300);
-      return () => clearTimeout(timer);
+      }, 350);
     }
-  }, [defaultSpotId]);
+    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+      setUserLocation({ lat, lng });
+    }
+  }, []);
 
   // 서울시 사진관/노포 현상소 공공 융합 데이터 동적 로드
   useEffect(() => {
@@ -448,6 +464,10 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <Suspense fallback={null}>
+        <MapQuerySync onSync={handleQuerySync} />
+      </Suspense>
+
       {/* Top Banner & Heading */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

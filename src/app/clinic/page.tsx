@@ -19,7 +19,11 @@ import {
   QrCode,
   Truck,
   Check,
-  ChevronRight
+  ChevronRight,
+  Camera,
+  Film,
+  Compass,
+  Sun
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 
@@ -251,6 +255,82 @@ export default function ClinicPage() {
         )}
       </div>
 
+      {/* 3. REPAIR TO FIRST ROLL HOBBY JOURNEY */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-vintage-900 to-[#2D241E] text-white space-y-5 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>장인 오버홀 완료 후 다음 단계</span>
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold">
+              오랜 잠에서 깨어난 카메라와 함께 첫 롤을 완성해 보세요
+            </h3>
+          </div>
+          <Link
+            href="/explore"
+            className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <span>52주 출사 코스 보기</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <Link
+            href="/films"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Film className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>1. 테스트 필름 퀵 주문</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              수리 점검용 코닥 컬러플러스 200을 당일 3시간 퀵으로 바로 받아보세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/explore"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+              <span>2. 52주 첫 롤 출사지</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              자연광이 풍부하고 테스트하기 좋은 서울숲, 북촌 한옥마을로 떠나보세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/golden-hour"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Sun className="w-4 h-4 group-hover:spin transition-transform" />
+              <span>3. 골든아워 예보 확인</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              오버홀된 렌즈의 광학 해상력을 노을 사광선 아래에서 극대화해 담아보세요.
+            </p>
+          </Link>
+
+          <Link
+            href="/studios"
+            className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all space-y-1 group"
+          >
+            <div className="text-amber-400 font-bold flex items-center gap-1.5">
+              <Ticket className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>4. 제휴 1롤 무료 스캔</span>
+            </div>
+            <p className="text-stone-300 text-[11px] leading-relaxed">
+              수리 고객에게 증정된 웰컴 쿠폰으로 가까운 제휴 현상소에서 무료 스캔하세요.
+            </p>
+          </Link>
+        </div>
+      </div>
+
       {/* ESTIMATE MODAL */}
       {isEstimateModalOpen && selectedMaster && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -299,7 +379,7 @@ export default function ClinicPage() {
 
                 <div className="flex justify-center gap-3 pt-2">
                   <Link
-                    href="/cabinet"
+                    href="/cabinet?tab=repairs"
                     className="px-5 py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold hover:bg-terracotta-light transition-colors shadow-xs"
                   >
                     마이 캐비닛에서 확인하기 →
