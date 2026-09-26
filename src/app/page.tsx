@@ -430,19 +430,24 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* Stats strip */}
+              {/* Stats strip with direct deep-links */}
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 shrink-0">
                 {[
-                  { label: '대여 중', value: rentingItems.filter(r => !r.isConvertedToOwn).length, color: 'text-terracotta-light' },
-                  { label: '소장 컬렉션', value: ownedItems.length, color: 'text-amber-300' },
-                  { label: '스냅 예약', value: bookedGigs.length + bookedExperiences.length, color: 'text-emerald-300' },
-                  { label: '수리 접수', value: repairEstimates.length, color: 'text-blue-300' },
-                  { label: '찜한 스팟', value: savedSpotIds.length, color: 'text-rose-300' },
+                  { label: '대여 중', value: rentingItems.filter(r => !r.isConvertedToOwn).length, color: 'text-terracotta-light', href: '/cabinet?tab=camera' },
+                  { label: '소장 컬렉션', value: ownedItems.length, color: 'text-amber-300', href: '/cabinet?tab=camera' },
+                  { label: '스냅 예약', value: bookedGigs.length + bookedExperiences.length, color: 'text-emerald-300', href: '/cabinet?tab=tickets' },
+                  { label: '수리 접수', value: repairEstimates.length, color: 'text-blue-300', href: '/cabinet?tab=repairs' },
+                  { label: '찜한 스팟', value: savedSpotIds.length, color: 'text-rose-300', href: '/explore?filter=saved' },
                 ].map((stat) => (
-                  <div key={stat.label} className="text-center p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <Link
+                    key={stat.label}
+                    href={stat.href}
+                    className="text-center p-3 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 block"
+                    title={`${stat.label} 상세 내역으로 바로가기`}
+                  >
                     <div className={`text-xl font-bold font-serif ${stat.color}`}>{stat.value}</div>
-                    <div className="text-[10px] text-vintage-400 mt-0.5">{stat.label}</div>
-                  </div>
+                    <div className="text-[10px] text-vintage-300 mt-0.5 font-medium">{stat.label}</div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -457,7 +462,7 @@ export default function HomePage() {
               </Link>
               {activeRenting && (
                 <Link
-                  href="/cabinet"
+                  href="/cabinet?tab=camera"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/10"
                 >
                   <span>Rent-to-Own 전환 진행하기 →</span>
@@ -465,7 +470,7 @@ export default function HomePage() {
               )}
               {savedSpotIds.length > 0 && (
                 <Link
-                  href="/explore"
+                  href="/explore?filter=saved"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/10"
                 >
                   <Heart className="w-3.5 h-3.5 text-rose-300" />

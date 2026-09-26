@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Camera, CameraCategory } from '@/types';
 import {
   Sparkles,
@@ -25,7 +26,8 @@ import {
   Film,
   Truck,
   PackageCheck,
-  Store
+  Store,
+  Compass
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
@@ -85,12 +87,35 @@ const BULK_FILM_PACKS: BulkFilmPack[] = [
   }
 ];
 
-export default function RentPage() {
+function RentQuerySync({
+  onSpotInfo,
+  onCategory,
+}: {
+  onSpotInfo: (title: string, lens: string) => void;
+  onCategory: (cat: any) => void;
+}) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const spotTitle = searchParams.get('spotTitle');
+    const recommendedLens = searchParams.get('recommendedLens');
+    if (spotTitle) {
+      onSpotInfo(spotTitle, recommendedLens || '');
+    }
+    const cat = searchParams.get('category');
+    if (cat && ['all', 'film', 'digital_compact', 'dslr'].includes(cat)) {
+      onCategory(cat);
+    }
+  }, [searchParams, onSpotInfo, onCategory]);
+  return null;
+}
+
+function RentContent() {
   const { cameras, pickupShops, isLoadingData, bookCameraRental, showToast, communityPhotos, openMapModal } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<CameraCategory | 'all'>('all');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [reviewTargetCamera, setReviewTargetCamera] = useState<Camera | null>(null);
+  const [referredSpot, setReferredSpot] = useState<{ title: string; lens: string } | null>(null);
 
 
   // Date picker state
@@ -218,6 +243,31 @@ export default function RentPage() {
           충무로·을지로 40년 명장의 손을 거쳐 완벽하게 오버홀된 기기를 주말 동안 편안하게 체험해 보세요.
           매장에서 <strong>장인의 10분 온보딩 강습</strong>을 듣고 손맛을 만끽한 뒤, 반하면 <strong>대여료 전액을 공제받고 잔금만으로 소장</strong>할 수 있습니다.
         </p>
+
+        {/* 출사지 연계 쿼리스트링 동기화 & 안내 배너 */}
+        <RentQuerySync
+          onSpotInfo={(title, lens) => setReferredSpot({ title, lens })}
+          onCategory={(cat) => setSelectedCategory(cat)}
+        />
+
+        {referredSpot && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 flex items-center justify-between gap-3 animate-fadeIn">
+            <div className="flex items-center gap-2.5">
+              <MapPin className="w-5 h-5 text-terracotta shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold">[{referredSpot.title}]</span> 출사를 위한 추천 장비 목록입니다.
+                {referredSpot.lens && <span className="text-vintage-600 block mt-0.5">권장 화각 / 렌즈: {referredSpot.lens}</span>}
+              </div>
+            </div>
+            <button
+              onClick={() => setReferredSpot(null)}
+              className="p-1 rounded-lg hover:bg-amber-100 text-vintage-500"
+              title="알림 닫기"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* 52주 취미 탐색 & 필름 동시 공급 퀵 배너 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -526,6 +576,22 @@ export default function RentPage() {
                     </button>
                   </div>
 
+                  <div className="pt-2 border-t border-vintage-100/60 flex items-center justify-between text-[11px] text-vintage-500">
+                    <Link
+                      href="/explore"
+                      className="hover:text-terracotta flex items-center gap-1 transition-colors font-medium"
+                    >
+                      <Compass className="w-3 h-3 text-amber-600" />
+                      <span>이 기종으로 갈 만한 52주 출사지 보기 →</span>
+                    </Link>
+                    <Link
+                      href="/films"
+                      className="hover:text-rose-700 flex items-center gap-1 transition-colors font-medium"
+                    >
+                      <Film className="w-3 h-3 text-rose-500" />
+                      <span>추천 필름</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1473,5 +1539,19 @@ export default function RentPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-8 text-vintage-500 text-xs">
+          <span>명장 정밀 점검 장비 목록 로딩 중...</span>
+        </div>
+      }
+    >
+      <RentContent />
+    </Suspense>
   );
 }

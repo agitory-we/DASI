@@ -164,21 +164,21 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
 
         {/* 4대 퀵 액션 그리드 */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {/* 액션 1: 현상소 1초 QR 접수증 */}
+          {/* 액션 1: 제휴 현상소 20% 할인 QR */}
           <button
-            onClick={() => handleActionClick('qr', '/cabinet?tab=coupons')}
+            onClick={() => handleActionClick('qr', '/studios')}
             className="flex flex-col items-start p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 hover:bg-amber-100/70 transition-all text-left group"
           >
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
               <QrCode className="w-5 h-5" />
             </div>
             <div className="flex items-center gap-1 font-bold text-sm text-vintage-900">
-              1초 QR 접수증
+              현상소 20% 할인 QR
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-semibold">
-                +150P
+                할인
               </span>
             </div>
-            <p className="text-[11px] text-vintage-500 mt-1 line-clamp-1">현상소 카운터 원터치 바코드</p>
+            <p className="text-[11px] text-vintage-500 mt-1 line-clamp-1">충무로·종로 노포 현장 모바일 접수</p>
           </button>
 
           {/* 액션 2: GPS 현장 지오펜싱 체크인 */}
@@ -205,7 +205,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
 
           {/* 액션 3: 출사 사진 커뮤니티 업로드 */}
           <button
-            onClick={() => handleActionClick('upload', '/explore')}
+            onClick={() => handleActionClick('upload', '/explore?action=upload')}
             className="flex flex-col items-start p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 hover:bg-emerald-100/70 transition-all text-left group"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">

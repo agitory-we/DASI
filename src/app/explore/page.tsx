@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import * as SunCalc from 'suncalc';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { EventOrHotSpot, CommunityPhoto } from '@/types';
@@ -175,7 +176,35 @@ function isExpired(item: EventOrHotSpot): boolean {
   return false;
 }
 
-export default function ExplorePage() {
+function ExploreQuerySync({
+  onFilterChange,
+  onOpenUpload,
+  onOpenReport,
+  onSelectSpotId,
+}: {
+  onFilterChange: (f: any) => void;
+  onOpenUpload: () => void;
+  onOpenReport: () => void;
+  onSelectSpotId: (id: string) => void;
+}) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter && ['all', 'top100', 'knto_gallery', 'festival', 'hotspot', 'guidebooks', 'saved', 'photos'].includes(filter)) {
+      onFilterChange(filter);
+    }
+    const action = searchParams.get('action');
+    if (action === 'upload') onOpenUpload();
+    if (action === 'report') onOpenReport();
+
+    const spotId = searchParams.get('spotId');
+    if (spotId) onSelectSpotId(spotId);
+  }, [searchParams, onFilterChange, onOpenUpload, onOpenReport, onSelectSpotId]);
+
+  return null;
+}
+
+function ExploreContent() {
   const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto, openMapModal } = useDasi();
   const { user, openLoginModal } = useAuth();
   const [filterType, setFilterType] = useState<'all' | 'top100' | 'knto_gallery' | 'festival' | 'hotspot' | 'guidebooks' | 'saved' | 'photos'>('all');
@@ -270,6 +299,15 @@ export default function ExplorePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      <ExploreQuerySync
+        onFilterChange={setFilterType}
+        onOpenUpload={() => setIsPhotoUploadModalOpen(true)}
+        onOpenReport={() => setIsReportModalOpen(true)}
+        onSelectSpotId={(id) => {
+          const found = allItems.find((i) => i.id === id);
+          if (found) setSelectedSpot(found);
+        }}
+      />
       {/* Header Banner */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-3">
@@ -958,9 +996,9 @@ export default function ExplorePage() {
                     <span>실시간 일몰 예보</span>
                   </Link>
                   <Link
-                    href="/rent"
+                    href={`/rent?spotTitle=${encodeURIComponent(item.title)}&recommendedLens=${encodeURIComponent(item.recommendedLenses)}`}
                     className="flex-1 px-2.5 py-1.5 rounded-xl bg-vintage-100/70 hover:bg-vintage-200 text-vintage-700 border border-vintage-200 font-semibold flex items-center justify-center gap-1 transition-colors"
-                    title="장비가 없다면? 명장 정밀 점검 기기로 가볍게 시작"
+                    title={`${item.title}에 어울리는 추천 기종 둘러보기`}
                   >
                     <Camera className="w-3 h-3 text-terracotta" />
                     <span>추천 기종 둘러보기</span>
@@ -1389,6 +1427,20 @@ export default function ExplorePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-8 text-vintage-500 text-xs">
+          <span>서울 52주 출사 가이드 로딩 중...</span>
+        </div>
+      }
+    >
+      <ExploreContent />
+    </Suspense>
   );
 }
 
