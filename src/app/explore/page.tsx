@@ -275,14 +275,14 @@ export default function ExplorePage() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
             <Calendar className="w-3.5 h-3.5 text-amber-700" />
-            <span>DASI Explore — 커뮤니티 큐레이션</span>
+            <span>서울 52주 출사 &amp; 축제 큐레이션 — 52-Week Shutter Guide</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-            서울 축제 &amp; 지역별 출사 Hot Spot 가이드
+            서울 52주 축제 &amp; 골목 출사 Hot Spot 가이드
           </h1>
           <p className="text-xs sm:text-sm text-vintage-600 max-w-3xl leading-relaxed">
-            카메라를 렌탈하고 어디로 떠나야 할지 고민이신가요?
-            계절별 서울 축제 일정과 아날로그 카메라로 인생 사진을 건질 수 있는 추천 화각, 최적 골든아워, 현장 세팅 팁을 매주 업데이트합니다.
+            1년 52주, 서울의 숨은 골목과 축제는 매주 새로운 감성을 선물합니다.
+            아날로그 필름과 수동 카메라에 최적화된 추천 화각, 매직아워(골든아워), 그리고 현장 촬영 팁을 만나보세요.
           </p>
         </div>
         {/* UGC 버튼 그룹 */}
@@ -928,6 +928,12 @@ export default function ExplorePage() {
                 {/* Pro Tips */}
                 <div className="text-xs text-vintage-700 leading-relaxed bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/80">
                   💡 <strong>촬영 팁:</strong> {item.tips}
+                </div>
+
+                {/* 52-Week Passport Stamp Eligibility */}
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-800 font-medium bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>52주 패스포트 인증 스팟 (+200P · 제휴 현상소 바우처 교환)</span>
                 </div>
 
                 {/* Tags */}

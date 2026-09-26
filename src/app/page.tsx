@@ -20,7 +20,9 @@ import {
   Ticket,
   Compass,
   Share2,
-  FolderLock
+  FolderLock,
+  Film,
+  Store,
 } from 'lucide-react';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
@@ -55,7 +57,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-16 sm:space-y-24">
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION: 52-WEEK ANALOG PHOTO PLAYGROUND */}
       <section className="relative overflow-hidden pt-8 pb-16 md:pt-16 md:pb-24 border-b border-vintage-200">
         {/* Background Warm Radial Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-vintage-200/40 via-vintage-100/20 to-transparent pointer-events-none -z-10" />
@@ -72,47 +74,45 @@ export default function HomePage() {
                 />
                 <span className="text-terracotta font-bold">DASI 아날로그</span>
                 <span className="text-vintage-300">|</span>
-                <span>써보고 반하면 소장하는 Rent-to-Own 마켓</span>
+                <span>서울 52주 아날로그 사진 놀이터 &amp; 라이프스타일 허브</span>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-vintage-900 leading-[1.15]">
-                그때 그 손맛 그대로, <br />
+                서울 52주 아날로그 사진 놀이터, <br />
                 <span className="text-terracotta underline decoration-vintage-300 decoration-wavy underline-offset-8">
-                  주말 동안 가볍게 대여하고
-                </span><br />
-                마음에 들면 내 것으로.
+                  매주 발견하는 새로운 셔터 찬스.
+                </span>
               </h1>
 
               <p className="text-base sm:text-lg text-vintage-700 leading-relaxed max-w-2xl font-sans">
-                충무로·을지로 40년 명장의 1:1 오버홀 점검 기기만 취급합니다.
-                클래식 필름카메라부터 후지필름·리코 하이엔드 디카까지, 
-                직접 픽업하고 장인에게 10분 온보딩 강습을 받아보세요.
+                고궁의 붉은 노을빛부터 숨은 골목의 따스한 빛까지. 
+                이번 주말 떠날 출사지와 골든아워를 확인하고, 장비가 고민이라면 명장의 카메라로 부담 없이 시작해 보세요.
               </p>
 
-              {/* Value Badges */}
+              {/* 3 Core Value Badges */}
               <div className="grid grid-cols-3 gap-3 pt-2 max-w-xl">
                 <div className="p-3 rounded-2xl bg-white/80 border border-vintage-200 shadow-2xs">
-                  <div className="text-terracotta font-serif font-bold text-lg sm:text-xl">100%</div>
-                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">명장 오버홀 점검</div>
+                  <div className="text-terracotta font-serif font-bold text-lg sm:text-xl">52주 코스</div>
+                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">시즌 축제 &amp; 골든아워</div>
                 </div>
                 <div className="p-3 rounded-2xl bg-white/80 border border-vintage-200 shadow-2xs">
-                  <div className="text-vintage-900 font-serif font-bold text-lg sm:text-xl">Rent-to-Own</div>
-                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">대여료 공제 후 소장</div>
+                  <div className="text-vintage-900 font-serif font-bold text-lg sm:text-xl">취미 서포트</div>
+                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">당일 필름 · 현상 할인 20%</div>
                 </div>
                 <div className="p-3 rounded-2xl bg-white/80 border border-vintage-200 shadow-2xs">
-                  <div className="text-emerald-700 font-serif font-bold text-lg sm:text-xl">0원</div>
-                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">신용 가승인 무보증금</div>
+                  <div className="text-emerald-700 font-serif font-bold text-lg sm:text-xl">Rent-to-Own</div>
+                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">체험 후 대여료 공제 소장</div>
                 </div>
               </div>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
-                  href="/rent"
+                  href="/explore"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-terracotta text-white text-sm sm:text-base font-semibold hover:bg-terracotta-light active:scale-98 transition-all shadow-md"
                 >
-                  <Camera className="w-4 h-4" />
-                  <span>이번 주말 카메라 대여하기</span>
+                  <Compass className="w-4 h-4" />
+                  <span>이번 주말 52주 출사지 &amp; 축제 탐험</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
@@ -121,7 +121,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-50 text-amber-900 border border-amber-300/80 text-sm sm:text-base font-semibold hover:bg-amber-100 active:scale-98 transition-all shadow-2xs"
                 >
                   <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>내 취향 맞춤 출사지 &amp; 500P 받기</span>
+                  <span>내 취향 맞춤 출사 코스 &amp; 500P</span>
                 </Link>
 
                 <Link
@@ -134,59 +134,70 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Hero Visual Card */}
+            {/* Right Hero Visual Card: Weekly Shutter Spot & Gear Bridge */}
             <div className="lg:col-span-5">
               <div className="relative rounded-3xl overflow-hidden bg-vintage-900 p-6 sm:p-8 text-cream shadow-xl border border-vintage-800">
-                {/* Visual Camera Tag */}
+                {/* Visual Header Tag */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-amber-300 backdrop-blur-md">
-                    👑 이번 주 대여 1위 기종
+                  <span className="px-3 py-1 rounded-full bg-terracotta/90 text-xs font-bold text-white shadow-2xs flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5" />
+                    <span>WEEK 39 · 이번 주 추천 출사 코스</span>
                   </span>
-                  <span className="text-xs text-vintage-300">소장 전환율 68%</span>
+                  <span className="text-xs text-amber-300 font-medium">🌅 일몰 17:40</span>
                 </div>
 
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-vintage-800">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-5 bg-vintage-800">
                   <img
-                    src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80"
-                    alt="Olympus Pen EE-3"
+                    src="https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&auto=format&fit=crop&q=80"
+                    alt="2026 가을 경복궁 & 창경궁 달빛 야간기행"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[11px] text-white">
-                    을지로 신성카메라 픽업 가능
+                  <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[11px] text-white flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-terracotta-light" />
+                    <span>종로구 사직로 경복궁 일대</span>
+                  </div>
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-amber-500/90 text-vintage-950 font-bold text-[10px] shadow-2xs">
+                    고궁 야간 달빛기행
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
-                      Olympus PEN EE-3
+                  <div>
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-white leading-snug">
+                      가을 고궁 달빛 야간기행 &amp; 매직아워
                     </h3>
-                    <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium">
-                      Mint 등급
-                    </span>
+                    <p className="text-xs text-vintage-300 mt-1 line-clamp-2 leading-relaxed">
+                      궁궐 처마 뒤로 물드는 붉은 노을 실루엣과 달빛 아래 단풍. 고감도 필름이나 밝은 조리개 단렌즈와 최고의 궁합입니다.
+                    </p>
                   </div>
-                  <p className="text-xs text-vintage-300 line-clamp-2">
-                    배터리 없이 72장 촬영 가능한 하프 카메라. 강태훈 명장의 10분 오버홀 검수 완료.
-                  </p>
 
                   <div className="pt-2 border-t border-vintage-800 flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-vintage-400">주말 1박2일 대여</span>
-                      <div className="text-lg font-bold text-terracotta-light">18,000원~</div>
+                      <span className="text-vintage-400">골든아워 매직타임</span>
+                      <div className="text-sm font-bold text-amber-300">17:40 - 18:30</div>
                     </div>
                     <div className="text-right">
-                      <span className="text-vintage-400">마음에 들면 소장 전환</span>
-                      <div className="text-sm font-semibold text-white">190,000원 (대여료 공제)</div>
+                      <span className="text-vintage-400">장비가 고민이라면?</span>
+                      <div className="text-xs font-semibold text-white">입문 명장 기기 18,000원~</div>
                     </div>
                   </div>
 
-                  <Link
-                    href="/rent"
-                    className="w-full mt-3 py-2.5 rounded-xl bg-white text-vintage-900 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-vintage-100 transition-colors"
-                  >
-                    <span>기기 세부 스펙 &amp; 예약 캘린더 보기</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Link
+                      href="/explore"
+                      className="py-2.5 rounded-xl bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1 hover:bg-terracotta-light transition-colors"
+                    >
+                      <span>출사 가이드 보기</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <Link
+                      href="/rent"
+                      className="py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors border border-white/10"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-amber-300" />
+                      <span>추천 기종 둘러보기</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,73 +205,77 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUICK HUB: 4 Core Capabilities */}
+      {/* QUICK HUB: 4 Photography Enablers for 52-Week Journey */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
-            href="/ai-appraisal"
+            href="/rent"
             className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
           >
             <div className="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <Sparkles className="w-5 h-5" />
+              <Camera className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                사진 3장 AI 감정
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors flex items-center justify-between">
+                <span>명장 기기 주말 체험</span>
+                <span className="text-[10px] text-terracotta font-medium">Rent-to-Own</span>
               </div>
               <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
-                외관 등급과 최근 6개월 실거래 시세 즉시 산출
+                카메라가 없어도 OK! 써보고 반하면 대여료 공제 후 소장
               </p>
             </div>
           </Link>
 
           <Link
-            href="/experiences"
-            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+            href="/films"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-amber-500/40 transition-all group flex flex-col justify-between"
           >
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <Compass className="w-5 h-5" />
+              <Film className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                작가 출사 &amp; 장인 클래스
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-amber-700 transition-colors flex items-center justify-between">
+                <span>서울 3시간 당일 퀵</span>
+                <span className="text-[10px] text-amber-700 font-medium">대량 벌크샵</span>
               </div>
               <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
-                을지로 골목 출사 워크숍 &amp; 렌즈 분해 세척 강습
+                출사 전 필름 급구! 24시 자판기 지도 &amp; 3시간 당일 퀵
               </p>
             </div>
           </Link>
 
           <Link
-            href="/frame"
-            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
+            href="/gigs"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-indigo-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-indigo-700 transition-colors flex items-center justify-between">
+                <span>로컬 사진가 동행 &amp; 긱</span>
+                <span className="text-[10px] text-indigo-700 font-medium">1:1 출사</span>
+              </div>
+              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
+                혼출이 망설여질 때! 동네 사진가와 함께하는 골목 스냅
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/studios"
+            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <Share2 className="w-5 h-5" />
+              <Store className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                인스타 필름프레임 생성기
+              <div className="text-xs font-bold text-vintage-900 group-hover:text-emerald-700 transition-colors flex items-center justify-between">
+                <span>40년 노포 현상소</span>
+                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">20% 할인</span>
               </div>
               <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
-                내 사진에 기종·현상소 워터마크 입혀 PNG 다운로드
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/cabinet"
-            className="p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all group flex flex-col justify-between"
-          >
-            <div className="w-10 h-10 rounded-xl bg-vintage-900/10 text-vintage-900 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <FolderLock className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                마이 캐비닛 &amp; 보증서
-              </div>
-              <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
-                대여 기기 반납 관리, 소장 전환 &amp; 디지털 보증서
+                다 찍은 필름은 모바일 1초 QR로 맡기고 스캔/인화 할인
               </p>
             </div>
           </Link>
@@ -462,26 +477,26 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 2. RENT-TO-OWN CAMERA SHOWCASE */}
+      {/* 2. HOBBY GEAR SHOWCASE (Rent-to-Own) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
-              <Flame className="w-4 h-4" />
-              <span>DASI Rental &amp; Own</span>
+              <Camera className="w-4 h-4" />
+              <span>DASI Gear Support · 써보고 소장하는 Rent-to-Own</span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              실패 없는 주말 렌탈 기기 라인업
+              이번 주 출사 테마와 어울리는 추천 기종 둘러보기
             </h2>
             <p className="text-sm text-vintage-600 mt-1">
-              클래식 필름부터 후지·리코 하이엔드 디카까지, 사용 후 대여료를 빼고 소장할 수 있습니다.
+              어떤 카메라가 나에게 맞을지 고민될 때, 40년 명장의 오버홀 점검 기기로 주말 동안 직접 만져보고 반했을 때 소장하세요.
             </p>
           </div>
           <Link
             href="/rent"
             className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
           >
-            <span>전체 24개 기종 보기</span>
+            <span>전체 24개 체험 기종 보기</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -802,16 +817,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. [PHASE 2 PREVIEW] SEOUL FESTIVALS & HOT SPOTS */}
+      {/* 6. 52-WEEK SEOUL FESTIVALS & HOT SPOTS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
               <Calendar className="w-4 h-4" />
-              <span>DASI Explore &amp; Spots [Phase 2]</span>
+              <span>서울 52주 축제 &amp; 골든아워 출사 가이드</span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              이번 주말 어디로 출사 갈까? 서울 축제 &amp; 핫스팟
+              이번 주말 어디로 출사 갈까? 52주 테마 코스
             </h2>
             <p className="text-sm text-vintage-600 mt-1">
               달빛기행부터 여의도 불꽃축제까지, 아날로그 카메라에 최적화된 화각과 골든아워를 안내합니다.
@@ -821,7 +836,7 @@ export default function HomePage() {
             href="/explore"
             className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
           >
-            <span>전체 출사 가이드 보기</span>
+            <span>전체 52주 출사 가이드 보기</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

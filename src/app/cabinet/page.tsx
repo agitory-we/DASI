@@ -2134,12 +2134,12 @@ function CabinetContent() {
                 사진을 클릭하면 큰 화면으로 감상하거나 프레임 생성기로 연결됩니다.
               </span>
               <div className="flex gap-2">
-                <a
+                <Link
                   href="/frame"
                   className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold shadow-xs"
                 >
                   프레임 메이커로 이동
-                </a>
+                </Link>
                 <button
                   onClick={() => setSelectedFilmRoll(null)}
                   className="px-4 py-2 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 text-xs font-semibold"
@@ -2167,13 +2167,13 @@ function CabinetContent() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-bold font-mono tracking-wider">
-                  <span>REPUBLIC OF DASI · ANALOG PASSPORT</span>
+                  <span>REPUBLIC OF DASI · 52-WEEK ANALOG PASSPORT</span>
                 </div>
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-cream">
-                  서울 아날로그 성지순례 패스포트
+                  서울 52주 아날로그 성지순례 패스포트
                 </h2>
                 <p className="text-xs text-vintage-300 max-w-xl leading-relaxed">
-                  현상소, 40년 명장 수리 공방, 골든아워 출사지를 방문해 디지털 브라스 도장을 모으세요. 각 코스를 완주할 때마다 1,000P 바우처와 한정판 실물 굿즈가 지급됩니다.
+                  52주 동안 계절별 출사지, 충무로·종로 제휴 현상소, 40년 명장 공방을 탐험하며 디지털 브라스 도장을 모으세요. 적립된 포인트는 제휴 현상소 스캔/인화 바우처와 장비 체험 할인권으로 즉시 환원됩니다.
                 </p>
 
                 {/* GPS 실시간 현장 거리 확인 버튼 */}
