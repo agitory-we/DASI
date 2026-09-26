@@ -164,6 +164,7 @@ function CabinetContent() {
     convertToOwn,
     bookedGigs,
     bookedExperiences,
+    cancelExperienceTicket,
     repairEstimates,
     proConsultations,
     coupons,
@@ -733,9 +734,19 @@ function CabinetContent() {
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-vintage-100 text-vintage-800">
-                          {exp.status === 'confirmed' ? '✓ 예약 확정' : '참여 완료'}
-                        </span>
+                        {exp.ticketCode.startsWith('TKT-HOST-') ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            👑 내가 주최한 모임 (호스트)
+                          </span>
+                        ) : exp.ticketCode.startsWith('TKT-MEET-') ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            🎟️ 출사 번개 참가 티켓
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-vintage-100 text-vintage-800">
+                            {exp.status === 'confirmed' ? '✓ 예약 확정' : '참여 완료'}
+                          </span>
+                        )}
                         {exp.hasRentalPackage && (
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900">
                             📷 대여 카메라 패키지 포함
@@ -764,13 +775,25 @@ function CabinetContent() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setSelectedTicket({ type: 'experience', data: exp })}
-                      className="w-full py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span>모바일 입장 티켓 열기</span>
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedTicket({ type: 'experience', data: exp })}
+                        className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>모바일 입장 티켓 열기</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`'${exp.title}' 티켓을 취소하시겠습니까?`)) {
+                            cancelExperienceTicket(exp.ticketCode);
+                          }
+                        }}
+                        className="px-3.5 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-600 text-xs font-semibold transition-colors"
+                      >
+                        취소
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2036,9 +2059,15 @@ function CabinetContent() {
                   <div className="w-12 h-12 rounded-full bg-terracotta text-white flex items-center justify-center mx-auto mb-2 font-bold">
                     <Ticket className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] tracking-widest uppercase font-mono text-terracotta font-bold">
-                    MOBILE ADMISSION VOUCHER
-                  </span>
+                  {selectedTicket.data.ticketCode.startsWith('TKT-HOST-') ? (
+                    <span className="inline-block px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] tracking-widest uppercase font-mono font-bold">
+                      👑 HOST MASTER PASS
+                    </span>
+                  ) : (
+                    <span className="text-[10px] tracking-widest uppercase font-mono text-terracotta font-bold">
+                      MOBILE ADMISSION VOUCHER
+                    </span>
+                  )}
                   <h3 className="font-serif text-2xl font-bold text-vintage-900">
                     {selectedTicket.data.title}
                   </h3>
@@ -2056,19 +2085,53 @@ function CabinetContent() {
                   )}
                 </div>
 
+                {/* Open Chat Link */}
+                <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200/80 text-left space-y-1.5">
+                  <div className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5">
+                    <span>💬 출사 참여자 카카오톡 단톡방</span>
+                    <span className="text-[9px] bg-amber-200/70 text-amber-900 px-1.5 py-0.5 rounded font-semibold">실시간 안내</span>
+                  </div>
+                  <p className="text-[10px] text-vintage-600">
+                    당일 현장 집결 세부 위치 안내 및 사진 공유를 위한 단톡방입니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://open.kakao.com/o/dasi_photowalk_2026');
+                      showToast('오픈채팅방 초대 링크가 복사되었습니다.', 'success');
+                    }}
+                    className="w-full py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-vintage-950 font-bold text-[11px] transition-colors"
+                  >
+                    단톡방 참여 링크 복사하기
+                  </button>
+                </div>
+
                 <div className="p-3 bg-white rounded-xl border border-vintage-200 inline-block">
                   <QrCode className="w-20 h-20 text-vintage-900 mx-auto" />
                   <div className="text-[9px] text-vintage-400 mt-1 font-mono">{selectedTicket.data.ticketCode}</div>
                 </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedTicket(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta transition-colors"
+                  >
+                    닫기
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`'${selectedTicket.data.title}' 티켓 예매를 취소하시겠습니까?`)) {
+                        cancelExperienceTicket(selectedTicket.data.ticketCode);
+                        setSelectedTicket(null);
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors"
+                  >
+                    예매 취소
+                  </button>
+                </div>
               </>
             )}
-
-            <button
-              onClick={() => setSelectedTicket(null)}
-              className="w-full py-2.5 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta"
-            >
-              닫기
-            </button>
           </div>
         </div>
       )}

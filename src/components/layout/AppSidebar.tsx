@@ -43,7 +43,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onToggleCollapse,
 }) => {
   const pathname = usePathname();
-  const { cameras, analogSpots, experiences, coupons, openMapModal } = useDasi();
+  const { cameras, analogSpots, meetups, coupons, openMapModal } = useDasi();
   const { profile } = useAuth();
 
   // 실시간 일몰/골든아워 계산 (서울 위경도)
@@ -74,7 +74,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   // 통계 카운트 계산
   const availableCamCount = cameras.filter((c) => c.isAvailable).length;
   const spotCount = analogSpots.length;
-  const expCount = experiences.length;
+  const meetupCount = meetups.length;
   const couponCount = coupons.filter((c) => !c.isUsed).length;
   const points = profile?.total_points ?? 1200;
 
@@ -101,11 +101,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           badgeColor: 'bg-amber-100 text-amber-700 animate-pulse',
         },
         {
-          title: '작가 출사 & 장인 클래스',
+          title: '52주 출사 모임 & 주말 번개',
           href: '/experiences',
           icon: Compass,
-          badge: `${expCount || 3}개`,
-          badgeColor: 'bg-vintage-100 text-vintage-700',
+          badge: `${meetupCount || 4}개`,
+          badgeColor: 'bg-amber-100 text-amber-900 font-bold',
         },
         {
           title: '로컬 포토긱 & 출사 동행',

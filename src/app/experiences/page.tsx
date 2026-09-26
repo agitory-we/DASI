@@ -21,7 +21,14 @@ import {
   Flame,
   Award,
   Film,
-  Building2
+  Building2,
+  Share2,
+  Check,
+  Copy,
+  ExternalLink,
+  MessageCircle,
+  Sliders,
+  AlertCircle
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
@@ -49,10 +56,20 @@ function ExperienceQuerySync({
 }
 
 export default function ExperiencesPage() {
-  const { meetups, createMeetup, joinMeetup, showToast } = useDasi();
+  const {
+    meetups,
+    bookedExperiences,
+    createMeetup,
+    joinMeetup,
+    cancelMeetup,
+    closeMeetup,
+    showToast
+  } = useDasi();
 
   const [selectedCategory, setSelectedCategory] = useState<MeetupCategory | 'all'>('all');
-  const [selectedMeetup, setSelectedMeetup] = useState<PhotoMeetup | null>(null);
+  
+  // 모임 상세 보기 모달 상태
+  const [selectedDetailMeetup, setSelectedDetailMeetup] = useState<PhotoMeetup | null>(null);
 
   // 모임 개설 모달 상태
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -74,7 +91,7 @@ export default function ExperiencesPage() {
   });
 
   // 모임 참가 모달 상태
-  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [selectedMeetupForJoin, setSelectedMeetupForJoin] = useState<PhotoMeetup | null>(null);
   const [joinForm, setJoinForm] = useState({
     name: '',
     phone: '',
@@ -84,6 +101,7 @@ export default function ExperiencesPage() {
     withFilm: false,
   });
   const [issuedTicketCode, setIssuedTicketCode] = useState<string | null>(null);
+  const [isCopiedChatLink, setIsCopiedChatLink] = useState(false);
 
   const handleOpenCreateWithSpot = React.useCallback((spotTitle?: string, type?: MeetupCategory) => {
     setCreateForm((prev) => ({
@@ -98,6 +116,11 @@ export default function ExperiencesPage() {
   const filteredMeetups = selectedCategory === 'all'
     ? meetups
     : meetups.filter((m) => m.category === selectedCategory);
+
+  // 이미 참가 신청했거나 본인이 호스트인 티켓 확인
+  const isUserJoined = (meetupId: string) => {
+    return bookedExperiences.some((b) => b.experienceId === meetupId);
+  };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,20 +156,27 @@ export default function ExperiencesPage() {
 
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMeetup) return;
+    if (!selectedMeetupForJoin) return;
     if (!joinForm.name.trim()) {
       showToast('신청자 성함을 입력해주세요.', 'warning');
       return;
     }
 
     playShutterSound('slr');
-    const code = joinMeetup(selectedMeetup.id, {
+    const code = joinMeetup(selectedMeetupForJoin.id, {
       name: joinForm.name,
       camera: joinForm.withRental ? joinForm.selectedCamera : joinForm.camera || '개인 소장 필름 카메라',
       withRental: joinForm.withRental,
     });
 
     setIssuedTicketCode(code);
+  };
+
+  const handleCopyChatLink = () => {
+    navigator.clipboard.writeText('https://open.kakao.com/o/dasi_photowalk_2026');
+    setIsCopiedChatLink(true);
+    showToast('오픈채팅방 초대 링크가 클립보드에 복사되었습니다.', 'success');
+    setTimeout(() => setIsCopiedChatLink(false), 3000);
   };
 
   return (
@@ -188,7 +218,7 @@ export default function ExperiencesPage() {
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/15 hover:bg-white/20 backdrop-blur-md text-white font-semibold transition-all border border-white/20 text-sm"
             >
               <Ticket className="w-4 h-4 text-amber-300" />
-              <span>내 출사 티켓 보관함</span>
+              <span>내 출사 티켓 보관함 ({bookedExperiences.length})</span>
               <ChevronRight className="w-4 h-4 text-vintage-300" />
             </Link>
           </div>
@@ -219,8 +249,10 @@ export default function ExperiencesPage() {
           ))}
         </div>
 
-        <div className="text-xs text-vintage-500 font-medium shrink-0">
-          총 <strong className="text-terracotta">{filteredMeetups.length}개</strong>의 출사 모임 진행 중
+        <div className="text-xs text-vintage-500 font-medium shrink-0 flex items-center gap-2">
+          <span>총 <strong className="text-terracotta">{filteredMeetups.length}개</strong> 모임 진행 중</span>
+          <span className="text-vintage-300">|</span>
+          <span className="text-emerald-700 font-semibold">내 참여/주최 {bookedExperiences.length}건</span>
         </div>
       </div>
 
@@ -230,6 +262,7 @@ export default function ExperiencesPage() {
           const isFull = meetup.currentAttendees >= meetup.maxAttendees;
           const seatsLeft = Math.max(0, meetup.maxAttendees - meetup.currentAttendees);
           const percentFilled = Math.min(100, Math.round((meetup.currentAttendees / meetup.maxAttendees) * 100));
+          const hasJoined = isUserJoined(meetup.id);
 
           return (
             <div
@@ -238,13 +271,16 @@ export default function ExperiencesPage() {
             >
               <div>
                 {/* Image & Badges */}
-                <div className="relative h-56 w-full overflow-hidden bg-vintage-100">
+                <div
+                  onClick={() => setSelectedDetailMeetup(meetup)}
+                  className="relative h-56 w-full overflow-hidden bg-vintage-100 cursor-pointer"
+                >
                   <img
                     src={meetup.imageUrl}
                     alt={meetup.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
@@ -270,12 +306,18 @@ export default function ExperiencesPage() {
                     )}
 
                     {meetup.isUserCreated ? (
-                      <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-vintage-800 text-2xs font-bold border border-vintage-200">
-                        C2C 유저 개설
+                      <span className="px-2 py-0.5 rounded-full bg-white/95 backdrop-blur-xs text-vintage-900 text-2xs font-bold border border-vintage-200 shadow-2xs">
+                        C2C 유저 주최
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 rounded-full bg-terracotta/90 backdrop-blur-xs text-white text-2xs font-bold">
                         DASI 공식
+                      </span>
+                    )}
+
+                    {hasJoined && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-2xs font-bold flex items-center gap-1 shadow-xs">
+                        <Check className="w-3 h-3" /> 참여 확정됨
                       </span>
                     )}
                   </div>
@@ -309,9 +351,13 @@ export default function ExperiencesPage() {
 
                 {/* Card Content */}
                 <div className="p-5 space-y-4">
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-vintage-900 leading-snug group-hover:text-terracotta transition-colors">
-                      {meetup.title}
+                  <div
+                    onClick={() => setSelectedDetailMeetup(meetup)}
+                    className="cursor-pointer"
+                  >
+                    <h3 className="font-serif text-lg font-bold text-vintage-900 leading-snug group-hover:text-terracotta transition-colors flex items-center justify-between gap-2">
+                      <span>{meetup.title}</span>
+                      <ChevronRight className="w-4 h-4 text-vintage-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </h3>
                     <p className="mt-1 text-xs text-vintage-600 line-clamp-2 leading-relaxed">
                       {meetup.description}
@@ -340,13 +386,13 @@ export default function ExperiencesPage() {
                       {meetup.recommendedGear && (
                         <span className="px-2 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-200/60 flex items-center gap-1">
                           <Camera className="w-3 h-3 text-amber-700" />
-                          <span>추천 기종: {meetup.recommendedGear}</span>
+                          <span>기종: {meetup.recommendedGear}</span>
                         </span>
                       )}
                       {meetup.recommendedFilm && (
                         <span className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200/60 flex items-center gap-1">
                           <Film className="w-3 h-3 text-emerald-700" />
-                          <span>추천 필름: {meetup.recommendedFilm}</span>
+                          <span>필름: {meetup.recommendedFilm}</span>
                         </span>
                       )}
                     </div>
@@ -376,38 +422,83 @@ export default function ExperiencesPage() {
               </div>
 
               {/* Card Footer Actions */}
-              <div className="p-5 pt-0">
-                <button
-                  disabled={isFull}
-                  onClick={() => {
-                    setSelectedMeetup(meetup);
-                    setIssuedTicketCode(null);
-                    setJoinForm({
-                      name: '',
-                      phone: '',
-                      camera: meetup.recommendedGear || '',
-                      withRental: false,
-                      selectedCamera: 'Olympus PEN EE-3 (하프 필름)',
-                      withFilm: false,
-                    });
-                    setIsJoinOpen(true);
-                  }}
-                  className={`w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                    isFull
-                      ? 'bg-vintage-200 text-vintage-400 cursor-not-allowed'
-                      : 'bg-vintage-900 hover:bg-terracotta text-white shadow-xs hover:shadow-md active:scale-98'
-                  }`}
-                >
-                  {isFull ? (
-                    <span>모집이 마감되었습니다</span>
+              <div className="p-5 pt-0 space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedDetailMeetup(meetup)}
+                    className="px-3.5 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 hover:bg-vintage-100 font-semibold text-xs transition-colors"
+                  >
+                    상세보기
+                  </button>
+
+                  {hasJoined ? (
+                    <Link
+                      href="/cabinet?tab=tickets"
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                    >
+                      <Ticket className="w-4 h-4 text-emerald-200" />
+                      <span>내 모바일 티켓 확인</span>
+                    </Link>
                   ) : (
-                    <>
-                      <Ticket className="w-4 h-4 text-amber-300" />
-                      <span>모임 참여 신청하기 (+150P)</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </>
+                    <button
+                      disabled={isFull}
+                      onClick={() => {
+                        setSelectedMeetupForJoin(meetup);
+                        setIssuedTicketCode(null);
+                        setJoinForm({
+                          name: '',
+                          phone: '',
+                          camera: meetup.recommendedGear || '',
+                          withRental: false,
+                          selectedCamera: 'Olympus PEN EE-3 (하프 필름)',
+                          withFilm: false,
+                        });
+                      }}
+                      className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        isFull
+                          ? 'bg-vintage-200 text-vintage-400 cursor-not-allowed'
+                          : 'bg-vintage-900 hover:bg-terracotta text-white shadow-xs hover:shadow-md active:scale-98'
+                      }`}
+                    >
+                      {isFull ? (
+                        <span>모집 마감</span>
+                      ) : (
+                        <>
+                          <Ticket className="w-4 h-4 text-amber-300" />
+                          <span>참여 신청하기 (+150P)</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
                   )}
-                </button>
+                </div>
+
+                {/* Host Quick Actions */}
+                {meetup.isUserCreated && (
+                  <div className="flex items-center justify-between text-2xs text-vintage-500 pt-1 border-t border-vintage-100">
+                    <span className="font-semibold text-amber-800">👑 내가 주최한 모임</span>
+                    <div className="flex items-center gap-2">
+                      {!isFull && (
+                        <button
+                          onClick={() => closeMeetup(meetup.id)}
+                          className="text-vintage-600 hover:text-vintage-900 underline"
+                        >
+                          조기 마감
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (confirm(`'${meetup.title}' 모임을 취소하시겠습니까?`)) {
+                            cancelMeetup(meetup.id);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 underline"
+                      >
+                        모임 취소
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -482,6 +573,160 @@ export default function ExperiencesPage() {
           </div>
         </div>
       </div>
+
+      {/* MEETUP DETAIL MODAL */}
+      {selectedDetailMeetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-vintage-200 relative my-8 animate-in fade-in zoom-in-95 duration-200 space-y-6">
+            <button
+              onClick={() => setSelectedDetailMeetup(null)}
+              className="absolute top-5 right-5 p-2 rounded-full text-vintage-400 hover:text-vintage-800 hover:bg-vintage-100 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header Image */}
+            <div className="relative h-64 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 rounded-t-3xl overflow-hidden">
+              <img
+                src={selectedDetailMeetup.imageUrl}
+                alt={selectedDetailMeetup.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6 text-white space-y-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-vintage-950 text-xs font-bold">
+                  {selectedDetailMeetup.category === 'flash_walk' ? '⚡ 즉석 번개' :
+                   selectedDetailMeetup.category === 'golden_hour' ? '🌅 골든아워 노을' :
+                   selectedDetailMeetup.category === 'theme_walk' ? '🎞️ 테마 워크' : '🔧 명장 클래스'}
+                </span>
+                <h3 className="font-serif text-2xl font-bold leading-snug">{selectedDetailMeetup.title}</h3>
+                <p className="text-xs text-vintage-200 flex items-center gap-2">
+                  <span>호스트: {selectedDetailMeetup.hostName}</span>
+                  <span>•</span>
+                  <span>{selectedDetailMeetup.hostRole}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Content Details */}
+            <div className="space-y-4 text-xs sm:text-sm">
+              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100">
+                <div className="flex items-center gap-2 text-vintage-700">
+                  <Calendar className="w-4 h-4 text-terracotta" />
+                  <span>일시: <strong>{selectedDetailMeetup.dateTime}</strong></span>
+                </div>
+                <div className="flex items-center gap-2 text-vintage-700">
+                  <Clock className="w-4 h-4 text-terracotta" />
+                  <span>소요 시간: <strong>{selectedDetailMeetup.duration}</strong></span>
+                </div>
+                <div className="col-span-2 flex items-center gap-2 text-vintage-700">
+                  <MapPin className="w-4 h-4 text-terracotta shrink-0" />
+                  <span>집결 장소: <strong>{selectedDetailMeetup.location}</strong></span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="font-bold text-vintage-900 text-xs">출사 코스 및 모임 소개</div>
+                <p className="text-vintage-600 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                  {selectedDetailMeetup.description}
+                </p>
+              </div>
+
+              {/* Included Perks */}
+              {selectedDetailMeetup.included && selectedDetailMeetup.included.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="font-bold text-vintage-900 text-xs">포함 내역 및 혜택</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedDetailMeetup.included.map((inc, i) => (
+                      <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>{inc}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommended Gear & Film */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {selectedDetailMeetup.recommendedGear && (
+                  <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
+                    <span className="font-bold text-amber-900 text-2xs flex items-center gap-1">
+                      <Camera className="w-3 h-3 text-amber-700" /> 추천 카메라 기종
+                    </span>
+                    <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedGear}</div>
+                  </div>
+                )}
+                {selectedDetailMeetup.recommendedFilm && (
+                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                    <span className="font-bold text-emerald-900 text-2xs flex items-center gap-1">
+                      <Film className="w-3 h-3 text-emerald-700" /> 추천 필름
+                    </span>
+                    <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedFilm}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Attendees & Chat Notice */}
+              <div className="p-3.5 rounded-xl bg-vintage-100/60 border border-vintage-200/80 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-vintage-700">
+                  <Users className="w-4 h-4 text-terracotta" />
+                  <span>
+                    참여 인원: <strong>{selectedDetailMeetup.currentAttendees} / {selectedDetailMeetup.maxAttendees}명</strong>
+                  </span>
+                </div>
+                <div className="text-amber-800 font-bold text-xs flex items-center gap-1">
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>참여 확정 시 단톡방 링크 안내</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-2 flex items-center justify-between border-t border-vintage-100">
+              <div>
+                <span className="text-2xs text-vintage-400">참가비</span>
+                <div className="text-lg font-bold text-terracotta">
+                  {selectedDetailMeetup.price === 0 ? '무료 참여' : `${selectedDetailMeetup.price.toLocaleString()}원`}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedDetailMeetup(null)}
+                  className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 font-semibold text-xs"
+                >
+                  닫기
+                </button>
+
+                {isUserJoined(selectedDetailMeetup.id) ? (
+                  <Link
+                    href="/cabinet?tab=tickets"
+                    className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Ticket className="w-3.5 h-3.5" />
+                    <span>내 티켓 보러가기</span>
+                  </Link>
+                ) : (
+                  <button
+                    disabled={selectedDetailMeetup.currentAttendees >= selectedDetailMeetup.maxAttendees}
+                    onClick={() => {
+                      const target = selectedDetailMeetup;
+                      setSelectedDetailMeetup(null);
+                      setSelectedMeetupForJoin(target);
+                      setIssuedTicketCode(null);
+                    }}
+                    className="px-6 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Ticket className="w-3.5 h-3.5" />
+                    <span>이 모임 참여 신청하기 (+150P)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CREATE MEETUP MODAL */}
       {isCreateOpen && (
@@ -612,7 +857,7 @@ export default function ExperiencesPage() {
                 {/* Capacity & Price */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="font-bold text-vintage-800 text-xs">모임 정원 (호스트 포함)</label>
+                    <label className="font-bold text-vintage-800 text-xs">모집 정원 (호스트 포함)</label>
                     <input
                       type="number"
                       min={2}
@@ -689,13 +934,12 @@ export default function ExperiencesPage() {
       )}
 
       {/* JOIN MEETUP MODAL */}
-      {isJoinOpen && selectedMeetup && (
+      {selectedMeetupForJoin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-vintage-200 relative my-8 animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => {
-                setIsJoinOpen(false);
-                setSelectedMeetup(null);
+                setSelectedMeetupForJoin(null);
                 setIssuedTicketCode(null);
               }}
               className="absolute top-5 right-5 p-2 rounded-full text-vintage-400 hover:text-vintage-800 hover:bg-vintage-100 transition-colors cursor-pointer"
@@ -730,23 +974,47 @@ export default function ExperiencesPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="font-serif text-sm font-bold text-vintage-900">{selectedMeetup.title}</h4>
+                    <h4 className="font-serif text-sm font-bold text-vintage-900">{selectedMeetupForJoin.title}</h4>
                     <div className="text-xs text-vintage-600 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-vintage-400" />
-                      <span>{selectedMeetup.dateTime}</span>
+                      <span>{selectedMeetupForJoin.dateTime}</span>
                     </div>
                     <div className="text-xs text-vintage-600 flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-vintage-400" />
-                      <span>{selectedMeetup.location}</span>
+                      <span>{selectedMeetupForJoin.location}</span>
                     </div>
                   </div>
 
                   <div className="pt-2 flex items-center justify-between text-xs text-vintage-500 border-t border-vintage-200/80">
-                    <span>호스트: {selectedMeetup.hostName}</span>
+                    <span>호스트: {selectedMeetupForJoin.hostName}</span>
                     <span className="font-bold text-vintage-800">
-                      {selectedMeetup.price === 0 ? '무료 번개' : `${selectedMeetup.price.toLocaleString()}원`}
+                      {selectedMeetupForJoin.price === 0 ? '무료 번개' : `${selectedMeetupForJoin.price.toLocaleString()}원`}
                     </span>
                   </div>
+                </div>
+
+                {/* Open Chat Invite Box */}
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-left space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                      <MessageCircle className="w-4 h-4 text-amber-700" />
+                      <span>출사 참여자 카카오톡 오픈채팅방</span>
+                    </span>
+                    <span className="text-2xs bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded font-semibold">
+                      실시간 집결 안내
+                    </span>
+                  </div>
+                  <p className="text-2xs text-vintage-600">
+                    출사 당일 현장 집결 및 사진 공유를 위한 단톡방에 입장해 주세요.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCopyChatLink}
+                    className="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-500 text-vintage-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {isCopiedChatLink ? <Check className="w-3.5 h-3.5 text-emerald-800" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{isCopiedChatLink ? '단톡방 링크 복사 완료!' : '오픈채팅 참여 링크 복사하기'}</span>
+                  </button>
                 </div>
 
                 <div className="flex gap-2">
@@ -759,8 +1027,7 @@ export default function ExperiencesPage() {
                   </Link>
                   <button
                     onClick={() => {
-                      setIsJoinOpen(false);
-                      setSelectedMeetup(null);
+                      setSelectedMeetupForJoin(null);
                       setIssuedTicketCode(null);
                     }}
                     className="px-5 py-3 rounded-xl border border-vintage-300 text-vintage-700 font-semibold text-xs sm:text-sm hover:bg-vintage-100 cursor-pointer"
@@ -775,16 +1042,16 @@ export default function ExperiencesPage() {
                 <div>
                   <span className="text-xs font-bold text-terracotta">출사 참여 신청</span>
                   <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 leading-snug">
-                    {selectedMeetup.title}
+                    {selectedMeetupForJoin.title}
                   </h3>
                   <div className="mt-2 text-xs text-vintage-600 space-y-1 bg-vintage-50 p-3 rounded-xl border border-vintage-100">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5 text-terracotta shrink-0" />
-                      <span>{selectedMeetup.dateTime}</span>
+                      <span>{selectedMeetupForJoin.dateTime}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-3.5 h-3.5 text-terracotta shrink-0" />
-                      <span>{selectedMeetup.location}</span>
+                      <span>{selectedMeetupForJoin.location}</span>
                     </div>
                   </div>
                 </div>
@@ -873,14 +1140,14 @@ export default function ExperiencesPage() {
                     <div>
                       <div className="text-2xs text-vintage-400">최종 참가비</div>
                       <div className="text-base font-bold text-terracotta">
-                        {selectedMeetup.price === 0 ? '무료 참여' : `${selectedMeetup.price.toLocaleString()}원`}
+                        {selectedMeetupForJoin.price === 0 ? '무료 참여' : `${selectedMeetupForJoin.price.toLocaleString()}원`}
                       </div>
                     </div>
 
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setIsJoinOpen(false)}
+                        onClick={() => setSelectedMeetupForJoin(null)}
                         className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 font-semibold text-xs cursor-pointer"
                       >
                         취소

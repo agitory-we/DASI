@@ -132,6 +132,9 @@ interface DasiContextType {
   bookExperience: (item: Omit<BookedExperienceItem, 'id' | 'ticketCode' | 'bookedAt' | 'status'>) => string;
   createMeetup: (item: Omit<PhotoMeetup, 'id' | 'currentAttendees'>) => string;
   joinMeetup: (meetupId: string, attendee: { name: string; camera?: string; withRental?: boolean }) => string;
+  cancelMeetup: (meetupId: string) => void;
+  closeMeetup: (meetupId: string) => void;
+  cancelExperienceTicket: (ticketCode: string) => void;
   submitRepairEstimate: (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => string;
   bookProConsultation: (item: Omit<ProConsultationItem, 'id' | 'vipCode' | 'requestedAt' | 'status'>) => string;
   toggleSaveSpot: (spotId: string) => void;
@@ -598,6 +601,39 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return ticketCode;
   };
 
+  const cancelMeetup = (meetupId: string) => {
+    const target = meetups.find((m) => m.id === meetupId);
+    if (!target) return;
+    setMeetups((prev) => prev.filter((m) => m.id !== meetupId));
+    // 해당 모임 관련 발급된 티켓들 취소 처리
+    setBookedExperiences((prev) => prev.filter((b) => b.experienceId !== meetupId));
+    showToast(`[${target.title}] 출사 모임이 취소되었습니다.`, 'info');
+  };
+
+  const closeMeetup = (meetupId: string) => {
+    setMeetups((prev) =>
+      prev.map((m) => (m.id === meetupId ? { ...m, currentAttendees: m.maxAttendees } : m))
+    );
+    showToast('출사 모임 모집이 조기 마감되었습니다.', 'info');
+  };
+
+  const cancelExperienceTicket = (ticketCode: string) => {
+    const ticket = bookedExperiences.find((b) => b.ticketCode === ticketCode);
+    if (!ticket) return;
+
+    setBookedExperiences((prev) => prev.filter((b) => b.ticketCode !== ticketCode));
+
+    // 해당 모임의 참가자 수 1 감소 (0 이하로는 내려가지 않음)
+    setMeetups((prev) =>
+      prev.map((m) =>
+        m.id === ticket.experienceId
+          ? { ...m, currentAttendees: Math.max(1, m.currentAttendees - 1) }
+          : m
+      )
+    );
+    showToast(`[${ticket.title}] 출사 티켓 예매가 취소되었습니다.`, 'info');
+  };
+
   const submitRepairEstimate = (item: Omit<RepairEstimateItem, 'id' | 'estimateCode' | 'requestedAt' | 'status'>) => {
     const estimateCode = `EST-${Math.floor(100000 + Math.random() * 900000)}`;
     const newEstimate: RepairEstimateItem = {
@@ -701,6 +737,9 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bookExperience,
         createMeetup,
         joinMeetup,
+        cancelMeetup,
+        closeMeetup,
+        cancelExperienceTicket,
         submitRepairEstimate,
         bookProConsultation,
         toggleSaveSpot,

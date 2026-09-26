@@ -23,6 +23,7 @@ import {
   FolderLock,
   Film,
   Store,
+  PlusCircle,
 } from 'lucide-react';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
@@ -36,6 +37,7 @@ export default function HomePage() {
     photoGigs,
     repairMasters,
     experiences,
+    meetups,
     isLoadingData,
     isWelcomeClaimed,
     claimWelcomeCoupons,
@@ -887,87 +889,128 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* NEW: ANALOG ACADEMY EXPERIENCES & WORKSHOPS */}
+      {/* NEW: 52-WEEK PHOTO MEETUPS & FLASH WALKS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
               <Compass className="w-4 h-4" />
-              <span>DASI Experiences &amp; Workshops</span>
+              <span>DASI Photo Club &amp; Meetup Playground</span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              주말 골목 출사 워크숍 &amp; 40년 명장 정비 클래스
+              52주 필름 출사 모임 &amp; 주말 번개 놀이터
             </h2>
             <p className="text-sm text-vintage-600 mt-1">
-              인스타 유명 작가와 걷는 을지로 매직아워 출사부터, 내 손으로 렌즈를 분해 청소해보는 장인 실습까지.
+              혼자 걷던 골목길에서 함께 걷는 낭만으로. 원하는 스팟에서 직접 번개를 열고(+300P), 동료들과 참여(+150P)하세요.
             </p>
           </div>
-          <Link
-            href="/experiences"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
-          >
-            <span>전체 클래스 &amp; 출사 보기</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/experiences?action=create"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-vintage-950 font-bold text-xs shadow-xs transition-all"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ 번개 모임 열기 (+300P)</span>
+            </Link>
+            <Link
+              href="/experiences"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
+            >
+              <span>전체 모임 보기</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {experiences.slice(0, 2).map((exp) => (
-            <div
-              key={exp.id}
-              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group"
-            >
-              <div>
-                <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
-                  <img
-                    src={exp.imageUrl}
-                    alt={exp.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
-                    {exp.type === 'photo_walk' ? '골목길 출사 워크' : '장인 정비 클래스'}
-                  </div>
-                  <div className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-lg bg-amber-500/90 text-white text-[10px] font-bold">
-                    {exp.capacity}
-                  </div>
-                </div>
+          {meetups.slice(0, 2).map((meetup) => {
+            const isFull = meetup.currentAttendees >= meetup.maxAttendees;
+            const percentFilled = Math.min(100, Math.round((meetup.currentAttendees / meetup.maxAttendees) * 100));
 
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-vintage-500">
-                    <Clock className="w-3.5 h-3.5 text-terracotta" />
-                    <span>{exp.dateTime}</span>
-                  </div>
-                  <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors leading-snug">
-                    {exp.title}
-                  </h3>
-                  <div className="flex items-center gap-2 pt-1">
+            return (
+              <div
+                key={meetup.id}
+                className="rounded-3xl bg-white border border-vintage-200 overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
                     <img
-                      src={exp.hostAvatar}
-                      alt={exp.hostName}
-                      className="w-8 h-8 rounded-full object-cover border border-vintage-200"
+                      src={meetup.imageUrl}
+                      alt={meetup.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div>
-                      <div className="text-xs font-bold text-vintage-900">{exp.hostName}</div>
-                      <div className="text-[10px] text-vintage-500">{exp.hostRole}</div>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3 flex gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full bg-amber-500 text-vintage-950 text-[10px] font-bold">
+                        {meetup.category === 'flash_walk' ? '⚡ 즉석 번개' :
+                         meetup.category === 'golden_hour' ? '🌅 골든아워' :
+                         meetup.category === 'theme_walk' ? '🎞️ 테마 워크' : '🔧 명장 클래스'}
+                      </span>
+                      {meetup.isUserCreated && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/90 text-vintage-900 text-[10px] font-bold">
+                          유저 개설
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={meetup.hostAvatar}
+                          alt={meetup.hostName}
+                          className="w-7 h-7 rounded-full border border-white/60 object-cover"
+                        />
+                        <span className="font-bold">{meetup.hostName}</span>
+                      </div>
+                      <span className="font-bold text-amber-300">
+                        {meetup.price === 0 ? '무료 번개' : `${meetup.price.toLocaleString()}원`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-vintage-500">
+                      <Clock className="w-3.5 h-3.5 text-terracotta" />
+                      <span>{meetup.dateTime}</span>
+                    </div>
+                    <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors leading-snug">
+                      {meetup.title}
+                    </h3>
+                    <p className="text-xs text-vintage-600 line-clamp-2">
+                      {meetup.description}
+                    </p>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex justify-between text-2xs text-vintage-500 font-medium">
+                        <span>참여 현황 ({meetup.currentAttendees}/{meetup.maxAttendees}명)</span>
+                        <span className={isFull ? 'text-red-500 font-bold' : 'text-terracotta font-bold'}>
+                          {isFull ? '모집 마감' : `${meetup.maxAttendees - meetup.currentAttendees}석 남음`}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-vintage-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${isFull ? 'bg-red-400' : 'bg-terracotta'}`}
+                          style={{ width: `${percentFilled}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="p-6 pt-0 border-t border-vintage-100 flex items-center justify-between mt-2">
-                <div>
-                  <div className="text-[10px] text-emerald-700 font-bold">{exp.rentalPackageDiscount}</div>
-                  <div className="text-lg font-bold text-vintage-900">{exp.price.toLocaleString()}원</div>
+                <div className="p-6 pt-0 border-t border-vintage-100 flex items-center justify-between mt-2">
+                  <div className="text-[11px] text-vintage-500 truncate max-w-[200px]">
+                    📍 {meetup.location}
+                  </div>
+                  <Link
+                    href="/experiences"
+                    className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs"
+                  >
+                    참여 신청하기 (+150P)
+                  </Link>
                 </div>
-                <Link
-                  href="/experiences"
-                  className="px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-bold transition-colors shadow-xs"
-                >
-                  모바일 티켓 예약
-                </Link>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
