@@ -22,6 +22,8 @@ interface GoogleMapCanvasProps {
 
 // 카테고리별 마커 스타일 및 배지 아이콘
 const CATEGORY_STYLES: Record<string, { bg: string; border: string; icon: string; label: string }> = {
+  festival: { bg: 'bg-rose-600', border: 'border-rose-300', icon: '🔥', label: '실시간축제' },
+  spot: { bg: 'bg-terracotta', border: 'border-orange-300', icon: '📍', label: '출사명소' },
   lab: { bg: 'bg-purple-600', border: 'border-purple-300', icon: '🧪', label: '당일현상소' },
   film_shop: { bg: 'bg-amber-600', border: 'border-amber-300', icon: '🎞️', label: '필름샵' },
   vending_machine: { bg: 'bg-emerald-600', border: 'border-emerald-300', icon: '⚡', label: '24시 자판기' },
@@ -124,26 +126,47 @@ export const GoogleMapCanvas: React.FC<GoogleMapCanvasProps> = ({
 
       const marker = L.marker([spot.lat, spot.lng], { icon: customIcon }).addTo(map);
 
-      // 마커 팝업 (인포윈도우)
+      const previewImg = spot.imageUrl || spot.photosTakenHere?.[0]?.imageUrl;
+      const photoCount = spot.photosTakenHere?.length || 0;
+      const metaBadge = spot.eventPeriod
+        ? `<div style="font-size: 10px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; font-weight: bold;">🗓️ ${spot.eventPeriod}</div>`
+        : spot.goldenHourTip
+        ? `<div style="font-size: 10px; color: #c2410c; background: #ffedd5; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; font-weight: bold;">🌅 골든아워: ${spot.goldenHourTip.slice(0, 24)}</div>`
+        : '';
+
+      // 마커 팝업 (인포윈도우: 실사진 썸네일 & 골든아워 시각화)
       const popupHtml = `
-        <div style="font-family: sans-serif; padding: 4px; min-width: 190px; color: #1c1917;">
+        <div style="font-family: sans-serif; padding: 4px; min-width: 210px; max-width: 250px; color: #1c1917;">
+          ${
+            previewImg
+              ? `<div style="position: relative; width: 100%; height: 95px; border-radius: 8px; overflow: hidden; margin-bottom: 6px; background: #292524;">
+                   <img src="${previewImg}" alt="${spot.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+                   ${
+                     photoCount > 0
+                       ? `<span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.75); color: white; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 4px;">📸 실사진 ${photoCount}장</span>`
+                       : ''
+                   }
+                 </div>`
+              : ''
+          }
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
             <span style="font-size: 13px;">${catStyle.icon}</span>
-            <strong style="font-size: 13px;">${spot.name}</strong>
-            ${spot.isPartner || spot.isMicroAdPartner || spot.hasQrDiscount ? '<span style="font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #fef3c7; color: #92400e; font-weight: bold;">제휴</span>' : ''}
+            <strong style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${spot.name}</strong>
+            ${spot.isPartner || spot.isMicroAdPartner || spot.hasQrDiscount ? '<span style="font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #fef3c7; color: #92400e; font-weight: bold; shrink-0;">제휴</span>' : ''}
           </div>
+          ${metaBadge}
           <div style="font-size: 11px; color: #78716c; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             ${spot.address || spot.area}
           </div>
-          <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #44403c; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #44403c; margin-bottom: 8px;">
             <span>★ ${spot.rating ? spot.rating.toFixed(1) : '4.8'}</span>
             ${spot.sameDayAvailable ? '<span style="color: #059669; font-weight: bold;">● 당일현상</span>' : ''}
           </div>
           <div style="display: flex; gap: 4px;">
-            <button id="nav-btn-g-${spot.id}" style="flex: 1; padding: 4px 6px; border-radius: 8px; background: #2563eb; color: white; font-size: 10px; font-weight: bold; border: none; cursor: pointer;">
+            <button id="nav-btn-g-${spot.id}" style="flex: 1; padding: 5px 6px; border-radius: 6px; background: #2563eb; color: white; font-size: 10px; font-weight: bold; border: none; cursor: pointer;">
               Google 길찾기
             </button>
-            <button id="nav-btn-k-${spot.id}" style="flex: 1; padding: 4px 6px; border-radius: 8px; background: #fee500; color: #3b1e08; font-size: 10px; font-weight: bold; border: none; cursor: pointer;">
+            <button id="nav-btn-k-${spot.id}" style="flex: 1; padding: 5px 6px; border-radius: 6px; background: #fee500; color: #3b1e08; font-size: 10px; font-weight: bold; border: none; cursor: pointer;">
               카카오맵
             </button>
           </div>

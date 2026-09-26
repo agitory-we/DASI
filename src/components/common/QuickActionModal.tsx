@@ -126,9 +126,17 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
 
         {/* 체크인 결과 알림 박스 */}
         {checkInResult && (
-          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <div className="text-xs text-emerald-800 flex-1 font-medium">{checkInResult}</div>
+          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <div className="text-xs text-emerald-800 truncate font-medium">{checkInResult}</div>
+            </div>
+            <button
+              onClick={() => handleActionClick('passport', '/cabinet?tab=passport')}
+              className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 underline shrink-0"
+            >
+              패스포트 보기 →
+            </button>
           </div>
         )}
 
@@ -158,7 +166,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* 액션 1: 현상소 1초 QR 접수증 */}
           <button
-            onClick={() => handleActionClick('qr', '/cabinet?tab=qr')}
+            onClick={() => handleActionClick('qr', '/cabinet?tab=coupons')}
             className="flex flex-col items-start p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 hover:bg-amber-100/70 transition-all text-left group"
           >
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">

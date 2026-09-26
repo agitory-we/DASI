@@ -17,6 +17,8 @@ import {
   Share2,
   Award,
   Store,
+  Sliders,
+  Users,
   ChevronLeft,
   ChevronRight,
   Radio,
@@ -76,16 +78,16 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   const couponCount = coupons.filter((c) => !c.isUsed).length;
   const points = profile?.total_points ?? 1200;
 
-  // 5대 핵심 카테고리 그룹 (GoodPartner 레퍼런스 스타일)
+  // 5대 핵심 카테고리 그룹 (52주 아날로그 취미 생태계 & 플레이그라운드 중심)
   const menuGroups = [
     {
-      groupTitle: '출사 & 영감',
+      groupTitle: '출사 & 52주 영감',
       groupTag: 'EXPLORE',
       tagColor: 'text-purple-700 bg-purple-50 border-purple-200',
       dotColor: 'bg-purple-500',
       items: [
         {
-          title: '서울 시즌 축제 & 핫스팟',
+          title: '서울 52주 축제 & 핫스팟',
           href: '/explore',
           icon: Calendar,
           badge: `${spotCount || 18}곳`,
@@ -99,17 +101,24 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           badgeColor: 'bg-amber-100 text-amber-700 animate-pulse',
         },
         {
-          title: '작가 출사 & 명장 클래스',
+          title: '작가 출사 & 장인 클래스',
           href: '/experiences',
           icon: Compass,
           badge: `${expCount || 3}개`,
           badgeColor: 'bg-vintage-100 text-vintage-700',
         },
+        {
+          title: '로컬 포토긱 & 출사 동행',
+          href: '/gigs',
+          icon: Users,
+          badge: '동행 매칭',
+          badgeColor: 'bg-sky-100 text-sky-800 font-semibold',
+        },
       ],
     },
     {
-      groupTitle: '장비 & 즉시 공급',
-      groupTag: 'INSTANT',
+      groupTitle: '장비 & 필름 서포트',
+      groupTag: 'EQUIPMENT',
       tagColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
       dotColor: 'bg-emerald-500',
       items: [
@@ -117,22 +126,22 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           title: '내 주변 당일 수령 맵',
           href: '/map',
           icon: MapPin,
-          badge: '당일 퀵',
+          badge: '당일 수령',
           badgeColor: 'bg-emerald-100 text-emerald-800 font-bold',
-        },
-        {
-          title: '카메라 렌탈 & 인수',
-          href: '/rent',
-          icon: Camera,
-          badge: `${availableCamCount}대`,
-          badgeColor: 'bg-terracotta/10 text-terracotta font-semibold',
         },
         {
           title: '필름 주문 & 대량 벌크샵',
           href: '/films',
           icon: Film,
-          badge: '12%↓',
+          badge: '당일 퀵',
           badgeColor: 'bg-rose-100 text-rose-700 font-bold',
+        },
+        {
+          title: '카메라 체험 & 소장(Rent-to-Own)',
+          href: '/rent',
+          icon: Camera,
+          badge: `${availableCamCount}대`,
+          badgeColor: 'bg-terracotta/10 text-terracotta font-semibold',
         },
         {
           title: '서울 제휴 현상소 & 사진관',
@@ -144,8 +153,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       ],
     },
     {
-      groupTitle: '명장 케어 & 검증',
-      groupTag: 'CARE',
+      groupTitle: '명장 케어 & 스마트 도구',
+      groupTag: 'TOOLS',
       tagColor: 'text-amber-700 bg-amber-50 border-amber-200',
       dotColor: 'bg-amber-500',
       items: [
@@ -153,8 +162,15 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           title: '40년 명장 정밀 클리닉',
           href: '/clinic',
           icon: Wrench,
-          badge: '30분 점검',
+          badge: '무료 점검',
           badgeColor: 'bg-amber-100 text-amber-800',
+        },
+        {
+          title: '스마트폰 실시간 노출계',
+          href: '/meter',
+          icon: Sliders,
+          badge: 'LIVE',
+          badgeColor: 'bg-emerald-100 text-emerald-800 font-bold',
         },
         {
           title: 'AI 카메라 감정 & 보증서',

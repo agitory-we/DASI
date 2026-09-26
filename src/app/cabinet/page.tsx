@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   Camera,
@@ -446,13 +447,13 @@ function CabinetContent() {
               {activeRentings.length === 0 ? (
                 <div className="text-center py-10 space-y-3">
                   <p className="text-xs text-vintage-500">현재 대여 중인 카메라가 없습니다. 이번 주말 감성 출사용 카메라를 예약해 보세요!</p>
-                  <a
+                  <Link
                     href="/rent"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
                   >
                     <span>카메라 대여 라인업 둘러보기</span>
                     <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-6 divide-y divide-vintage-100">
@@ -622,13 +623,13 @@ function CabinetContent() {
             {bookedGigs.length === 0 ? (
               <div className="rounded-3xl bg-white border border-vintage-200 p-10 text-center space-y-3">
                 <p className="text-xs text-vintage-500">예약된 스냅 촬영 내역이 없습니다.</p>
-                <a
+                <Link
                   href="/gigs"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
                 >
                   <span>을지로·성수 감성 스냅 작가 둘러보기</span>
                   <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

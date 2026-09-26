@@ -22,7 +22,10 @@ import {
   Bell,
   Star,
   Store,
-  Sliders
+  Sliders,
+  Film,
+  Sun,
+  Gift,
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
@@ -139,6 +142,9 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   const moreNavItems = [
+    { href: '/films', label: '필름 주문 & 대량 벌크샵', desc: '서울 전역 3시간 당일 퀵 · 최대 22% 대량 할인', icon: Film },
+    { href: '/studios', label: '서울 제휴 현상소 & 사진관', desc: '40년+ 노포 및 당일 스캔 랩 · 현장 20% 할인 QR', icon: Store },
+    { href: '/golden-hour', label: '골든아워 실시간 예보', desc: '오늘 서울 일몰·매직아워 및 4대 명소 노출값', icon: Sun },
     { href: '/meter', label: '실시간 필름 노출계', desc: '카메라 조도 측정 및 명장 추천 F값/셔터 산출', icon: Sliders },
     { href: '/experiences', label: '출사 & 클래스', desc: '작가 출사 워크숍 및 장인 정비 강습', icon: Compass },
     { href: '/explore', label: '서울 축제 & 출사지', desc: '시즌별 축제 및 골든아워 촬영 팁', icon: Calendar },
@@ -503,11 +509,9 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 모바일 전용 인터랙티브 토이 바로가기 */}
             {/* 모바일 전용 인터랙티브 토이 & 사진관 바로가기 */}
             <div className="pt-2 border-t border-vintage-100 space-y-2">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsStudioOpen(true);
-                }}
+              <Link
+                href="/studios"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-amber-900 text-xs font-bold flex items-center justify-between shadow-xs"
               >
                 <div className="flex items-center gap-2">
@@ -517,7 +521,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">
                   20% 할인 QR
                 </span>
-              </button>
+              </Link>
 
               <div className="grid grid-cols-2 gap-2">
                 <button

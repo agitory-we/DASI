@@ -44,7 +44,18 @@ export interface PickupShop {
   imageUrl: string;
 }
 
-export type SpotCategory = 'lab' | 'film_shop' | 'vending_machine' | 'repair' | 'pickup';
+export type SpotCategory = 'lab' | 'film_shop' | 'vending_machine' | 'repair' | 'pickup' | 'spot' | 'festival';
+
+export interface SpotPhotoItem {
+  id?: string;
+  imageUrl: string;
+  caption?: string;
+  cameraModel?: string;
+  filmType?: string;
+  photographer?: string;
+  likesCount?: number;
+  labName?: string;
+}
 
 export interface AnalogSpot {
   id: string;
@@ -80,6 +91,19 @@ export interface AnalogSpot {
   quickDeliveryAvailable?: boolean; // 서울 시내 3시간 당일 퀵 배송 지원
   hasQrDiscount?: boolean; // DASI 제휴 QR 10% 현장 할인 가능
   qrDiscountRate?: string; // 예: "현장 전 품목 10% 즉시 할인"
+  // ── 핫스팟 및 축제 메타데이터 & 실촬영 사진 (Shot at this Spot) ──
+  imageUrl?: string;
+  photosTakenHere?: SpotPhotoItem[];
+  goldenHourTip?: string;
+  eventPeriod?: string;
+  recommendedLenses?: string;
+  tips?: string;
+  source?: 'tourapi' | 'korea100' | 'manual';
+  sourceId?: string;
+  dropBox?: boolean;
+  services?: string[];
+  scanners?: string[];
+  description?: string;
 }
 
 export type GigCategory = 'foreigner_tour' | 'sub_wedding' | 'daily_snap' | 'pet_walk';

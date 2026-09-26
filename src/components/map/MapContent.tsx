@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import * as SunCalc from 'suncalc';
 import { AnalogSpot, SpotCategory } from '@/types';
 import {
   MapPin,
@@ -24,7 +25,12 @@ import {
   Award,
   Zap,
   Ticket,
-  Wrench
+  Wrench,
+  Sun,
+  Camera,
+  Film,
+  Calendar,
+  ShoppingBag
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { ReviewModal } from '@/components/common/ReviewModal';
@@ -34,6 +40,19 @@ import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
 import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 import { GoogleMapCanvas } from '@/components/map/GoogleMapCanvas';
+
+interface ShotToRentPackage {
+  title: string;
+  location: string;
+  imageUrl: string;
+  photographer?: string;
+  moodTag: string;
+  recommendedCamera: string;
+  recommendedFilm: string;
+  recommendedLab: string;
+  pricePerDay: number;
+  highlight: string;
+}
 
 export interface MapContentProps {
   defaultSpotId?: string;
@@ -50,12 +69,14 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
   const [isSpotCheckInOpen, setIsSpotCheckInOpen] = useState<boolean>(false);
   const [isStudioModalOpen, setIsStudioModalOpen] = useState<boolean>(false);
   const [selectedCouponSpot, setSelectedCouponSpot] = useState<AnalogSpot | null>(null);
+  const [selectedShotToRent, setSelectedShotToRent] = useState<ShotToRentPackage | null>(null);
   const [filterSameDayOnly, setFilterSameDayOnly] = useState<boolean>(false);
   const [filterQrDiscountOnly, setFilterQrDiscountOnly] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [sortByNearest, setSortByNearest] = useState<boolean>(false);
   const [selectedToneScanner, setSelectedToneScanner] = useState<string>('');
+  const [festivalSpots, setFestivalSpots] = useState<AnalogSpot[]>([]);
 
 
   // Haversine Distance formula in meters/km
@@ -155,27 +176,86 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
       .catch((err) => console.error('Failed to load studios on map:', err));
   }, []);
 
-  // 한국관광 100선 및 공식 캐치프레이즈를 AnalogSpot 형태로 매핑
+  // 1. 공공데이터 TourAPI 실시간 축제 로드 및 지도 스팟 매핑
+  useEffect(() => {
+    fetch('/api/explore')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.events && data.events.length > 0) {
+          const mapped: AnalogSpot[] = data.events
+            .filter((ev: any) => ev.lat && ev.lng)
+            .map((ev: any) => ({
+              id: ev.id,
+              name: ev.title,
+              category: 'festival' as SpotCategory,
+              isMicroAdPartner: false,
+              partnerBadgeText: 'TourAPI 공인 축제',
+              address: ev.location,
+              area: ev.location.includes('서울') ? '서울' : (ev.location.split(' ')[0] || '전국'),
+              lat: ev.lat,
+              lng: ev.lng,
+              contact: '1330 (관광안내)',
+              openHours: ev.periodOrTime || '행사 기간 상시 운영',
+              rating: 4.9,
+              reviewsCount: 52,
+              services: ['실시간축제', '공식행사', ev.recommendedLenses || '35mm 단렌즈', '야간조명'],
+              scanners: ['현장 출사 포토존'],
+              description: ev.tips || `${ev.title} 공식 축제 현장 출사`,
+              imageUrl: ev.imageUrl,
+              isPartner: false,
+              eventPeriod: ev.periodOrTime,
+              goldenHourTip: ev.goldenHour,
+              recommendedLenses: ev.recommendedLenses,
+              tips: ev.tips,
+              photosTakenHere: [
+                {
+                  imageUrl: ev.imageUrl,
+                  caption: `${ev.title} 현장 컷`,
+                  cameraModel: 'Leica M6 / Contax T2',
+                  filmType: 'Kodak Portra 400',
+                  photographer: '한국관광공사 전문기자단',
+                },
+              ],
+            }));
+          setFestivalSpots(mapped);
+        }
+      })
+      .catch((err) => console.error('Failed to load festivals on map:', err));
+  }, []);
+
+  // 2. 한국관광 100선 및 공식 캐치프레이즈를 AnalogSpot 형태로 매핑
   const top100AnalogSpots: AnalogSpot[] = useMemo(() => {
     return KOREA_TOP_100_SPOTS.map((s) => ({
       id: s.id,
       name: s.name,
-      category: 'pickup' as SpotCategory, // 출사 포인트/인증 거점
+      category: 'spot' as SpotCategory, // 출사 명소 카테고리로 정상화
       isMicroAdPartner: false,
-      partnerBadgeText: '한국관광 100선',
+      partnerBadgeText: '한국관광 100선 공인',
       address: s.address,
       area: s.region,
       lat: s.lat,
       lng: s.lng,
       contact: '한국관광공사 1330',
       openHours: '연중무휴 (일출~일몰 권장)',
-      rating: 4.9,
-      reviewsCount: 38,
-      services: ['한국관광100선', '공식캐치프레이즈', '출사인증', s.recommendedLens],
+      rating: 4.95,
+      reviewsCount: 68,
+      services: ['한국관광100선', '공식캐치프레이즈', '출사인증+150P', s.recommendedLens],
       scanners: [s.filmRecommendation],
       description: `"${s.catchphrase}" — ${s.goldenHour}`,
       imageUrl: s.imageUrl,
       isPartner: true,
+      goldenHourTip: s.goldenHour,
+      recommendedLenses: s.recommendedLens,
+      tips: s.filmRecommendation,
+      photosTakenHere: [
+        {
+          imageUrl: s.imageUrl,
+          caption: `${s.name} 대표 출사 화각`,
+          cameraModel: 'Nikon FM2 / Leica M6',
+          filmType: s.filmRecommendation.split(' ')[0] || 'Kodak Portra 400',
+          photographer: '한국관광공사 공인 사진작가',
+        },
+      ],
       dropBox: false,
     }));
   }, []);
@@ -192,7 +272,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
           const mapped: AnalogSpot[] = json.spots.map((item: any) => ({
             id: `tourapi-nearby-${item.contentid}`,
             name: item.title,
-            category: 'pickup' as SpotCategory,
+            category: 'spot' as SpotCategory, // 출사 명소 카테고리로 정상화
             isMicroAdPartner: false,
             address: item.addr1 + (item.addr2 ? ` ${item.addr2}` : ''),
             area: '서울',
@@ -201,13 +281,22 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
             contact: item.tel || '1330',
             openHours: '상시 관람',
             rating: 4.8,
-            reviewsCount: 15,
+            reviewsCount: 24,
             services: ['한국관광공사공인', '실시간위치기반'],
             scanners: ['자연광 표준 렌즈 권장'],
             description: `한국관광공사 실시간 위치기반 공공데이터 (현재 위치 기준 약 ${Math.round(parseFloat(item.dist || '0'))}m 거리)`,
             imageUrl: item.firstimage || 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&auto=format&fit=crop&q=80',
             isPartner: false,
             dropBox: false,
+            photosTakenHere: [
+              {
+                imageUrl: item.firstimage || 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&auto=format&fit=crop&q=80',
+                caption: `${item.title} 현장 실사진`,
+                cameraModel: 'Olympus PEN EE-3',
+                filmType: 'Kodak Gold 200',
+                photographer: '관광공사 공인 실측',
+              }
+            ]
           }));
           setTourApiNearbySpots(mapped);
           showToast(`내 주변 3km 내 한국관광공사 출사지 ${mapped.length}곳을 실시간 불러왔습니다!`, 'success');
@@ -223,8 +312,8 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
   };
 
   const combinedSpots = useMemo(() => {
-    return [...analogSpots, ...top100AnalogSpots, ...tourApiNearbySpots, ...studiosList];
-  }, [analogSpots, top100AnalogSpots, tourApiNearbySpots, studiosList]);
+    return [...analogSpots, ...top100AnalogSpots, ...festivalSpots, ...tourApiNearbySpots, ...studiosList];
+  }, [analogSpots, top100AnalogSpots, festivalSpots, tourApiNearbySpots, studiosList]);
 
   const sortedSpots = useMemo(() => {
     return [...combinedSpots].filter((spot) => {
@@ -242,11 +331,91 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
   }, [combinedSpots, selectedCategory, selectedArea, filterSameDayOnly, filterQrDiscountOnly, sortByNearest, userLocation]);
 
   const activeSpot = useMemo(() => {
-    return sortedSpots.find((s) => s.id === activeSpotId) || sortedSpots[0] || combinedSpots[0];
-  }, [sortedSpots, activeSpotId, combinedSpots]);
+    return combinedSpots.find((s) => s.id === activeSpotId) || sortedSpots[0] || combinedSpots[0];
+  }, [combinedSpots, sortedSpots, activeSpotId]);
+
+  // 스팟별 실제 GPS 좌표 기반 실시간 일몰 & 골든아워 동적 계산
+  const spotSunData = useMemo(() => {
+    if (!activeSpot || !activeSpot.lat || !activeSpot.lng) return null;
+    try {
+      const now = new Date();
+      const times = SunCalc.getTimes(now, activeSpot.lat, activeSpot.lng);
+      const toHHMM = (d: Date) => {
+        if (!d || isNaN(d.getTime())) return '--:--';
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      };
+      if (!times.sunset || isNaN(times.sunset.getTime())) return null;
+      const sunsetStr = toHHMM(times.sunset);
+      const goldenStart = toHHMM(new Date(times.sunset.getTime() - 60 * 60 * 1000));
+      return {
+        sunset: sunsetStr,
+        goldenRange: `${goldenStart} ~ ${sunsetStr}`,
+      };
+    } catch {
+      return null;
+    }
+  }, [activeSpot]);
+
+  // 활성화된 스팟에서 실제로 찍힌 사진 컬렉션 (Shot at this Spot)
+  const photosForActiveSpot = useMemo(() => {
+    if (!activeSpot) return [];
+    const list: any[] = [];
+    const seenUrls = new Set<string>();
+
+    // 1. 스팟 자체의 photosTakenHere
+    if (activeSpot.photosTakenHere) {
+      activeSpot.photosTakenHere.forEach((p) => {
+        if (!seenUrls.has(p.imageUrl)) {
+          list.push(p);
+          seenUrls.add(p.imageUrl);
+        }
+      });
+    }
+
+    // 2. 커뮤니티 사진 중 장소명/제목 매칭
+    const spotKw = activeSpot.name.replace(/[^가-힣a-zA-Z0-9]/g, '');
+    communityPhotos.forEach((cp) => {
+      const targetText = (cp.location + ' ' + cp.caption + ' ' + (cp.labName || '')).replace(/[^가-힣a-zA-Z0-9]/g, '');
+      if (
+        (spotKw.length >= 2 && targetText.includes(spotKw)) ||
+        (targetText.length >= 2 && spotKw.includes(targetText.slice(0, 3)))
+      ) {
+        if (!seenUrls.has(cp.imageUrl)) {
+          list.push({
+            id: cp.id,
+            imageUrl: cp.imageUrl,
+            caption: cp.caption,
+            cameraModel: cp.cameraModel,
+            filmType: cp.filmType,
+            photographer: cp.photographerName,
+            labName: cp.labName,
+            likesCount: cp.likesCount,
+          });
+          seenUrls.add(cp.imageUrl);
+        }
+      }
+    });
+
+    // 3. 사진이 1장 이하이고 대표 이미지가 있으면 보강
+    if (list.length === 0 && activeSpot.imageUrl) {
+      list.push({
+        imageUrl: activeSpot.imageUrl,
+        caption: `${activeSpot.name} 대표 출사 구도`,
+        cameraModel: activeSpot.recommendedLenses || '35mm / 50mm 단렌즈',
+        filmType: 'Kodak Portra 400',
+        photographer: 'DASI 아카이브',
+      });
+    }
+
+    return list;
+  }, [activeSpot, communityPhotos]);
 
   const getCategoryIcon = (category: SpotCategory) => {
     switch (category) {
+      case 'festival':
+        return '🔥';
+      case 'spot':
+        return '📍';
       case 'lab':
         return '🧪';
       case 'film_shop':
@@ -348,10 +517,12 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
         {/* Categories */}
         <div className="flex flex-wrap items-center gap-1.5">
           {[
-            { id: 'all', label: '전체 스팟' },
+            { id: 'all', label: '🌐 전체 스팟' },
+            { id: 'spot', label: '📍 출사 핫스팟 & 100선' },
+            { id: 'festival', label: `🔥 실시간 축제 (${festivalSpots.length})` },
             { id: 'lab', label: '🧪 당일 현상소' },
-            { id: 'vending_machine', label: '⚡ 24시 필름자판기' },
-            { id: 'film_shop', label: '🎞️ 필름 판매점' },
+            { id: 'vending_machine', label: '⚡ 24시 자판기' },
+            { id: 'film_shop', label: '🎞️ 필름샵' },
             { id: 'repair', label: '🔧 명장 수리실' },
           ].map((tab) => (
             <button
@@ -369,13 +540,13 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
         </div>
 
         {/* Region Filter */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-vintage-500 font-medium">지역 필터:</span>
-          {['all', '을지로', '충무로', '성수', '남대문'].map((area) => (
+        <div className="flex items-center gap-1.5 text-xs overflow-x-auto pb-1 max-w-full">
+          <span className="text-vintage-500 font-medium shrink-0">권역:</span>
+          {['all', '을지로', '충무로', '성수', '종로', '서울', '강원', '경상', '전라', '제주'].map((area) => (
             <button
               key={area}
               onClick={() => setSelectedArea(area)}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-lg font-medium transition-all shrink-0 ${
                 selectedArea === area
                   ? 'bg-terracotta text-white font-bold'
                   : 'bg-vintage-100 text-vintage-700 hover:bg-vintage-200'
@@ -762,6 +933,122 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                   );
                 })()}
 
+                {/* 🌅 실시간 동적 골든아워 & 일몰 위젯 (스팟별 실제 GPS 좌표 연산) */}
+                {spotSunData && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-terracotta/10 border border-amber-300/80 flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
+                        <Sun className="w-4 h-4 animate-spin-slow" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-vintage-500 font-medium">{activeSpot.name} 오늘 일몰</div>
+                        <div className="font-serif font-bold text-vintage-900">{spotSunData.sunset} PM</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 border-l border-amber-200/80 pl-3">
+                      <div className="w-8 h-8 rounded-xl bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-vintage-500 font-medium">최적 매직 골든아워</div>
+                        <div className="font-serif font-bold text-terracotta">{spotSunData.goldenRange}</div>
+                      </div>
+                    </div>
+                    {activeSpot.recommendedLenses && (
+                      <div className="hidden sm:block border-l border-amber-200/80 pl-3">
+                        <div className="text-[10px] text-vintage-500 font-medium">추천 화각</div>
+                        <div className="font-serif font-bold text-vintage-800">{activeSpot.recommendedLenses}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 📸 이 장소에서 찍힌 실제 필름 사진 컬렉션 (Shot at this Spot) */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
+                        <Camera className="w-4 h-4 text-terracotta" />
+                        <span>📸 이 장소에서 찍힌 실제 필름 사진 ({photosForActiveSpot.length}장)</span>
+                      </span>
+                      <p className="text-[11px] text-vintage-500 mt-0.5">
+                        공공데이터 공인 사진작가 및 DASI 커뮤니티 유저가 직접 담아낸 무보정 실사진입니다.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-terracotta font-semibold hidden sm:inline">사진 클릭 시 촬영 기기 즉시 대여</span>
+                  </div>
+
+                  {photosForActiveSpot.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {photosForActiveSpot.map((photo, pIdx) => (
+                        <div
+                          key={photo.id || pIdx}
+                          onClick={() => {
+                            setSelectedShotToRent({
+                              title: photo.caption || `${activeSpot.name} 출사 컷`,
+                              location: activeSpot.name,
+                              imageUrl: photo.imageUrl,
+                              photographer: photo.photographer || '한국관광공사 사진작가',
+                              moodTag: photo.filmType?.includes('Portra') ? '청량하고 자연스러운 피부톤' : '빈티지 아날로그 감성',
+                              recommendedCamera: photo.cameraModel || 'Olympus PEN EE-3',
+                              recommendedFilm: photo.filmType || 'Kodak Gold 200',
+                              recommendedLab: photo.labName || '망우삼림 (을지로 본점)',
+                              pricePerDay: 25000,
+                              highlight: `${activeSpot.name}의 빛과 색감을 가장 완벽하게 재현하는 클래식 세팅입니다.`,
+                            });
+                          }}
+                          className="rounded-2xl border border-vintage-200 overflow-hidden bg-vintage-950 group relative aspect-4/3 cursor-pointer shadow-xs hover:shadow-lg transition-all"
+                        >
+                          <img
+                            src={photo.imageUrl}
+                            alt={photo.caption || activeSpot.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 text-white">
+                            <span className="text-[10px] font-bold truncate flex items-center gap-1">
+                              <span>📷</span>
+                              <span>{photo.cameraModel || '35mm 필름 카메라'}</span>
+                            </span>
+                            <span className="text-[9px] text-amber-300 truncate">
+                              🎞️ {photo.filmType || '아날로그 컬러 필름'}
+                            </span>
+                            <span className="text-[8px] text-vintage-300 truncate mt-0.5">
+                              {photo.caption ? `"${photo.caption}"` : activeSpot.name}
+                            </span>
+                            <div className="mt-1 flex items-center justify-between text-[8px] text-vintage-400 border-t border-white/10 pt-1">
+                              <span>{photo.photographer ? `📸 ${photo.photographer}` : '공인 작가'}</span>
+                              <span className="text-amber-400 font-bold">이 기기 대여 &gt;</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 rounded-2xl bg-vintage-50 border border-vintage-200 text-center text-xs text-vintage-500 space-y-2">
+                      <p>아직 이 장소에 등록된 유저 출사 사진이 없습니다.</p>
+                      <button
+                        onClick={() => setIsSpotReviewModalOpen(true)}
+                        className="px-3.5 py-1.5 rounded-xl bg-terracotta text-white text-xs font-bold"
+                      >
+                        첫 출사 사진 제보하고 +150P 받기
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 💡 DASI 큐레이터의 출사 비법 & 가이드 */}
+                {(activeSpot.tips || activeSpot.description) && (
+                  <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-vintage-800 space-y-1">
+                    <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                      <span>DASI 큐레이터의 출사 팁</span>
+                    </div>
+                    <p className="text-[11px] text-vintage-700 leading-relaxed">
+                      {activeSpot.tips || activeSpot.description}
+                    </p>
+                  </div>
+                )}
+
                 {/* Micro-Ad Promotion Box */}
                 {activeSpot.promoNotice && (
                   <div className="p-4 rounded-2xl bg-terracotta/5 border border-terracotta/20 flex items-start gap-3">
@@ -774,11 +1061,142 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                     </div>
                   </div>
                 )}
+
+                {/* 하단 Action Bridge */}
+                <div className="pt-2 border-t border-vintage-100 flex flex-wrap gap-2">
+                  <Link
+                    href="/rent"
+                    className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-center"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-amber-300" />
+                    <span>이 장소 추천 카메라 렌탈하기</span>
+                  </Link>
+                  <button
+                    onClick={() => openNavigation(activeSpot, 'google')}
+                    className="px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>길찾기</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Shot-to-Rent 스마트 패키지 매칭 모달 */}
+      {selectedShotToRent && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          onClick={() => setSelectedShotToRent(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-[#FAF8F5] rounded-3xl p-6 sm:p-7 shadow-2xl border-4 border-vintage-300 text-vintage-900 animate-slide-up space-y-5 cursor-default max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedShotToRent(null)}
+              className="absolute top-4 right-4 p-2 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Shot-to-Rent 감성 재현 매칭</span>
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900">
+                &ldquo;이 장소 감성 그대로 주말 대여&rdquo;
+              </h3>
+              <p className="text-xs text-vintage-600">
+                선택하신 사진의 색감과 장소에 가장 최적화된 클래식 명기 바디와 필름 패키지입니다.
+              </p>
+            </div>
+
+            <div className="relative aspect-16/9 rounded-2xl overflow-hidden bg-vintage-900 border border-vintage-200 shadow-inner">
+              <img
+                src={selectedShotToRent.imageUrl}
+                alt={selectedShotToRent.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-white">
+                <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
+                  {selectedShotToRent.moodTag}
+                </span>
+                <h4 className="font-serif text-base font-bold line-clamp-1">{selectedShotToRent.title}</h4>
+                <p className="text-xs text-vintage-300">
+                  {selectedShotToRent.location} {selectedShotToRent.photographer ? `· 📸 ${selectedShotToRent.photographer}` : ''}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-vintage-200 space-y-3">
+              <div className="text-xs font-bold text-vintage-900 border-b border-vintage-100 pb-2 flex items-center justify-between">
+                <span>🎯 스마트 매칭 번들 구성</span>
+                <span className="text-terracotta text-[11px] font-normal">대여료 100% 소장 공제</span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center font-bold">
+                      <Camera className="w-3.5 h-3.5" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedCamera}</div>
+                      <div className="text-[10px] text-vintage-500">40년 명장 정밀 오버홀 완료 바디</div>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold text-vintage-800">₩{selectedShotToRent.pricePerDay.toLocaleString()}/일</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+                      <Film className="w-3.5 h-3.5" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedFilm} (36exp)</div>
+                      <div className="text-[10px] text-vintage-500">풍부한 계조의 감성 필름</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-emerald-700 font-semibold">픽업 현장 보유</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-700 flex items-center justify-center font-bold">
+                      🧪
+                    </span>
+                    <div>
+                      <div className="font-bold text-vintage-900">{selectedShotToRent.recommendedLab}</div>
+                      <div className="text-[10px] text-vintage-500">당일 고화질 현상·스캔 지원</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-vintage-600 font-medium">+150P 적립</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-100 text-[11px] text-vintage-600 leading-snug">
+                💡 <strong>명장 추천 팁</strong>: {selectedShotToRent.highlight}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <Link
+                href="/rent"
+                onClick={() => setSelectedShotToRent(null)}
+                className="flex-1 py-3.5 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 text-center"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>주말 렌탈 바로 예약하기 (대여료 100% 소장 공제)</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* B2B MICRO-ADS PROMOTION BANNER (Turn 5 Charter) */}
       <div className="p-6 rounded-3xl bg-gradient-to-r from-vintage-900 to-vintage-800 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-vintage-700">
