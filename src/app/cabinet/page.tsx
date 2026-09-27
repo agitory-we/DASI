@@ -303,7 +303,7 @@ function CabinetContent() {
       totalPhotos: 36,
       photos: [
         'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=1000&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1000&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=1000&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1000&auto=format&fit=crop&q=80',

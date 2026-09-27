@@ -39,6 +39,8 @@ import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { PhotoMeetup, MeetupCategory, MeetupPhotoRoll } from '@/types';
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80';
+
 // URL 파라미터 감지하여 모임 개설 모달 자동 오픈 (?action=create&spotTitle=...)
 function ExperienceQuerySync({
   onOpenCreateWithSpot
@@ -49,11 +51,12 @@ function ExperienceQuerySync({
 
   React.useEffect(() => {
     const action = searchParams.get('action');
-    const spotTitle = searchParams.get('spotTitle');
+    const spotTitleParam = searchParams.get('spotTitle');
     const typeParam = searchParams.get('type') as MeetupCategory | null;
 
     if (action === 'create') {
-      onOpenCreateWithSpot(spotTitle || undefined, typeParam || undefined);
+      const decodedSpot = spotTitleParam ? decodeURIComponent(spotTitleParam) : undefined;
+      onOpenCreateWithSpot(decodedSpot, typeParam || undefined);
     }
   }, [searchParams, onOpenCreateWithSpot]);
 
@@ -263,7 +266,7 @@ export default function ExperiencesPage() {
       </Suspense>
 
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-vintage-900 via-vintage-800 to-terracotta/90 text-white p-8 sm:p-12 shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-vintage-950 via-vintage-900 to-[#2A201B] text-white p-8 sm:p-12 shadow-2xl border border-vintage-800/80">
         <div className="absolute -right-10 -bottom-10 w-96 h-96 bg-terracotta/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-200 text-xs font-bold border border-white/15">
@@ -276,7 +279,7 @@ export default function ExperiencesPage() {
             함께 웃는 <span className="text-amber-300">52주 낭만 출사</span>로
           </h1>
 
-          <p className="text-sm sm:text-base text-vintage-100 leading-relaxed max-w-2xl font-normal">
+          <p className="text-sm sm:text-base text-vintage-200 leading-relaxed max-w-2xl font-normal">
             원하는 스팟에서 언제든 번개 출사를 직접 열고(+300P), 동료 필름러들과 함께 참여(+150P)하세요.
             카메라가 없어도 괜찮습니다. 모임 참여자는 <strong>렌트투온 1만원 결합 할인</strong>과 <strong>신선 필름 당일 픽업</strong>, <strong>20% 제휴 현상소 혜택</strong>이 원클릭으로 이어집니다.
           </p>
@@ -397,9 +400,12 @@ export default function ExperiencesPage() {
                   <img
                     src={meetup.imageUrl}
                     alt={meetup.title}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
@@ -447,6 +453,9 @@ export default function ExperiencesPage() {
                       <img
                         src={meetup.hostAvatar}
                         alt={meetup.hostName}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                        }}
                         className="w-8 h-8 rounded-full border border-white/60 object-cover"
                       />
                       <div>
@@ -960,6 +969,9 @@ export default function ExperiencesPage() {
               <img
                 src={selectedDetailMeetup.imageUrl}
                 alt={selectedDetailMeetup.title}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                }}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
@@ -1059,7 +1071,7 @@ export default function ExperiencesPage() {
                         <div className="space-y-1.5">
                           <div className="font-bold text-vintage-900 text-xs">포함 내역 및 혜택</div>
                           <div className="flex flex-wrap gap-1.5">
-                            {selectedDetailMeetup.included.map((inc, i) => (
+                            {selectedDetailMeetup.included.map((inc: string, i: number) => (
                               <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-semibold flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                                 <span>{inc}</span>
@@ -1204,6 +1216,9 @@ export default function ExperiencesPage() {
                                     <img
                                       src={p}
                                       alt={`${roll.photographerName}-${idx}`}
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                                      }}
                                       className="w-full h-full object-cover group-hover/pic:scale-105 transition-transform duration-300"
                                     />
                                     <Link

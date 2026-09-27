@@ -53,7 +53,7 @@ export default function ProStudioPage() {
       experience: '해외 국제 건축사진 비엔나 비엔날레 초청 작가',
       pricing: '하프 데이(4시간) 1,200,000원부터',
       portfolio: [
-        'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
       ],
       philosophy: '인공적인 조명을 배제하고, 오직 공간이 머금은 자연광과 필름의 질감만으로 브랜드의 정체성을 완성합니다.',

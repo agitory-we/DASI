@@ -18,6 +18,7 @@ const config: Config = {
           700: "#80543f",
           800: "#694537",
           900: "#573a30",
+          950: "#34221b",
         },
         terracotta: {
           DEFAULT: "#c85a38",

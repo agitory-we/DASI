@@ -150,7 +150,7 @@ export const mockCameras: Camera[] = [
     pickupLocation: '남대문시장 중앙상가 B1',
     imageUrl: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
-      'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     ],
     description: '주머니 속의 궁극의 스냅 머신. 40mm 화각으로 시선의 왜곡 없이 거리의 순간을 포착하는 스트리트 포토그래피의 제왕.',
     story: '포지티브 필름 모드와 하이 콘트라스트 흑백의 미친 질감. 성수동이나 을지로 골목길을 산책하며 찰나의 빛을 담기에 이만한 카메라는 없습니다.',
@@ -452,7 +452,7 @@ export const mockPhotoGigs: PhotoGig[] = [
     rating: 4.91,
     reviewsCount: 37,
     portfolioImages: [
-      'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
     ],
     tags: ['을지로감성', '고대비흑백', '프로필사진', '부담없는3만원대'],
@@ -565,7 +565,7 @@ export const mockEventsAndHotSpots: EventOrHotSpot[] = [
     goldenHour: '17:15 - 18:00 (종묘 방향 붉은 노을)',
     recommendedLenses: '40mm ~ 50mm 표준 단렌즈',
     tips: '녹슨 철골 구조물과 멀리 보이는 종묘의 기와지붕, 그리고 퇴근길 자동차 불빛의 대비가 빈티지 흑백 필름(Tri-X 400)과 최상의 궁합을 이룹니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     tags: ['을지로', '인더스트리얼', '레트로거리', '노을명소'],
   },
   {
@@ -597,7 +597,7 @@ export const mockExperiences: Experience[] = [
     rentalPackageDiscount: 'DASI 카메라 렌탈 고객 10,000원 즉시 할인',
     capacity: '정원 8명 (잔여 2석)',
     description: '빛과 그림자가 드라마틱하게 변하는 골목길에서 레인지파인더 수동 초점 맞추는 법과 흑백 필름의 구도를 1:1로 코칭해 드립니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     included: ['코닥 Tri-X 400 흑백 필름 1롤 무료 제공', '을지로 망우삼림 당일 스캔권 포함', '현장 1:1 사진 구도 피드백'],
   },
   {
@@ -776,7 +776,7 @@ export const mockPhotoMeetups: PhotoMeetup[] = [
     currentAttendees: 6,
     maxAttendees: 8,
     description: '세운상가 공중보행로와 좁은 인쇄골목 사이로 쏟아지는 강렬한 빛과 그림자를 고대비 흑백 필름으로 담아냅니다. 음료 및 망우삼림 당일 스캔권이 제공됩니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     recommendedGear: '기계식 SLR or 하프 카메라 (Olympus PEN EE-3)',
     recommendedFilm: '일포드 HP5+ 400 / 코닥 Tri-X 400',
     rentalPackageDiscount: '흑백 필름 1롤 무료 동봉',
@@ -891,7 +891,7 @@ export const mockPhotoCrews: PhotoCrew[] = [
     name: '을지로 흑백 스트리트 크루',
     tagline: '세운상가와 인쇄골목의 진한 콘트라스트를 담아내는 다큐멘터리 클럽',
     region: '을지로·충무로',
-    coverImage: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     leaderName: '도윤 (Doyun)',
     leaderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
     membersCount: 18,
