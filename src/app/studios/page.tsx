@@ -38,6 +38,7 @@ interface PartnerLabItem {
   dropoffAvailable: boolean;
   dropoffBoxName?: string;
   badge: string;
+  imageUrl: string;
 }
 
 const PARTNER_LABS: PartnerLabItem[] = [
@@ -56,6 +57,7 @@ const PARTNER_LABS: PartnerLabItem[] = [
     dropoffAvailable: true,
     dropoffBoxName: 'GS25 충무로역점 (24시 드롭오프)',
     badge: '48년 전통 노포',
+    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 'lab-2',
@@ -72,6 +74,7 @@ const PARTNER_LABS: PartnerLabItem[] = [
     dropoffAvailable: true,
     dropoffBoxName: 'CU 을지로3가역점 (24시 드롭오프)',
     badge: '38년 전통 노포',
+    imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 'lab-3',
@@ -88,6 +91,7 @@ const PARTNER_LABS: PartnerLabItem[] = [
     dropoffAvailable: true,
     dropoffBoxName: '세븐일레븐 충무로2가점',
     badge: '전문 현상소',
+    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 'lab-4',
@@ -103,6 +107,7 @@ const PARTNER_LABS: PartnerLabItem[] = [
     leadTime: '당일 2시간 초고속 현상',
     dropoffAvailable: false,
     badge: '셀프 스캔 랩',
+    imageUrl: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 'lab-5',
@@ -119,6 +124,7 @@ const PARTNER_LABS: PartnerLabItem[] = [
     dropoffAvailable: true,
     dropoffBoxName: 'CU 을지로3가점 (24시)',
     badge: '인기 핫스팟',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
   },
 ];
 
@@ -145,12 +151,17 @@ export default function StudiosPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Header Banner */}
       <div className="space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
-          <Store className="w-3.5 h-3.5" />
-          <span>공공데이터 + 골목상권 소상공인 융합 헤리티지</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
+            <Store className="w-3.5 h-3.5 text-amber-700" />
+            <span>공공데이터 + 골목상권 소상공인 융합 헤리티지</span>
+          </div>
+          <span className="text-xs text-vintage-400">·</span>
+          <span className="text-xs text-vintage-600 font-medium">공식 제휴 5개소 · 24시간 무인 드롭오프 연동</span>
         </div>
+
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          서울시 사진관 &amp; 공식 제휴 현상소 디렉터리
+          서울 제휴 현상소 &amp; 사진관 (QR 20%↓)
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           40년 넘게 서울 충무로와 을지로의 아날로그 감성을 지켜온 장인 노포 현상소부터, 
@@ -202,113 +213,140 @@ export default function StudiosPage() {
         {filteredLabs.map((lab) => (
           <div
             key={lab.id}
-            className="p-6 rounded-3xl bg-white border border-vintage-200 hover:border-amber-400 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 relative group"
+            className="rounded-3xl bg-white border border-vintage-200 hover:border-amber-400 hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden group"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-stone-900 text-white text-[10px] font-mono font-bold">
-                    {lab.badge}
-                  </span>
-                  <span className="text-[11px] text-vintage-500 font-medium">
-                    {lab.openYear}년 개업 ({lab.years}년 전통)
-                  </span>
-                </div>
-                <span className="text-xs font-bold text-amber-700 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
+            {/* Card Thumbnail Image Header */}
+            <div className="relative h-52 w-full shrink-0 bg-vintage-100 overflow-hidden">
+              <img
+                src={lab.imageUrl}
+                alt={lab.name}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=80';
+                }}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+              
+              <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-full bg-stone-950/80 backdrop-blur-xs text-white text-[10px] font-mono font-bold border border-white/10">
+                  {lab.badge}
+                </span>
+                <span className="px-2 py-1 rounded-full bg-white/90 backdrop-blur-xs text-vintage-900 text-[10px] font-bold">
+                  {lab.openYear}년 개업 ({lab.years}년 전통)
+                </span>
+              </div>
+
+              <div className="absolute top-3 right-3">
+                <span className="px-2.5 py-1 rounded-full bg-terracotta text-white text-[11px] font-bold shadow-xs flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
                   <span>{lab.district}</span>
                 </span>
               </div>
 
-              <div>
-                <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+              <div className="absolute bottom-3 left-4 right-4 text-white">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold tracking-tight drop-shadow-sm group-hover:text-amber-300 transition-colors">
                   {lab.name}
                 </h3>
-                <p className="text-xs text-vintage-500 mt-1 flex items-center gap-1">
-                  <span>{lab.address}</span>
-                  <span>·</span>
-                  <span className="font-mono text-vintage-700">{lab.phone}</span>
-                </p>
               </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                {lab.specialties.map((spec, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 rounded-md bg-vintage-100 text-vintage-700 text-[10px] font-medium"
-                  >
-                    #{spec}
-                  </span>
-                ))}
-              </div>
-
-              {/* Benefit Banner */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/90 space-y-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-amber-950 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>{lab.discountText}</span>
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-extrabold">
-                    DASI 단독 제휴
-                  </span>
-                </div>
-                <div className="text-[11px] text-amber-800 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-600 shrink-0" />
-                  <span>소요 시간: {lab.leadTime}</span>
-                </div>
-              </div>
-
-              {lab.dropoffAvailable && (
-                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
-                    24h
-                  </div>
-                  <div>
-                    <span className="font-bold">{lab.dropoffBoxName}</span>
-                    <span className="text-[11px] text-emerald-600 block">야간·새벽 무인 필름 수거함 무료 연동</span>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div className="pt-2 border-t border-vintage-100 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedStudioForQr(lab);
-                  showToast(`🎫 [${lab.name}] 현장 할인 QR 바우처가 발급되었습니다!`, 'success');
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5"
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                <span>현장 20% 할인 QR 발급</span>
-              </button>
+            <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <p className="text-xs text-vintage-500 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-vintage-700 font-medium">{lab.address}</span>
+                  <span>·</span>
+                  <span className="font-mono text-vintage-800 font-semibold">{lab.phone}</span>
+                </p>
 
-              <button
-                type="button"
-                onClick={() => handleOpenKakaoMap(lab)}
-                className="p-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 transition-colors"
-                title="카카오맵 길찾기"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </button>
+                <div className="flex flex-wrap gap-1.5">
+                  {lab.specialties.map((spec, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-0.5 rounded-md bg-vintage-100 text-vintage-700 text-[11px] font-medium"
+                    >
+                      #{spec}
+                    </span>
+                  ))}
+                </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  shareViaKakaoTalk({
-                    title: `${lab.name} - DASI 서울 제휴 현상소`,
-                    description: `${lab.discountText} · 소요시간: ${lab.leadTime}`,
-                    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800',
-                    buttonTitle: '현상소 정보 & 쿠폰 받기',
-                  })
-                }
-                className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold"
-                title="카카오톡 공유"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
+                {/* Benefit Banner */}
+                <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-amber-950 flex items-center gap-1.5 truncate">
+                      <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span className="truncate">{lab.discountText}</span>
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-extrabold whitespace-nowrap shrink-0 shadow-2xs">
+                      DASI 단독 제휴
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-amber-800 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                    <span>소요 시간: {lab.leadTime}</span>
+                  </div>
+                </div>
+
+                {lab.dropoffAvailable && (
+                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                      24h
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-bold block truncate">{lab.dropoffBoxName}</span>
+                      <span className="text-[11px] text-emerald-600 block">야간·새벽 무인 필름 수거함 무료 연동</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons Bar */}
+              <div className="pt-3 border-t border-vintage-100 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStudioForQr(lab);
+                    showToast(`🎫 [${lab.name}] 현장 할인 QR 바우처가 발급되었습니다!`, 'success');
+                  }}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                  <span>현장 20% 할인 QR 발급</span>
+                </button>
+
+                <Link
+                  href="/map"
+                  className="p-2.5 rounded-xl bg-vintage-100 hover:bg-amber-100 text-vintage-800 hover:text-amber-900 border border-vintage-200 transition-colors flex items-center justify-center"
+                  title="DASI 아날로그 지도에서 위치 보기"
+                >
+                  <MapPin className="w-4 h-4 text-terracotta" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenKakaoMap(lab)}
+                  className="p-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-800 border border-vintage-200 transition-colors"
+                  title="카카오맵 길찾기"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    shareViaKakaoTalk({
+                      title: `${lab.name} - DASI 서울 제휴 현상소`,
+                      description: `${lab.discountText} · 소요시간: ${lab.leadTime}`,
+                      imageUrl: lab.imageUrl,
+                      buttonTitle: '현상소 정보 & 쿠폰 받기',
+                    })
+                  }
+                  className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold shadow-2xs"
+                  title="카카오톡 공유"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
