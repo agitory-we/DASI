@@ -40,7 +40,10 @@ interface FilmProduct {
   imageUrl: string;
   badge?: string;
   leadTime: string;
+  stock: number;
 }
+
+const FALLBACK_FILM_IMAGE = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80';
 
 const FILM_PRODUCTS: FilmProduct[] = [
   {
@@ -54,8 +57,9 @@ const FILM_PRODUCTS: FilmProduct[] = [
     discountRate: '12% OFF',
     toneDesc: '따스하고 빈티지한 황금빛 톤, 일상 스냅용 표준 필름',
     bestFor: '을지로·종로 골목길, 따스한 오후 햇살 스냅',
-    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=700&auto=format&fit=crop&q=80&crop=left',
     leadTime: '서울 3시간 당일 퀵 가능',
+    stock: 24,
   },
   {
     id: 'film-3',
@@ -68,9 +72,10 @@ const FILM_PRODUCTS: FilmProduct[] = [
     discountRate: '17% OFF',
     toneDesc: '골든아워 출사를 위한 알찬 3롤 번들 세트',
     bestFor: '반나절 또는 주말 서울 도심 골목 탐방',
-    imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=700&auto=format&fit=crop&q=80&crop=center',
     badge: '인기 1위',
     leadTime: '서울 3시간 당일 퀵 가능',
+    stock: 18,
   },
   {
     id: 'film-5',
@@ -83,9 +88,10 @@ const FILM_PRODUCTS: FilmProduct[] = [
     discountRate: '19% OFF',
     toneDesc: '다양한 조도 환경을 위한 감도 400 고감도 조합',
     bestFor: '일몰 골든아워 ~ 실내 및 흐린 날 전천후 촬영',
-    imageUrl: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=600&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=700&auto=format&fit=crop&q=80&crop=right',
     badge: '추천',
     leadTime: '서울 3시간 당일 퀵 무료',
+    stock: 12,
   },
   {
     id: 'film-10',
@@ -98,9 +104,10 @@ const FILM_PRODUCTS: FilmProduct[] = [
     discountRate: '22% OFF',
     toneDesc: '대량 출사 & 동호회 정기 출사를 위한 특별 할인팩',
     bestFor: '장기 여행, 동호회 단체 출사, 스튜디오 작업',
-    imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=700&auto=format&fit=crop&q=80',
     badge: '최대할인',
     leadTime: '서울 전역 3시간 무료 퀵 배송',
+    stock: 9,
   },
 ];
 
@@ -109,6 +116,7 @@ export default function FilmsPage() {
   const { profile } = useAuth();
   const [selectedFilm, setSelectedFilm] = useState<FilmProduct | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<'quick' | 'pickup' | 'parcel'>('quick');
+  const [pickupHub, setPickupHub] = useState<string>('충무로 보성광학');
   const [address, setAddress] = useState('서울특별시 중구 을지로 100');
   const [usePoints, setUsePoints] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
@@ -123,8 +131,14 @@ export default function FilmsPage() {
 
     setTimeout(() => {
       setIsOrdering(false);
+      const deliveryText =
+        deliveryMethod === 'quick'
+          ? '당일 3시간 퀵 배송'
+          : deliveryMethod === 'pickup'
+          ? `${pickupHub} 현장 즉시 픽업`
+          : '일반 택배 배송';
       showToast(
-        `🎉 ${selectedFilm.name} (${deliveryMethod === 'quick' ? '당일 3시간 퀵' : deliveryMethod === 'pickup' ? '현장 픽업' : '일반 택배'}) 주문이 정상 접수되었습니다!`,
+        `🎉 ${selectedFilm.name} (${deliveryText}) 주문이 정상 접수되었습니다!`,
         'success'
       );
       setSelectedFilm(null);
@@ -230,6 +244,9 @@ export default function FilmsPage() {
                   src={prod.imageUrl}
                   alt={prod.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = FALLBACK_FILM_IMAGE;
+                  }}
                 />
                 <div className="absolute top-3 left-3 flex gap-1.5">
                   <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-xs text-white text-[10px] font-mono font-bold">
@@ -246,7 +263,7 @@ export default function FilmsPage() {
                 )}
               </div>
 
-              <div className="p-5 space-y-3">
+              <div className="p-5 space-y-2.5">
                 <div className="flex items-center justify-between text-xs text-vintage-500">
                   <span className="font-semibold text-vintage-700">{prod.brand}</span>
                   <span className="font-bold text-amber-700">{prod.rolls}롤 세트</span>
@@ -260,9 +277,19 @@ export default function FilmsPage() {
                   {prod.toneDesc}
                 </p>
 
-                <div className="pt-2 border-t border-vintage-100 text-[11px] text-vintage-500 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-terracotta shrink-0" />
-                  <span className="truncate">{prod.leadTime}</span>
+                {/* Stock & Lead Time */}
+                <div className="space-y-1 pt-1.5 border-t border-vintage-100">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-vintage-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-terracotta shrink-0" />
+                      <span>{prod.leadTime}</span>
+                    </span>
+                    <span className="text-emerald-700 font-medium">재고 {prod.stock}세트</span>
+                  </div>
+                  <div className="px-2 py-1 rounded-md bg-amber-50 text-amber-900 text-[10px] font-medium flex items-center justify-between">
+                    <span>📷 카메라 대여 고객</span>
+                    <strong className="text-terracotta font-bold">3,000원 추가 지원</strong>
+                  </div>
                 </div>
               </div>
             </div>
@@ -435,6 +462,42 @@ export default function FilmsPage() {
                 ))}
               </div>
             </div>
+
+            {/* Pickup Hub Selection (if pickup) */}
+            {deliveryMethod === 'pickup' && (
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-vintage-800">
+                  <MapPin className="w-3.5 h-3.5 inline mr-1 text-terracotta" />
+                  수령하실 DASI 공식 제휴 거점 선택
+                </label>
+                <div className="space-y-1.5">
+                  {[
+                    { name: '충무로 보성광학', desc: '한동규 장인 (38년 경력) · 충무로역 5번 출구 앞' },
+                    { name: '을지로 망우삼림', desc: 'DASI 인증 제휴 현상소 카운터 · 을지로3가역 11번 출구' },
+                    { name: '남대문 중앙사', desc: '문정식 장인 (35년 경력) · 회현역 남대문 카메라 골목' },
+                  ].map((hub) => (
+                    <button
+                      key={hub.name}
+                      type="button"
+                      onClick={() => setPickupHub(hub.name)}
+                      className={`w-full p-2.5 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        pickupHub === hub.name
+                          ? 'bg-amber-50 border-amber-500 ring-1 ring-amber-400/40 text-amber-950 font-bold'
+                          : 'bg-white border-vintage-200 text-vintage-700 hover:bg-vintage-50'
+                      }`}
+                    >
+                      <div>
+                        <div className="text-xs">{hub.name}</div>
+                        <div className="text-[10px] text-vintage-500">{hub.desc}</div>
+                      </div>
+                      {pickupHub === hub.name && (
+                        <Check className="w-4 h-4 text-amber-600 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Address Input (if quick or parcel) */}
             {deliveryMethod !== 'pickup' && (
