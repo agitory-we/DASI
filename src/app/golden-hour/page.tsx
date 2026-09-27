@@ -16,9 +16,14 @@ import {
   AlertCircle,
   ChevronRight,
   Users,
+  CheckCircle2,
+  Eye,
 } from 'lucide-react';
 import * as SunCalc from 'suncalc';
 import { shareViaKakaoTalk } from '@/utils/kakaoShare';
+import { useDasi } from '@/context/DasiContext';
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80';
 
 interface SunsetSpot {
   id: string;
@@ -90,7 +95,10 @@ const SUNSET_SPOTS: SunsetSpot[] = [
 ];
 
 export default function GoldenHourPage() {
+  const { openMapModal, showToast } = useDasi();
+  const [copiedSpotId, setCopiedSpotId] = useState<string | null>(null);
   const [times, setTimes] = useState<{
+    sunrise: string;
     sunset: string;
     goldenStart: string;
     goldenEnd: string;
@@ -98,6 +106,7 @@ export default function GoldenHourPage() {
     blueEnd: string;
     countdownMinutes: number;
     phase: string;
+    progressPct: number;
   } | null>(null);
 
   const [now, setNow] = useState(new Date());
@@ -110,6 +119,7 @@ export default function GoldenHourPage() {
         const scTimes = SunCalc.getTimes(current, 37.5665, 126.978);
         if (scTimes.sunset && !isNaN(scTimes.sunset.getTime())) {
           const sunsetDate = scTimes.sunset;
+          const sunriseDate = scTimes.sunrise || new Date(current.setHours(6, 0, 0, 0));
           const goldenStartDate = new Date(sunsetDate.getTime() - 60 * 60 * 1000);
           const blueEndDate = new Date(sunsetDate.getTime() + 30 * 60 * 1000);
 
@@ -130,7 +140,13 @@ export default function GoldenHourPage() {
             currentPhase = '🌙 야경 (Night)';
           }
 
+          // Progress from Sunrise to Blue Hour End (0% to 100%)
+          const totalDuration = blueEndDate.getTime() - sunriseDate.getTime();
+          const elapsed = current.getTime() - sunriseDate.getTime();
+          const progressPct = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+
           setTimes({
+            sunrise: fmt(sunriseDate),
             sunset: fmt(sunsetDate),
             goldenStart: fmt(goldenStartDate),
             goldenEnd: fmt(sunsetDate),
@@ -138,6 +154,7 @@ export default function GoldenHourPage() {
             blueEnd: fmt(blueEndDate),
             countdownMinutes: diffMins,
             phase: currentPhase,
+            progressPct,
           });
         }
       } catch (e) {
@@ -149,6 +166,29 @@ export default function GoldenHourPage() {
     const timer = setInterval(calc, 30000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleShare = async (spot: SunsetSpot) => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).Kakao?.isInitialized()) {
+        shareViaKakaoTalk({
+          title: `${spot.name} - 골든아워 일몰 출사 가이드`,
+          description: `추천 필름: ${spot.recommendedFilm} · 권장 세팅: ${spot.exposureTip}`,
+          imageUrl: spot.imageUrl,
+          buttonTitle: '일몰 예보 & 출사 팁 보기',
+        });
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof window !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiedSpotId(spot.id);
+      showToast(`${spot.name} 출사 가이드 링크가 복사되었습니다!`);
+      setTimeout(() => setCopiedSpotId(null), 2500);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -190,8 +230,29 @@ export default function GoldenHourPage() {
             </div>
           </div>
 
+          {/* Visual Sun Progress Track */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between text-[11px] text-stone-300 font-mono">
+              <span className="flex items-center gap-1">🌅 일출 {times.sunrise}</span>
+              <span className="text-amber-400 font-bold">✨ 골든아워 {times.goldenStart}</span>
+              <span className="text-rose-400 font-bold">🌇 일몰 {times.sunset}</span>
+              <span className="text-indigo-400">🌌 블루아워 {times.blueEnd}</span>
+            </div>
+            <div className="relative h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 rounded-full transition-all duration-1000"
+                style={{ width: `${times.progressPct}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-stone-400">
+              <span>자연광 충만 (ISO 100~200)</span>
+              <span>골든 사광선 극대화 (ISO 200~400)</span>
+              <span>삼각대·고감도 특화 (ISO 800+)</span>
+            </div>
+          </div>
+
           {/* Timeline Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <div className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
                 <Sun className="w-3.5 h-3.5" />
@@ -232,6 +293,29 @@ export default function GoldenHourPage() {
             </div>
           </div>
 
+          {/* Sunset Quality Clarity Score Widget */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold font-mono text-base shrink-0">
+                92점
+              </div>
+              <div>
+                <div className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>오늘 서울 노을 퀄리티 지수: 최상 (Excellent)</span>
+                </div>
+                <p className="text-[11px] text-stone-300 mt-0.5 leading-relaxed">
+                  대기 투명도가 높고 서쪽 시야가 탁 트여, 붉은 황금빛 사광선과 선명한 지평선 그라데이션 노을 촬영이 매우 유망합니다.
+                </p>
+              </div>
+            </div>
+            <div className="hidden sm:block text-right shrink-0">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+                출사 강력 추천
+              </span>
+            </div>
+          </div>
+
           {/* Quick Meter Link */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs">
             <span className="text-stone-300">
@@ -263,13 +347,16 @@ export default function GoldenHourPage() {
           {SUNSET_SPOTS.map((spot) => (
             <div
               key={spot.id}
-              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
+              className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
             >
               <div>
                 <div className="relative aspect-[16/9] bg-stone-900 overflow-hidden">
                   <img
                     src={spot.imageUrl}
                     alt={spot.name}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-xs font-bold flex items-center gap-1">
@@ -288,38 +375,39 @@ export default function GoldenHourPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-vintage-100 text-xs">
+                  <div className="space-y-2.5 pt-2 border-t border-vintage-100 text-xs">
                     <div className="flex items-start gap-2">
                       <span className="font-bold text-vintage-800 shrink-0">추천 앵글:</span>
                       <span className="text-vintage-600">{spot.bestAngle}</span>
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-start gap-2">
-                        <span className="font-bold text-vintage-800 shrink-0">추천 필름:</span>
-                        <span className="text-amber-800 font-semibold">{spot.recommendedFilm}</span>
+
+                    <div className="flex items-center justify-between gap-2 bg-amber-50/50 p-2.5 rounded-xl border border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-vintage-900 shrink-0">🎞️ 추천 필름:</span>
+                        <span className="text-amber-900 font-semibold">{spot.recommendedFilm}</span>
                       </div>
                       <Link
                         href="/films"
-                        className="px-2 py-0.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-bold shrink-0 transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-300 text-amber-950 text-[10px] font-bold shrink-0 transition-colors"
                       >
-                        당일 퀵 주문 →
+                        당일 퀵 주문
                       </Link>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-start gap-2">
-                        <span className="font-bold text-vintage-800 shrink-0">추천 렌즈:</span>
-                        <span className="text-vintage-600">{spot.recommendedLens}</span>
+                    <div className="flex items-center justify-between gap-2 bg-vintage-50 p-2.5 rounded-xl border border-vintage-100">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-vintage-900 shrink-0">📷 추천 렌즈:</span>
+                        <span className="text-vintage-700">{spot.recommendedLens}</span>
                       </div>
                       <Link
                         href={`/rent?spotTitle=${encodeURIComponent(spot.name)}&recommendedLens=${encodeURIComponent(spot.recommendedLens)}`}
-                        className="px-2 py-0.5 rounded-md bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-[10px] font-bold shrink-0 transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-vintage-200/80 hover:bg-vintage-300 text-vintage-900 text-[10px] font-bold shrink-0 transition-colors"
                       >
-                        체험 장비 보기 →
+                        체험 장비
                       </Link>
                     </div>
 
-                    <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-950 font-medium">
+                    <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 font-medium">
                       <Camera className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold block">권장 노출값:</span>
@@ -332,13 +420,14 @@ export default function GoldenHourPage() {
 
               <div className="p-6 pt-0 space-y-2">
                 <div className="flex gap-2">
-                  <Link
-                    href={`/map?spotId=${spot.id}`}
+                  <button
+                    type="button"
+                    onClick={() => openMapModal(spot.id)}
                     className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1.5"
                   >
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>스팟 지도에서 확인</span>
-                  </Link>
+                    <span>스팟 지도 팝업</span>
+                  </button>
 
                   <Link
                     href="/explore"
@@ -351,18 +440,15 @@ export default function GoldenHourPage() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      shareViaKakaoTalk({
-                        title: `${spot.name} - 골든아워 일몰 출사 가이드`,
-                        description: `추천 필름: ${spot.recommendedFilm} · 권장 세팅: ${spot.exposureTip}`,
-                        imageUrl: spot.imageUrl,
-                        buttonTitle: '일몰 예보 & 출사 팁 보기',
-                      })
-                    }
-                    className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold"
-                    title="카카오톡 공유"
+                    onClick={() => handleShare(spot)}
+                    className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 transition-colors font-bold flex items-center justify-center"
+                    title="가이드 링크 공유 또는 복사"
                   >
-                    <Share2 className="w-4 h-4" />
+                    {copiedSpotId === spot.id ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-900" />
+                    ) : (
+                      <Share2 className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
 
