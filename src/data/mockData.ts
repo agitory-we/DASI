@@ -470,7 +470,7 @@ export const mockMasters: RepairMaster[] = [
     experienceYears: 42,
     location: '서울 중구 을지로 157 대림상가 3층',
     address: '을지로3가역 3번 출구 도보 2분',
-    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80',
+    profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80',
     quote: '단종된 부품은 직접 선반으로 깎아서라도 다시 숨을 불어넣습니다.',
     availableServices: [
       { name: '바디 정밀 분해소제 (오버홀)', estimatedCost: '80,000원 ~ 120,000원', duration: '3~5 영업일' },
@@ -487,12 +487,28 @@ export const mockMasters: RepairMaster[] = [
     experienceYears: 38,
     location: '서울 중구 충무로 42 충무스퀘어 1층',
     address: '충무로역 5번 출구 앞',
-    profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80',
+    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80',
     quote: '독일제 정밀 렌즈의 광학적 축을 0.01mm 단위로 정확하게 재정렬합니다.',
     availableServices: [
       { name: '레인지파인더 이중합치상 핀 정렬', estimatedCost: '50,000원', duration: '당일 1시간' },
       { name: '라이카 침동식 렌즈 헬리코이드 그리스 교체', estimatedCost: '60,000원', duration: '2 영업일' },
       { name: '셔터 속도 정밀 계측 및 텐션 조정', estimatedCost: '40,000원', duration: '당일' },
+    ]
+  },
+  {
+    id: 'master-3',
+    name: '문정식 장인',
+    shopName: '남대문 중앙사',
+    specialty: '전자동 콤팩트 카메라 / 올림푸스 뮤 & 콘탁스 T 시리즈 회로 수리',
+    experienceYears: 35,
+    location: '서울 중구 남대문시장4길 9 중앙상가 B1',
+    address: '회현역 5번 출구 남대문 카메라 거리',
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+    quote: '단선된 FPC 기판과 모터 기어를 미세 납땜으로 정확하게 살려냅니다.',
+    availableServices: [
+      { name: '전자식 셔터 릴리즈 및 렌즈 경통 걸림 수리', estimatedCost: '45,000원 ~ 70,000원', duration: '1~2 영업일' },
+      { name: '배터리 누액 단자 부식 제거 및 정밀 세척', estimatedCost: '25,000원', duration: '당일 수리 가능' },
+      { name: '플래시 충전 회로 콘덴서 교체', estimatedCost: '35,000원', duration: '당일' },
     ]
   }
 ];

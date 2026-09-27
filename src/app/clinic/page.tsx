@@ -77,16 +77,20 @@ export default function ClinicPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
       {/* Top Banner */}
       <div className="space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
-          <Wrench className="w-3.5 h-3.5" />
-          <span>닥터 DASI · 장인 클리닉 &amp; 제휴 케어</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
+            <Wrench className="w-3.5 h-3.5" />
+            <span>닥터 DASI · 장인 클리닉 &amp; 제휴 케어</span>
+          </div>
+          <span className="text-xs text-vintage-400">·</span>
+          <span className="text-xs text-vintage-600 font-medium">서울 3대 공인 명장 · 표준 정찰제 · 비대면 무료 견적</span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-          대한민국 40년 명장 수리실 &amp; 웰컴 쿠폰북
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
+          40년 명장 정밀 클리닉 (무료 점검)
         </h1>
         <p className="text-xs sm:text-sm text-vintage-600 max-w-3xl leading-relaxed">
           어디서 고쳐야 할지 몰라 장롱 속에 방치했던 아날로그 카메라를 다시 깨워보세요.
-          증상 사진만으로 예상 수리비를 무료로 진단받고, 제휴 현상소 1롤 무료 스캔 쿠폰을 바로 사용할 수 있습니다.
+          증상 사진만으로 예상 수리비를 무료로 진단받고, 제휴 현상소 1롤 무료 스캔 쿠폰과 신성카메라 차광 스펀지 무료 교체권을 즉시 사용할 수 있습니다.
         </p>
       </div>
 
@@ -178,61 +182,65 @@ export default function ClinicPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {repairMasters.map((master) => (
               <div
                 key={master.id}
-                className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-8 shadow-xs space-y-6 flex flex-col justify-between hover:shadow-md transition-all"
+                className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-7 shadow-xs space-y-6 flex flex-col justify-between hover:shadow-lg hover:border-amber-400 transition-all"
               >
                 <div className="space-y-4">
                   {/* Profile Header */}
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3.5">
                     <img
                       src={master.profileImage}
                       alt={master.name}
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-vintage-200 shrink-0"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80';
+                      }}
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-vintage-200 shrink-0 shadow-2xs"
                     />
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-serif text-xl font-bold text-vintage-900">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h3 className="font-serif text-lg sm:text-xl font-bold text-vintage-900 truncate">
                           {master.name}
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">
                           경력 {master.experienceYears}년
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-terracotta">
                         {master.shopName}
                       </div>
-                      <div className="text-xs text-vintage-600 flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-vintage-400 shrink-0" />
-                        <span>{master.location} ({master.address})</span>
+                      <div className="text-[11px] text-vintage-500 flex items-center gap-1 truncate">
+                        <MapPin className="w-3 h-3 text-vintage-400 shrink-0" />
+                        <span className="truncate">{master.location}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Master Quote */}
-                  <div className="p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100 text-xs text-vintage-700 italic leading-relaxed">
+                  <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-100 text-xs text-vintage-700 italic leading-relaxed">
                     "{master.quote}"
                   </div>
 
                   {/* Specialty Tag */}
                   <div className="text-xs">
-                    <span className="text-vintage-500 font-medium">주력 전문 분야: </span>
+                    <span className="text-vintage-500 font-medium">주력 전문: </span>
                     <span className="font-semibold text-vintage-900">{master.specialty}</span>
                   </div>
 
                   {/* Available Services Table */}
-                  <div className="space-y-2 pt-2">
-                    <span className="text-xs font-bold text-vintage-800 block">
+                  <div className="space-y-2 pt-1">
+                    <span className="text-[11px] font-bold text-vintage-700 block">
                       표준 정찰제 수리/클리닝 항목
                     </span>
                     <div className="rounded-2xl border border-vintage-200 overflow-hidden divide-y divide-vintage-100 text-xs">
                       {master.availableServices.map((srv, idx) => (
-                        <div key={idx} className="p-3 flex items-center justify-between bg-white hover:bg-vintage-50/50">
-                          <span className="font-medium text-vintage-900">{srv.name}</span>
-                          <div className="text-right">
-                            <span className="font-bold text-terracotta">{srv.estimatedCost}</span>
+                        <div key={idx} className="p-2.5 flex items-center justify-between bg-white hover:bg-vintage-50/50">
+                          <span className="font-medium text-vintage-900 text-xs">{srv.name}</span>
+                          <div className="text-right shrink-0 ml-2">
+                            <span className="font-bold text-terracotta text-xs">{srv.estimatedCost}</span>
                             <span className="text-[10px] text-vintage-400 block">{srv.duration}</span>
                           </div>
                         </div>
@@ -242,13 +250,23 @@ export default function ClinicPage() {
                 </div>
 
                 {/* Footer Action */}
-                <button
-                  onClick={() => handleOpenEstimate(master)}
-                  className="w-full py-3 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white text-xs sm:text-sm font-bold transition-colors shadow-xs flex items-center justify-center gap-2"
-                >
-                  <Wrench className="w-4 h-4" />
-                  <span>{master.name}에게 비대면 무료 견적 문의하기</span>
-                </button>
+                <div className="pt-2 border-t border-vintage-100 flex items-center gap-2">
+                  <button
+                    onClick={() => handleOpenEstimate(master)}
+                    className="flex-1 py-3 px-3 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>비대면 무료 견적 문의</span>
+                  </button>
+
+                  <Link
+                    href="/map"
+                    className="p-3 rounded-2xl bg-vintage-100 hover:bg-amber-100 text-vintage-800 hover:text-amber-900 border border-vintage-200 transition-colors flex items-center justify-center shrink-0"
+                    title={`${master.shopName} 위치 지도에서 보기`}
+                  >
+                    <MapPin className="w-4 h-4 text-terracotta" />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
