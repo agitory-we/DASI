@@ -205,10 +205,15 @@ function ExploreQuerySync({
   return null;
 }
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80';
+const PAGE_SIZE = 16;
+
 function ExploreContent() {
   const { savedSpotIds, toggleSaveSpot, communityPhotos, likeCommunityPhoto, openMapModal } = useDasi();
   const { user, openLoginModal } = useAuth();
   const [filterType, setFilterType] = useState<'all' | 'top100' | 'knto_gallery' | 'festival' | 'hotspot' | 'guidebooks' | 'saved' | 'photos'>('all');
+  const [seasonFilter, setSeasonFilter] = useState<'all' | '봄' | '여름' | '가을' | '겨울'>('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedSpot, setSelectedSpot] = useState<EventOrHotSpot | null>(null);
   const [checkInSpot, setCheckInSpot] = useState<EventOrHotSpot | null>(null);
   const [selectedTopSpot, setSelectedTopSpot] = useState<KoreaTopSpot | null>(null);
@@ -286,15 +291,48 @@ function ExploreContent() {
   }, []);
 
   const filteredItems = useMemo(() => {
-    const active = allItems.filter(item => !isExpired(item));
-    if (filterType === 'all') return active;
-    if (filterType === 'saved') return active.filter(i => savedSpotIds.includes(i.id));
-    return active.filter(i => i.type === filterType);
-  }, [allItems, filterType, savedSpotIds]);
+    let items = allItems.filter(item => !isExpired(item));
+    if (filterType === 'saved') {
+      items = items.filter(i => savedSpotIds.includes(i.id));
+    } else if (filterType !== 'all') {
+      items = items.filter(i => i.type === filterType);
+    }
+
+    if (seasonFilter !== 'all') {
+      const seasonKeywords: Record<'봄' | '여름' | '가을' | '겨울', string[]> = {
+        봄: ['봄', '벚꽃', '진달래', '튤립', '03.', '04.', '05.', '3월', '4월', '5월', 'spring'],
+        여름: ['여름', '바다', '능소화', '수국', '야경', '06.', '07.', '08.', '6월', '7월', '8월', 'summer'],
+        가을: ['가을', '단풍', '억새', '은행', '국화', '09.', '10.', '11.', '9월', '10월', '11월', 'autumn', 'fall'],
+        겨울: ['겨울', '눈', '설경', '일출', '12.', '01.', '02.', '12월', '1월', '2월', 'winter'],
+      };
+      const targets = seasonKeywords[seasonFilter];
+      items = items.filter(i => {
+        const text = `${i.title} ${i.tags?.join(' ') || ''} ${i.periodOrTime || ''} ${i.tips || ''}`.toLowerCase();
+        return targets.some(kw => text.includes(kw));
+      });
+    }
+
+    return items;
+  }, [allItems, filterType, seasonFilter, savedSpotIds]);
+
+  const visibleItems = useMemo(() => {
+    return filteredItems.slice(0, visibleCount);
+  }, [filteredItems, visibleCount]);
 
   const festivalCount = useMemo(() => {
     return allItems.filter(i => i.type === 'festival' && !isExpired(i)).length;
   }, [allItems]);
+
+  // 필터 변경 시 페이징 리셋
+  const handleFilterTypeChange = (type: typeof filterType) => {
+    setFilterType(type);
+    setVisibleCount(PAGE_SIZE);
+  };
+
+  const handleSeasonFilterChange = (season: typeof seasonFilter) => {
+    setSeasonFilter(season);
+    setVisibleCount(PAGE_SIZE);
+  };
 
 
 
@@ -377,17 +415,29 @@ function ExploreContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => handleSeasonFilterChange(seasonFilter === currentSeason ? 'all' : currentSeason)}
+          className={`flex items-center gap-3 text-left p-2.5 rounded-2xl transition-all ${
+            seasonFilter === currentSeason
+              ? 'bg-amber-500/20 ring-2 ring-amber-500 shadow-xs'
+              : 'hover:bg-amber-100/50'
+          }`}
+          title="클릭하여 현재 시즌 명소만 필터링하기"
+        >
           <div className="w-10 h-10 rounded-2xl bg-amber-200/60 text-amber-800 flex items-center justify-center shrink-0">
             <Leaf className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[10px] text-vintage-500 font-medium">현재 출사 시즌</div>
+            <div className="text-[10px] text-vintage-500 font-medium flex items-center gap-1">
+              <span>현재 출사 시즌</span>
+              <span className="text-[9px] text-amber-700 bg-amber-200/70 px-1 py-0.2 rounded font-bold">클릭 필터</span>
+            </div>
             <div className="font-serif text-base font-bold text-amber-900">
               {currentSeason === '봄' ? '🌸 봄 벚꽃 시즌' : currentSeason === '여름' ? '🌊 여름 야경 시즌' : currentSeason === '가을' ? '🍁 가을 단풍 시즌' : '❄️ 겨울 설경 시즌'}
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* 35mm Darkroom Film Strip Showcase (한국관광공사 전문 사진작가 & 커뮤니티 특별전) */}
@@ -404,29 +454,53 @@ function ExploreContent() {
         <FilmStripViewer photos={filmStripPhotos} />
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-vintage-200 pb-4 overflow-x-auto">
-        {[
-          { id: 'all', label: '🌐 전체 둘러보기' },
-          { id: 'top100', label: '🏅 한국관광 100선 명품 출사지' },
-          { id: 'knto_gallery', label: `📸 관광공사 사진작가 갤러리 (${kntoGalleryPhotos.length || 16})` },
-          { id: 'festival', label: `🎉 서울·전국 실시간 축제 (${festivalCount})` },
-          { id: 'hotspot', label: '📷 골목길 출사 핫스팟' },
-          { id: 'guidebooks', label: '📚 공식 여행 가이드북 & 매거진' },
-          { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilterType(tab.id as any)}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
-              filterType === tab.id
-                ? 'bg-vintage-900 text-white shadow-xs'
-                : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Filter Tabs & Season Pills */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 border-b border-vintage-200 pb-3 overflow-x-auto">
+          {[
+            { id: 'all', label: '🌐 전체 둘러보기' },
+            { id: 'top100', label: '🏅 한국관광 100선 명품 출사지' },
+            { id: 'knto_gallery', label: `📸 관광공사 사진작가 갤러리 (${kntoGalleryPhotos.length || 16})` },
+            { id: 'festival', label: `🎉 서울·전국 실시간 축제 (${festivalCount})` },
+            { id: 'hotspot', label: '📷 골목길 출사 핫스팟' },
+            { id: 'guidebooks', label: '📚 공식 여행 가이드북 & 매거진' },
+            { id: 'saved', label: `❤️ 찜한 스팟 (${savedSpotIds.length})` },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleFilterTypeChange(tab.id as any)}
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                filterType === tab.id
+                  ? 'bg-vintage-900 text-white shadow-xs'
+                  : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Season Quick Filter Pills */}
+        <div className="flex items-center gap-1.5 flex-wrap text-xs pt-1">
+          <span className="text-vintage-500 font-medium mr-1 text-[11px]">계절 큐레이션:</span>
+          {(['all', '봄', '여름', '가을', '겨울'] as const).map((s) => {
+            const labelMap = { all: '전체 계절', 봄: '🌸 봄 (벚꽃·꽃놀이)', 여름: '🌊 여름 (야경·바다)', 가을: '🍁 가을 (단풍·억새)', 겨울: '❄️ 겨울 (설경·일출)' };
+            const isActive = seasonFilter === s;
+            return (
+              <button
+                key={s}
+                onClick={() => handleSeasonFilterChange(s)}
+                className={`px-3 py-1.5 rounded-full font-semibold transition-all text-xs flex items-center gap-1 ${
+                  isActive
+                    ? 'bg-amber-600 text-white shadow-xs scale-105'
+                    : 'bg-vintage-100/80 text-vintage-700 hover:bg-vintage-200 border border-vintage-200/60'
+                }`}
+              >
+                <span>{labelMap[s]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -878,166 +952,205 @@ function ExploreContent() {
 
       {/* Cards Grid (기존 축제 및 출사지 목록: all, festival, hotspot, saved일 때) */}
       {!isLoading && (filterType === 'all' || filterType === 'festival' || filterType === 'hotspot' || filterType === 'saved') && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {filteredItems.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
-          >
-            <div>
-              {/* Image Preview */}
-              <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                  <span className={`px-2.5 py-1 rounded-full backdrop-blur-md text-white text-[10px] font-medium ${TYPE_COLORS[item.type]}`}>
-                    {TYPE_LABELS[item.type]}
-                  </span>
-                  {item.source === 'tourapi' && (
-                    <span className="px-2 py-1 rounded-full bg-blue-600/80 backdrop-blur-md text-white text-[10px] font-medium">
-                      공식 축제
-                    </span>
-                  )}
-                  {item.type === 'festival' && item.startDate && (
-                    item.startDate <= new Date().toISOString().slice(0, 10).replace(/-/g, '') ? (
-                      <span className="px-2 py-1 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        <span>진행 중</span>
+        <div className="space-y-8">
+          <div className="flex items-center justify-between text-xs text-vintage-500 px-1">
+            <span>
+              총 <strong className="text-vintage-900 font-bold">{filteredItems.length}</strong>개의 출사 명소
+              {seasonFilter !== 'all' && <span className="text-amber-700 ml-1">({seasonFilter} 시즌 필터 적용 중)</span>}
+            </span>
+            <span>
+              표시 중: <strong>{Math.min(visibleCount, filteredItems.length)}</strong> / {filteredItems.length}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {visibleItems.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Image Preview */}
+                  <div className="relative aspect-[16/9] bg-vintage-100 overflow-hidden">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      <span className={`px-2.5 py-1 rounded-full backdrop-blur-md text-white text-[10px] font-medium ${TYPE_COLORS[item.type]}`}>
+                        {TYPE_LABELS[item.type]}
                       </span>
-                    ) : (
-                      <span className="px-2 py-1 rounded-full bg-amber-600/90 backdrop-blur-md text-white text-[10px] font-medium">
-                        개막 예정
-                      </span>
-                    )
-                  )}
+                      {item.source === 'tourapi' && (
+                        <span className="px-2 py-1 rounded-full bg-blue-600/80 backdrop-blur-md text-white text-[10px] font-medium">
+                          공식 축제
+                        </span>
+                      )}
+                      {item.type === 'festival' && item.startDate && (
+                        item.startDate <= new Date().toISOString().slice(0, 10).replace(/-/g, '') ? (
+                          <span className="px-2 py-1 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            <span>진행 중</span>
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded-full bg-amber-600/90 backdrop-blur-md text-white text-[10px] font-medium">
+                            개막 예정
+                          </span>
+                        )
+                      )}
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSaveSpot(item.id);
+                        }}
+                        className={`p-2 rounded-full backdrop-blur-md transition-all ${
+                          savedSpotIds.includes(item.id)
+                            ? 'bg-terracotta text-white shadow-md'
+                            : 'bg-black/50 text-white/80 hover:text-white hover:bg-black/70'
+                        }`}
+                        title={savedSpotIds.includes(item.id) ? '위시리스트 해제' : '출사 위시리스트 저장'}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${savedSpotIds.includes(item.id) ? 'fill-current' : ''}`} />
+                      </button>
+                    </div>
+                    <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[11px] flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-terracotta-light" />
+                      <span>{item.location}</span>
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-6 space-y-4">
+                    <div>
+                      <div className="text-[11px] font-bold text-terracotta mb-1 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{item.periodOrTime}</span>
+                      </div>
+                      <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
+
+                    {/* Shooting Spec Guide Box */}
+                    <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-100 space-y-2 text-xs">
+                      <div className="flex items-center gap-2 text-vintage-800">
+                        <Sun className="w-4 h-4 text-amber-600 shrink-0" />
+                        <div>
+                          <strong className="text-vintage-900">최적 골든아워:</strong> {item.goldenHour}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-vintage-800">
+                        <Camera className="w-4 h-4 text-terracotta shrink-0" />
+                        <div>
+                          <strong className="text-vintage-900">추천 화각:</strong> {item.recommendedLenses}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pro Tips */}
+                    <div className="text-xs text-vintage-700 leading-relaxed bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/80">
+                      💡 <strong>촬영 팁:</strong> {item.tips}
+                    </div>
+
+                    {/* 52-Week Passport Stamp Eligibility */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-emerald-800 font-medium bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>52주 패스포트 인증 스팟 (+200P · 제휴 현상소 바우처 교환)</span>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-0.5 rounded-md bg-vintage-100 text-vintage-600 text-[10px]"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* 52주 취미 생태계 연결: 골든아워 & 추천 기종 */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-vintage-100/70 text-[11px]">
+                      <Link
+                        href="/golden-hour"
+                        className="flex-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-semibold flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <Sun className="w-3 h-3 text-amber-600" />
+                        <span>실시간 일몰 예보</span>
+                      </Link>
+                      <Link
+                        href={`/rent?spotTitle=${encodeURIComponent(item.title)}&recommendedLens=${encodeURIComponent(item.recommendedLenses)}`}
+                        className="flex-1 px-2.5 py-1.5 rounded-xl bg-vintage-100/70 hover:bg-vintage-200 text-vintage-700 border border-vintage-200 font-semibold flex items-center justify-center gap-1 transition-colors"
+                        title={`${item.title}에 어울리는 추천 기종 둘러보기`}
+                      >
+                        <Camera className="w-3 h-3 text-terracotta" />
+                        <span>추천 기종 둘러보기</span>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute top-3 right-3">
+
+                {/* Footer Action */}
+                <div className="p-6 pt-0 border-t border-vintage-100 mt-2 flex items-center gap-2">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSaveSpot(item.id);
-                    }}
-                    className={`p-2 rounded-full backdrop-blur-md transition-all ${
-                      savedSpotIds.includes(item.id)
-                        ? 'bg-terracotta text-white shadow-md'
-                        : 'bg-black/50 text-white/80 hover:text-white hover:bg-black/70'
-                    }`}
-                    title={savedSpotIds.includes(item.id) ? '위시리스트 해제' : '출사 위시리스트 저장'}
+                    onClick={() => setSelectedSpot(item)}
+                    className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                   >
-                    <Heart className={`w-3.5 h-3.5 ${savedSpotIds.includes(item.id) ? 'fill-current' : ''}`} />
+                    <span>상세 구도 가이드</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <Link
+                    href={`/experiences?action=create&spotTitle=${encodeURIComponent(item.title)}&type=flash_walk`}
+                    className="px-3 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs shrink-0"
+                    title="이 스팟에서 번개 출사 모임 열기"
+                  >
+                    <span>⚡ 번개</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => openMapModal(item.id)}
+                    className="px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
+                    title="웹 내 팝업 지도로 이 스팟 위치 보기"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-emerald-700" />
+                    <span className="hidden sm:inline">지도</span>
+                  </button>
+                  <button
+                    onClick={() => setCheckInSpot(item)}
+                    className="px-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
+                    title="현장 방문 브라스 핀 인증 (+200P)"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>체크인 (+200P)</span>
                   </button>
                 </div>
-                <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[11px] flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-terracotta-light" />
-                  <span>{item.location}</span>
-                </div>
               </div>
+            ))}
+          </div>
 
-              {/* Body */}
-              <div className="p-6 space-y-4">
-                <div>
-                  <div className="text-[11px] font-bold text-terracotta mb-1 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{item.periodOrTime}</span>
-                  </div>
-                  <h3 className="font-serif text-xl font-bold text-vintage-900 group-hover:text-terracotta transition-colors">
-                    {item.title}
-                  </h3>
-                </div>
-
-                {/* Shooting Spec Guide Box */}
-                <div className="p-4 rounded-2xl bg-vintage-50 border border-vintage-100 space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-vintage-800">
-                    <Sun className="w-4 h-4 text-amber-600 shrink-0" />
-                    <div>
-                      <strong className="text-vintage-900">최적 골든아워:</strong> {item.goldenHour}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-vintage-800">
-                    <Camera className="w-4 h-4 text-terracotta shrink-0" />
-                    <div>
-                      <strong className="text-vintage-900">추천 화각:</strong> {item.recommendedLenses}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pro Tips */}
-                <div className="text-xs text-vintage-700 leading-relaxed bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/80">
-                  💡 <strong>촬영 팁:</strong> {item.tips}
-                </div>
-
-                {/* 52-Week Passport Stamp Eligibility */}
-                <div className="flex items-center gap-1.5 text-[11px] text-emerald-800 font-medium bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>52주 패스포트 인증 스팟 (+200P · 제휴 현상소 바우처 교환)</span>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 rounded-md bg-vintage-100 text-vintage-600 text-[10px]"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-
-                {/* 52주 취미 생태계 연결: 골든아워 & 추천 기종 */}
-                <div className="flex items-center gap-2 pt-2 border-t border-vintage-100/70 text-[11px]">
-                  <Link
-                    href="/golden-hour"
-                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-semibold flex items-center justify-center gap-1 transition-colors"
-                  >
-                    <Sun className="w-3 h-3 text-amber-600" />
-                    <span>실시간 일몰 예보</span>
-                  </Link>
-                  <Link
-                    href={`/rent?spotTitle=${encodeURIComponent(item.title)}&recommendedLens=${encodeURIComponent(item.recommendedLenses)}`}
-                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-vintage-100/70 hover:bg-vintage-200 text-vintage-700 border border-vintage-200 font-semibold flex items-center justify-center gap-1 transition-colors"
-                    title={`${item.title}에 어울리는 추천 기종 둘러보기`}
-                  >
-                    <Camera className="w-3 h-3 text-terracotta" />
-                    <span>추천 기종 둘러보기</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Action */}
-            <div className="p-6 pt-0 border-t border-vintage-100 mt-2 flex items-center gap-2">
-              <button
-                onClick={() => setSelectedSpot(item)}
-                className="flex-1 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
-              >
-                <span>상세 구도 가이드</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+          {/* Load More Pagination Button */}
+          {visibleCount < filteredItems.length && (
+            <div className="flex flex-col items-center justify-center pt-4 pb-2 space-y-2">
               <button
                 type="button"
-                onClick={() => openMapModal(item.id)}
-                className="px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
-                title="웹 내 팝업 지도로 이 스팟 위치 보기"
+                onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                className="px-8 py-3.5 rounded-2xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95"
               >
-                <MapPin className="w-3.5 h-3.5 text-emerald-700" />
-                <span className="hidden sm:inline">지도</span>
+                <span>더 많은 출사지 불러오기 (+{Math.min(PAGE_SIZE, filteredItems.length - visibleCount)}개)</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
-              <button
-                onClick={() => setCheckInSpot(item)}
-                className="px-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
-                title="현장 방문 브라스 핀 인증 (+200P)"
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                <span>체크인 (+200P)</span>
-              </button>
+              <p className="text-[11px] text-vintage-400">
+                현재 {Math.min(visibleCount, filteredItems.length)}개 / 전체 {filteredItems.length}개 표시 중
+              </p>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
       )} {/* !isLoading 카드 그리드 종료 */}
 
       {/* EMPTY STATE */}
