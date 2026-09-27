@@ -51,6 +51,25 @@ const INITIAL_FILM_STOCKS: FilmStock[] = [
   { id: 'f-5', name: 'Ilford HP5 Plus 400 (흑백)', brand: 'Ilford', iso: 400, count: 6, price: 14000, isSoldOut: false },
 ];
 
+interface PartnerStoreInfo {
+  id: string;
+  name: string;
+  master?: string;
+  desc: string;
+}
+
+const LAB_PARTNERS: PartnerStoreInfo[] = [
+  { id: 'spot-1', name: '을지로 망우삼림', desc: 'Noritsu / 후지 프론티어 고화질 스캔' },
+  { id: 'spot-2', name: '종로 고래사진관', desc: '셀프 스캔 룸 & 특급 현상' },
+  { id: 'spot-3', name: '충무로 일진사', desc: '40년 전통 당일 인화' },
+];
+
+const REPAIR_PARTNERS: PartnerStoreInfo[] = [
+  { id: 'rep-1', name: '충무로 보성광학', master: '한동규 명장 (38년 경력)', desc: '기계식 SLR 오버홀' },
+  { id: 'rep-2', name: '을지로 신성카메라', master: '강태훈 명장 (42년 경력)', desc: 'RF & 라이카 정밀 수리' },
+  { id: 'rep-3', name: '남대문 중앙사', master: '문정식 명장 (35년 경력)', desc: '클래식 전자 셔터 복원' },
+];
+
 export default function PartnerDashboardPage() {
   const { showToast, redeemCouponByCode } = useDasi();
   const { user, profile, awardPoints } = useAuth();
@@ -59,6 +78,9 @@ export default function PartnerDashboardPage() {
   // 상점 선택
   const [partnerType, setPartnerType] = useState<'lab' | 'repair'>('lab');
   const [selectedPartnerId, setSelectedPartnerId] = useState('spot-1'); // 망우삼림 기본
+
+  const currentLab = LAB_PARTNERS.find(p => p.id === selectedPartnerId) || LAB_PARTNERS[0];
+  const currentRepair = REPAIR_PARTNERS.find(p => p.id === selectedPartnerId) || REPAIR_PARTNERS[0];
 
   // 1초 QR 접수 코드 검증
   const [qrCodeInput, setQrCodeInput] = useState('');
@@ -340,10 +362,10 @@ export default function PartnerDashboardPage() {
                 <Store className="w-3.5 h-3.5" />
                 <span>DASI 공식 인증 파트너 전용 콘솔</span>
               </div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight break-keep keep-all">
                 파트너 실시간 운영 대시보드
               </h1>
-              <p className="text-xs sm:text-sm text-vintage-300 max-w-xl">
+              <p className="text-xs sm:text-sm text-vintage-300 max-w-xl break-keep keep-all">
                 현장 1초 접수 QR 검증, 실시간 필름 재고 +/- 조정, 수리 케이스 등록을 한곳에서 즉시 처리합니다.
               </p>
             </div>
@@ -373,7 +395,7 @@ export default function PartnerDashboardPage() {
                       </span>
                     </div>
                     <div className={`text-[10px] mt-0.5 ${isSeniorEasyMode ? 'text-vintage-800' : 'text-vintage-300'}`}>
-                      할인 &amp; 접수만 아주 크게 보기
+                      할인 & 접수만 아주 크게 보기
                     </div>
                   </div>
                 </div>
@@ -397,30 +419,66 @@ export default function PartnerDashboardPage() {
             </div>
           </div>
 
-          {/* 파트너 유형 탭 */}
-          <div className="flex items-center gap-2 mt-6 pt-6 border-t border-white/10">
-            <button
-              onClick={() => setPartnerType('lab')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-                partnerType === 'lab'
-                  ? 'bg-terracotta text-white shadow-sm'
-                  : 'bg-white/10 text-vintage-300 hover:bg-white/20'
-              }`}
-            >
-              <Camera className="w-4 h-4" />
-              <span>현상소 &amp; 필름샵 모드 (을지로 망우삼림)</span>
-            </button>
-            <button
-              onClick={() => setPartnerType('repair')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-                partnerType === 'repair'
-                  ? 'bg-terracotta text-white shadow-sm'
-                  : 'bg-white/10 text-vintage-300 hover:bg-white/20'
-              }`}
-            >
-              <Wrench className="w-4 h-4" />
-              <span>수리 명장 모드 (충무로 보성광학)</span>
-            </button>
+          {/* 파트너 유형 탭 & 지점 선택 드롭다운 */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 pt-6 border-t border-white/10">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setPartnerType('lab');
+                  if (!selectedPartnerId.startsWith('spot-')) setSelectedPartnerId('spot-1');
+                  triggerHaptic('selection');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                  partnerType === 'lab'
+                    ? 'bg-terracotta text-white shadow-sm ring-1 ring-white/20'
+                    : 'bg-white/10 text-vintage-300 hover:bg-white/20'
+                }`}
+              >
+                <Camera className="w-4 h-4" />
+                <span>현상소 & 필름샵 모드</span>
+              </button>
+              <button
+                onClick={() => {
+                  setPartnerType('repair');
+                  if (!selectedPartnerId.startsWith('rep-')) setSelectedPartnerId('rep-1');
+                  triggerHaptic('selection');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                  partnerType === 'repair'
+                    ? 'bg-terracotta text-white shadow-sm ring-1 ring-white/20'
+                    : 'bg-white/10 text-vintage-300 hover:bg-white/20'
+                }`}
+              >
+                <Wrench className="w-4 h-4" />
+                <span>수리 명장 모드</span>
+              </button>
+            </div>
+
+            {/* 지점 선택기 */}
+            <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs">
+              <span className="text-vintage-400 font-medium">제휴 지점:</span>
+              <select
+                value={selectedPartnerId}
+                onChange={(e) => {
+                  setSelectedPartnerId(e.target.value);
+                  triggerHaptic('selection');
+                  showToast(`${e.target.options[e.target.selectedIndex].text} 콘솔로 전환되었습니다.`, 'info');
+                }}
+                className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
+              >
+                {partnerType === 'lab'
+                  ? LAB_PARTNERS.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-vintage-900 text-white">
+                        {p.name}
+                      </option>
+                    ))
+                  : REPAIR_PARTNERS.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-vintage-900 text-white">
+                        {p.name} · {p.master}
+                      </option>
+                    ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -430,7 +488,7 @@ export default function PartnerDashboardPage() {
             - 손떨림/오터치 방지 56px+ 대형 터치 버튼
             - "오늘 장사 상태", "20% 할인 확인", "필름 접수", "오늘 번 돈" 4대 핵심만 노출
         ══════════════════════════════════════════════════════════════════ */}
-        {isSeniorEasyMode && (
+        {partnerType === 'lab' && isSeniorEasyMode && (
           <div className="space-y-6 animate-fadeIn">
             {/* 1. 영업 상태 & 오늘 정산금 요약 바 */}
             <div className="p-5 sm:p-6 rounded-3xl bg-white border-2 border-vintage-300 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -439,7 +497,7 @@ export default function PartnerDashboardPage() {
                   {isScanAccepting ? '영업' : '마감'}
                 </div>
                 <div>
-                  <div className="text-xs text-vintage-500 font-bold">지금 우리 가게 상태</div>
+                  <div className="text-xs text-vintage-500 font-bold">지금 우리 가게 상태 ({currentLab.name})</div>
                   <div className="text-xl sm:text-2xl font-extrabold text-vintage-900 mt-0.5">
                     {isScanAccepting ? '손님 필름 정상 접수 중' : '오늘 접수 마감됨'}
                   </div>
@@ -812,7 +870,7 @@ export default function PartnerDashboardPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h2 className="text-sm font-bold text-vintage-900">제휴 사진관 &amp; 현상소 20% 할인 QR 승인기</h2>
+                        <h2 className="text-sm font-bold text-vintage-900">제휴 사진관 & 현상소 20% 할인 QR 승인기</h2>
                         <span className="text-[10px] px-2 py-0.2 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200">
                           O2O 현장 정산
                         </span>
@@ -1128,7 +1186,7 @@ export default function PartnerDashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-xl sm:text-2xl font-black text-vintage-900">수리 명장 간편 완료 처리</h3>
-                    <p className="text-xs sm:text-sm text-vintage-600">오늘 수리 완료하신 카메라를 버튼 한 번으로 등록하세요.</p>
+                    <p className="text-xs sm:text-sm text-vintage-600">[{currentRepair.name} · {currentRepair.master}] 오늘 수리 완료하신 카메라를 버튼 한 번으로 등록하세요.</p>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-xl">
