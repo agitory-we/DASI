@@ -59,6 +59,8 @@ export interface MapContentProps {
   defaultSpotId?: string;
 }
 
+const FALLBACK_SPOT_IMAGE = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80';
+
 function MapQuerySync({ onSync }: { onSync: (spotId?: string, lat?: number, lng?: number) => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -481,61 +483,69 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
               <span>웹으로 돌아가기</span>
             </Link>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>실시간 아날로그 스팟 &amp; 당일 스캔 맵</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>실시간 당일 픽업 &amp; 아날로그 스팟</span>
+            </div>
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/60 text-[11px] font-medium">
+              <Zap className="w-3 h-3 text-amber-600" />
+              <span>서울 전역 3시간 퀵 배송 가능</span>
             </div>
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-            전국 현상소 · 필름 자판기 지도
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
+            내 주변 당일 수령 &amp; 아날로그 지도
           </h1>
-          <p className="text-xs sm:text-sm text-vintage-600 mt-1 max-w-2xl leading-relaxed">
-            을지로, 충무로, 성수동 등 당일 스캔이 가능한 현상소와 24시 필름 자판기, 40년 명장 수리실의 위치와 색감 갤러리를 확인하세요.
+          <p className="text-xs sm:text-sm text-vintage-600 mt-1.5 max-w-2xl leading-relaxed">
+            을지로·충무로·성수동 즉시 수령 카메라 거점, 당일 스캔 현상소, 24시 필름 자판기 및 40년 명장 수리실의 실시간 위치와 색감을 확인하세요.
           </p>
         </div>
 
-        {/* Micro-Ads & GPS Buttons */}
+        {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleLocateMe}
             disabled={isLocating}
-            className="px-3.5 py-2.5 rounded-xl border border-vintage-300 bg-white hover:bg-vintage-50 text-xs font-semibold text-vintage-800 transition-colors flex items-center gap-1.5 shadow-2xs"
+            className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs ${
+              sortByNearest
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'bg-white hover:bg-vintage-50 border-vintage-300 text-vintage-800'
+            }`}
           >
-            <Compass className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin text-terracotta' : 'text-emerald-700'}`} />
-            <span>{isLocating ? '위치 찾는 중...' : '내 주변 거리순 정렬'}</span>
+            <Compass className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin text-terracotta' : sortByNearest ? 'text-white' : 'text-emerald-700'}`} />
+            <span>{isLocating ? 'GPS 찾는 중...' : sortByNearest ? '내 위치 기준 정렬됨' : '내 주변 거리순'}</span>
           </button>
 
           <button
             onClick={handleFetchTourApiNearby}
             disabled={isLoadingNearby}
             className="px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-900 transition-colors flex items-center gap-1.5 shadow-2xs"
+            title="한국관광공사 공공데이터 실시간 3km 반경 로딩"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isLoadingNearby ? 'animate-spin text-amber-600' : 'text-amber-600'}`} />
-            <span>{isLoadingNearby ? '공공데이터 스캔 중...' : '📍 주변 3km 공공데이터 출사지 로딩'}</span>
+            <span>{isLoadingNearby ? '공공데이터 스캔 중...' : '주변 3km 출사지'}</span>
           </button>
 
           <button
             onClick={() => setIsStudioModalOpen(true)}
-            className="px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-500/15 hover:bg-amber-500/25 text-xs font-bold text-amber-900 transition-colors flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-2.5 rounded-xl border border-vintage-300 bg-white hover:bg-vintage-50 text-xs font-bold text-vintage-800 transition-colors flex items-center gap-1.5 shadow-2xs"
             title="서울시 사진관 & 노포 현상소 (20% 할인 QR & 업력)"
           >
             <Store className="w-3.5 h-3.5 text-terracotta" />
-            <span>🏛️ 서울 사진관·현상소 (제휴 QR)</span>
+            <span>제휴 사진관 QR</span>
           </button>
 
           <button
             onClick={() => setIsPartnerModalOpen(true)}
             className="px-3.5 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
           >
-            <Store className="w-3.5 h-3.5" />
-            <span>상점 입점 제휴 신청</span>
+            <span>상점 입점 제휴</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-vintage-200 pb-4">
-        {/* Categories */}
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* Decluttered Apple-Style Unified Control Bar */}
+      <div className="bg-white/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-vintage-200/90 shadow-2xs space-y-3">
+        {/* Row 1: Category Chips (Scrollable) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {[
             { id: 'all', label: '🌐 전체 스팟' },
             { id: 'spot', label: '📍 출사 핫스팟 & 100선' },
@@ -548,10 +558,10 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
             <button
               key={tab.id}
               onClick={() => setSelectedCategory(tab.id as any)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
                 selectedCategory === tab.id
                   ? 'bg-vintage-900 text-white shadow-xs'
-                  : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
+                  : 'bg-vintage-50 text-vintage-700 hover:bg-vintage-100 border border-vintage-200/70'
               }`}
             >
               {tab.label}
@@ -559,50 +569,55 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
           ))}
         </div>
 
-        {/* Region Filter */}
-        <div className="flex items-center gap-1.5 text-xs overflow-x-auto pb-1 max-w-full">
-          <span className="text-vintage-500 font-medium shrink-0">권역:</span>
-          {['all', '을지로', '충무로', '성수', '종로', '서울', '강원', '경상', '전라', '제주'].map((area) => (
+        {/* Row 2: Secondary Filters (Region & Instant Status) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-vintage-100">
+          {/* Quick Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-vintage-400 text-xs font-medium">필터:</span>
             <button
-              key={area}
-              onClick={() => setSelectedArea(area)}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all shrink-0 ${
-                selectedArea === area
-                  ? 'bg-terracotta text-white font-bold'
-                  : 'bg-vintage-100 text-vintage-700 hover:bg-vintage-200'
+              onClick={() => setFilterSameDayOnly((prev) => !prev)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                filterSameDayOnly
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
               }`}
             >
-              {area === 'all' ? '전체' : area}
+              <Zap className="w-3 h-3" />
+              <span>당일 즉시 가능 매장만</span>
+              {filterSameDayOnly && <CheckCircle2 className="w-3 h-3" />}
             </button>
-          ))}
-        </div>
 
-        {/* Instant & QR Benefit Quick Filter Chips */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-vintage-200/60 w-full">
-          <span className="text-vintage-500 text-xs font-semibold">조건별 모아보기:</span>
-          <button
-            onClick={() => setFilterSameDayOnly((prev) => !prev)}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-              filterSameDayOnly
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
-            }`}
-          >
-            <span>⚡ 당일 즉시 가능 매장만</span>
-            {filterSameDayOnly && <CheckCircle2 className="w-3.5 h-3.5" />}
-          </button>
+            <button
+              onClick={() => setFilterQrDiscountOnly((prev) => !prev)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                filterQrDiscountOnly
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
+              }`}
+            >
+              <Ticket className="w-3 h-3" />
+              <span>DASI 제휴 QR 할인처</span>
+              {filterQrDiscountOnly && <CheckCircle2 className="w-3 h-3" />}
+            </button>
+          </div>
 
-          <button
-            onClick={() => setFilterQrDiscountOnly((prev) => !prev)}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-              filterQrDiscountOnly
-                ? 'bg-rose-600 text-white shadow-xs'
-                : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
-            }`}
-          >
-            <span>🎟️ DASI 제휴 QR 할인 매장만</span>
-            {filterQrDiscountOnly && <CheckCircle2 className="w-3.5 h-3.5" />}
-          </button>
+          {/* Region Segmented Bar */}
+          <div className="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar">
+            <span className="text-vintage-400 font-medium shrink-0 mr-1">권역:</span>
+            {['all', '을지로', '충무로', '성수', '종로', '서울', '강원', '경상', '전라', '제주'].map((area) => (
+              <button
+                key={area}
+                onClick={() => setSelectedArea(area)}
+                className={`px-2 py-0.5 rounded-md font-semibold transition-all shrink-0 ${
+                  selectedArea === area
+                    ? 'bg-vintage-900 text-white'
+                    : 'text-vintage-600 hover:bg-vintage-100'
+                }`}
+              >
+                {area === 'all' ? '전국' : area}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -910,7 +925,14 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                       {activeSpot.sampleColorToneImages.map((tone, idx) => (
                         <div key={idx} className="rounded-2xl border border-vintage-200 overflow-hidden bg-vintage-50">
                           <div className="aspect-4/3 relative">
-                            <img src={tone.imageUrl} alt={tone.scannerName} className="w-full h-full object-cover" />
+                            <img
+                              src={tone.imageUrl}
+                              alt={tone.scannerName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = FALLBACK_SPOT_IMAGE;
+                              }}
+                            />
                             <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-black/75 text-white text-[10px] font-bold backdrop-blur-xs">
                               {tone.scannerName}
                             </span>
@@ -940,7 +962,14 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {matchedLabPhotos.map((photo) => (
                           <div key={photo.id} className="rounded-2xl border border-vintage-200 overflow-hidden bg-vintage-900 group relative aspect-[4/3]">
-                            <img src={photo.imageUrl} alt={photo.caption} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <img
+                              src={photo.imageUrl}
+                              alt={photo.caption}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = FALLBACK_SPOT_IMAGE;
+                              }}
+                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-2.5 text-white">
                               <span className="text-[10px] font-bold truncate">📷 {photo.cameraModel}</span>
                               <span className="text-[9px] text-amber-300 truncate">🎞️ {photo.filmType}</span>
@@ -1023,6 +1052,9 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                             src={photo.imageUrl}
                             alt={photo.caption || activeSpot.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = FALLBACK_SPOT_IMAGE;
+                            }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 text-white">
                             <span className="text-[10px] font-bold truncate flex items-center gap-1">
@@ -1083,21 +1115,38 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                 )}
 
                 {/* 하단 Action Bridge */}
-                <div className="pt-2 border-t border-vintage-100 flex flex-wrap gap-2">
+                <div className="pt-3 border-t border-vintage-100 flex flex-col sm:flex-row gap-2.5">
                   <Link
-                    href="/rent"
-                    className="flex-1 py-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-center"
+                    href={`/rent?search=${encodeURIComponent(activeSpot.name.split(' ')[0] || '카메라')}`}
+                    className="flex-1 py-3.5 px-4 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs text-center group"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5 text-amber-300" />
-                    <span>이 장소 추천 카메라 렌탈하기</span>
+                    <ShoppingBag className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+                    <span>이 장소 맞춤 카메라 주말 대여 &amp; 픽업 &gt;</span>
                   </Link>
-                  <button
-                    onClick={() => openNavigation(activeSpot, 'google')}
-                    className="px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
-                  >
-                    <Navigation className="w-3.5 h-3.5" />
-                    <span>길찾기</span>
-                  </button>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openNavigation(activeSpot, 'kakao')}
+                      className="flex-1 sm:flex-initial px-3 py-3 rounded-xl bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
+                      title="카카오맵으로 빠른 길찾기"
+                    >
+                      <span>카카오맵</span>
+                    </button>
+                    <button
+                      onClick={() => openNavigation(activeSpot, 'naver')}
+                      className="flex-1 sm:flex-initial px-3 py-3 rounded-xl bg-[#03C75A] hover:bg-[#02b351] text-white text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
+                      title="네이버 지도로 길찾기"
+                    >
+                      <span>네이버지도</span>
+                    </button>
+                    <button
+                      onClick={() => openNavigation(activeSpot, 'google')}
+                      className="px-2.5 py-3 rounded-xl bg-vintage-100 hover:bg-vintage-200 text-vintage-700 text-xs font-semibold flex items-center justify-center transition-colors"
+                      title="구글 지도로 열기"
+                    >
+                      <Navigation className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1140,6 +1189,9 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                 src={selectedShotToRent.imageUrl}
                 alt={selectedShotToRent.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = FALLBACK_SPOT_IMAGE;
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-white">
                 <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
