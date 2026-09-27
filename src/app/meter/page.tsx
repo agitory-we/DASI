@@ -77,6 +77,7 @@ export default function LightMeterPage() {
   const [currentEv100, setCurrentEv100] = useState<number>(12); // 기본 EV 12
   const [mode, setMode] = useState<'camera' | 'manual'>('camera');
   const [activePresetIndex, setActivePresetIndex] = useState<number>(1);
+  const [isFlashing, setIsFlashing] = useState<boolean>(false);
 
   // 카메라 비디오 스트림 시작
   const startCamera = useCallback(async () => {
@@ -187,42 +188,63 @@ export default function LightMeterPage() {
   const handleShutterClick = () => {
     triggerHaptic('success');
     playShutterSound('slr');
+    setIsFlashing(true);
+    setTimeout(() => {
+      setIsFlashing(false);
+    }, 150);
   };
 
   return (
     <div className="min-h-screen bg-[#1c1815] text-[#e8ded1] flex flex-col justify-between p-4 sm:p-6 select-none">
       {/* 1. 상단 앱바 */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 gap-2">
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+          className="shrink-0 flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors whitespace-nowrap"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 shrink-0" />
           <span>홈으로</span>
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span className="font-serif font-bold text-sm tracking-wider uppercase">
-            DASI Master Light Meter
-          </span>
+        <div className="flex items-center gap-2 truncate">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 truncate">
+            <span className="font-serif font-bold text-sm tracking-wider uppercase text-white truncate">
+              스마트폰 실시간 노출계
+            </span>
+            <span className="text-[10px] text-amber-400/80 font-mono tracking-widest hidden sm:inline">
+              LIVE LIGHT METER
+            </span>
+          </div>
         </div>
         <button
           onClick={() => {
             triggerHaptic('light');
-            setMode(mode === 'camera' ? 'manual' : 'camera');
+            if (mode === 'manual') {
+              setMode('camera');
+              startCamera();
+            } else {
+              setMode('manual');
+            }
           }}
-          className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+          className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap ${
             mode === 'camera'
-              ? 'bg-terracotta/20 border-terracotta text-terracotta'
-              : 'bg-white/10 border-white/20 text-white/80'
+              ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+              : 'bg-amber-500/20 border-amber-500/50 text-amber-300'
           }`}
         >
-          {mode === 'camera' ? '📷 카메라 측광' : '🎛️ 수동 조도'}
+          {mode === 'camera' ? '📷 카메라 측광 중' : '🎛️ 수동 조도 모드'}
         </button>
       </div>
 
       {/* 2. 중앙 뷰파인더 & 측광 레티클 */}
       <div className="relative my-4 flex-1 flex flex-col items-center justify-center min-h-[320px] max-h-[460px] rounded-3xl overflow-hidden bg-black/80 border border-white/10 shadow-2xl">
+        {/* SLR 셔터 작동 플래시 오버레이 */}
+        <div
+          className={`absolute inset-0 bg-white z-30 pointer-events-none transition-opacity duration-150 ${
+            isFlashing ? 'opacity-90' : 'opacity-0'
+          }`}
+        />
+
         {mode === 'camera' && (
           <>
             <video
@@ -333,22 +355,22 @@ export default function LightMeterPage() {
       </div>
 
       {/* 4. 조작 다이얼 (Aperture & ISO 휠 선택) */}
-      <div className="space-y-3 mb-2">
+      <div className="space-y-3 mb-3">
         {/* F-stop 조리개 다이얼 바 */}
         <div>
-          <div className="flex items-center justify-between text-[11px] text-white/60 mb-1.5 px-1">
-            <span>렌즈 조리개 (Aperture) 선택</span>
-            <span className="text-amber-300 font-mono">F{selectedAperture}</span>
+          <div className="flex items-center justify-between text-[11px] text-white/70 mb-1.5 px-1">
+            <span className="font-medium">렌즈 조리개 (Aperture) 선택</span>
+            <span className="text-amber-300 font-mono font-bold">F{selectedAperture}</span>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
             {APERTURE_LIST.map((f) => (
               <button
                 key={f}
                 onClick={() => handleApertureChange(f)}
-                className={`flex-1 min-w-[42px] py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                className={`shrink-0 min-w-[48px] py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                   selectedAperture === f
-                    ? 'bg-amber-400 text-black shadow-lg scale-105'
-                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
+                    ? 'bg-amber-400 text-black shadow-lg scale-105 ring-2 ring-amber-300/50'
+                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
                 }`}
               >
                 F{f}
@@ -359,19 +381,19 @@ export default function LightMeterPage() {
 
         {/* ISO 필름 감도 다이얼 바 */}
         <div>
-          <div className="flex items-center justify-between text-[11px] text-white/60 mb-1.5 px-1">
-            <span>필름 감도 (ISO) 선택</span>
-            <span className="text-amber-300 font-mono">ISO {selectedIso}</span>
+          <div className="flex items-center justify-between text-[11px] text-white/70 mb-1.5 px-1">
+            <span className="font-medium">필름 감도 (ISO) 선택</span>
+            <span className="text-amber-300 font-mono font-bold">ISO {selectedIso}</span>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
             {ISO_LIST.map((iso) => (
               <button
                 key={iso}
                 onClick={() => handleIsoChange(iso)}
-                className={`flex-1 min-w-[48px] py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                className={`shrink-0 min-w-[54px] py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                   selectedIso === iso
-                    ? 'bg-terracotta text-white shadow-lg scale-105'
-                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
+                    ? 'bg-terracotta text-white shadow-lg scale-105 ring-2 ring-terracotta/50'
+                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
                 }`}
               >
                 {iso}
@@ -384,9 +406,9 @@ export default function LightMeterPage() {
       {/* 5. 하단 셔터 시뮬레이션 및 햅틱 테스트 버튼 */}
       <button
         onClick={handleShutterClick}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-terracotta to-amber-600 text-white font-serif font-bold text-base shadow-lg shadow-terracotta/20 hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 mb-4"
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-terracotta via-amber-600 to-terracotta bg-[length:200%_auto] hover:bg-right text-white font-serif font-bold text-base shadow-lg shadow-terracotta/25 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 mb-4"
       >
-        <Camera className="w-5 h-5" />
+        <Camera className="w-5 h-5 text-amber-200" />
         <span>셔터 햅틱 &amp; 효과음 테스트 (SLR Click)</span>
       </button>
 
