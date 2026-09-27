@@ -179,14 +179,14 @@ export default function AIAppraisalPage() {
 
       {/* Header */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold tracking-wide">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>DASI Vision AI 감정 엔진</span>
+          <span>DASI Vision AI 감정 엔진 · VISION</span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 break-keep keep-all leading-tight">
           사진 3장으로 끝내는 카메라 AI 감정
         </h1>
-        <p className="text-xs sm:text-sm text-vintage-600 leading-relaxed">
+        <p className="text-xs sm:text-sm text-vintage-600 leading-relaxed break-keep keep-all">
           외관 정면, 조작부(상단/후면), 시리얼 넘버 사진 3장만 올리시면
           국내외 10만 건의 실거래가 DB와 대조하여 모델명, 연식, 외관 등급, 예상 시세를 즉시 산출합니다.
         </p>
@@ -194,12 +194,12 @@ export default function AIAppraisalPage() {
 
       {/* STEP 1: UPLOAD */}
       {step === 'upload' && (
-        <div className="rounded-3xl bg-white border border-vintage-200 p-6 sm:p-10 shadow-xs space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="rounded-3xl bg-white border border-vintage-200 p-4 sm:p-10 shadow-xs space-y-6 sm:space-y-8">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-6">
             {/* Slot 1: 전면 */}
             <div
               onClick={() => frontInputRef.current?.click()}
-              className={`p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
+              className={`p-3 sm:p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
                 photoData.front
                   ? 'border-emerald-500 bg-emerald-50/20'
                   : 'border-vintage-300 hover:border-terracotta bg-vintage-50'
@@ -208,22 +208,22 @@ export default function AIAppraisalPage() {
               {photoData.front ? (
                 <div className="w-full h-full relative">
                   <img src={photoData.front} alt="전면" className="w-full h-full object-cover rounded-xl" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-xs font-bold">
-                    사진 변경하기
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-[11px] sm:text-xs font-bold">
+                    변경하기
                   </div>
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
-                    ✓ 전면 완료
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] sm:text-[10px] font-bold">
+                    ✓ 전면
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
-                    <Camera className="w-6 h-6" />
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
+                    <Camera className="w-4 h-4 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-xs font-bold text-vintage-800">1. 바디 전면 사진</div>
-                  <p className="text-[10px] text-vintage-500">렌즈와 로고가 보이게 촬영</p>
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
-                    파일 선택 / 촬영
+                  <div className="text-[11px] sm:text-xs font-bold text-vintage-800 truncate">1. 전면 바디</div>
+                  <p className="text-[9px] sm:text-[10px] text-vintage-500 hidden sm:block">렌즈/로고 정면</p>
+                  <span className="text-[9px] sm:text-[10px] px-2 py-0.5 sm:py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
+                    촬영 / 선택
                   </span>
                 </div>
               )}
@@ -232,7 +232,7 @@ export default function AIAppraisalPage() {
             {/* Slot 2: 상단/후면 */}
             <div
               onClick={() => backInputRef.current?.click()}
-              className={`p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
+              className={`p-3 sm:p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
                 photoData.back
                   ? 'border-emerald-500 bg-emerald-50/20'
                   : 'border-vintage-300 hover:border-terracotta bg-vintage-50'
@@ -241,22 +241,22 @@ export default function AIAppraisalPage() {
               {photoData.back ? (
                 <div className="w-full h-full relative">
                   <img src={photoData.back} alt="상단/후면" className="w-full h-full object-cover rounded-xl" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-xs font-bold">
-                    사진 변경하기
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-[11px] sm:text-xs font-bold">
+                    변경하기
                   </div>
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
-                    ✓ 상단/후면 완료
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] sm:text-[10px] font-bold">
+                    ✓ 상단/후면
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
-                    <Camera className="w-6 h-6" />
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
+                    <Camera className="w-4 h-4 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-xs font-bold text-vintage-800">2. 조작부 (상단/후면)</div>
-                  <p className="text-[10px] text-vintage-500">셔터 다이얼 및 뷰파인더 앵글</p>
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
-                    파일 선택 / 촬영
+                  <div className="text-[11px] sm:text-xs font-bold text-vintage-800 truncate">2. 조작부 다이얼</div>
+                  <p className="text-[9px] sm:text-[10px] text-vintage-500 hidden sm:block">셔터/뷰파인더</p>
+                  <span className="text-[9px] sm:text-[10px] px-2 py-0.5 sm:py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
+                    촬영 / 선택
                   </span>
                 </div>
               )}
@@ -265,7 +265,7 @@ export default function AIAppraisalPage() {
             {/* Slot 3: 시리얼넘버 */}
             <div
               onClick={() => serialInputRef.current?.click()}
-              className={`p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
+              className={`p-3 sm:p-6 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all aspect-square relative overflow-hidden group ${
                 photoData.serial
                   ? 'border-emerald-500 bg-emerald-50/20'
                   : 'border-vintage-300 hover:border-terracotta bg-vintage-50'
@@ -274,50 +274,86 @@ export default function AIAppraisalPage() {
               {photoData.serial ? (
                 <div className="w-full h-full relative">
                   <img src={photoData.serial} alt="시리얼 넘버" className="w-full h-full object-cover rounded-xl" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-xs font-bold">
-                    사진 변경하기
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white text-[11px] sm:text-xs font-bold">
+                    변경하기
                   </div>
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
-                    ✓ 시리얼 완료
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] sm:text-[10px] font-bold">
+                    ✓ 시리얼
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
-                    <Camera className="w-6 h-6" />
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white text-vintage-400 flex items-center justify-center mx-auto shadow-2xs">
+                    <Camera className="w-4 h-4 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-xs font-bold text-vintage-800">3. 하판 시리얼 넘버</div>
-                  <p className="text-[10px] text-vintage-500">바닥면 음각 일련번호 근접 샷</p>
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
-                    파일 선택 / 촬영
+                  <div className="text-[11px] sm:text-xs font-bold text-vintage-800 truncate">3. 하판 시리얼</div>
+                  <p className="text-[9px] sm:text-[10px] text-vintage-500 hidden sm:block">바닥 일련번호</p>
+                  <span className="text-[9px] sm:text-[10px] px-2 py-0.5 sm:py-1 rounded-full bg-terracotta/10 text-terracotta font-bold inline-block">
+                    촬영 / 선택
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Sample quick loader for testing convenience */}
-          <div className="p-3.5 rounded-2xl bg-vintage-50 border border-vintage-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-vintage-600 font-medium">📷 사진 파일이 없으신가요?</span>
-            <button
-              onClick={() => {
-                handleMockSample('front', 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80');
-                handleMockSample('back', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80');
-                handleMockSample('serial', 'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?w=800&auto=format&fit=crop&q=80');
-              }}
-              className="text-terracotta hover:underline font-bold"
-            >
-              샘플 카메라 3장 자동 채우기 →
-            </button>
+          {/* Sample quick presets */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-vintage-50 border border-vintage-200 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-vintage-700 font-bold flex items-center gap-1.5">
+                <span>📷 실물 카메라가 없으신가요? 3대 명기 샘플로 즉시 체험</span>
+              </span>
+              <span className="text-[11px] text-vintage-500 hidden sm:inline">원클릭 자동 채우기</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  handleMockSample('front', 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('back', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('serial', 'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?w=800&auto=format&fit=crop&q=80');
+                  showToast('Nikon FM2 실물 샘플 사진 3장이 채워졌습니다.', 'info');
+                }}
+                className="p-2 sm:p-2.5 rounded-xl bg-white border border-vintage-200 hover:border-terracotta hover:bg-terracotta/5 transition-all text-center text-xs font-semibold text-vintage-800"
+              >
+                <div className="font-bold truncate text-[11px] sm:text-xs">Nikon FM2</div>
+                <div className="text-[10px] text-vintage-400">기계식 SLR</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleMockSample('front', 'https://images.unsplash.com/photo-1502982720700-bfff97f2da8d?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('back', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('serial', 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=800&auto=format&fit=crop&q=80');
+                  showToast('Olympus PEN EE-3 실물 샘플 사진 3장이 채워졌습니다.', 'info');
+                }}
+                className="p-2 sm:p-2.5 rounded-xl bg-white border border-vintage-200 hover:border-terracotta hover:bg-terracotta/5 transition-all text-center text-xs font-semibold text-vintage-800"
+              >
+                <div className="font-bold truncate text-[11px] sm:text-xs">Olympus EE-3</div>
+                <div className="text-[10px] text-vintage-400">하프 필름</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleMockSample('front', 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('back', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80');
+                  handleMockSample('serial', 'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?w=800&auto=format&fit=crop&q=80');
+                  showToast('Contax T2 실물 샘플 사진 3장이 채워졌습니다.', 'info');
+                }}
+                className="p-2 sm:p-2.5 rounded-xl bg-white border border-vintage-200 hover:border-terracotta hover:bg-terracotta/5 transition-all text-center text-xs font-semibold text-vintage-800"
+              >
+                <div className="font-bold truncate text-[11px] sm:text-xs">Contax T2</div>
+                <div className="text-[10px] text-vintage-400">티타늄 명기</div>
+              </button>
+            </div>
           </div>
 
           <div className="text-center pt-2">
             <button
               onClick={() => setStep('self_check')}
               disabled={!isAllUploaded}
-              className={`px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-md flex items-center gap-2 mx-auto ${
+              className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 mx-auto ${
                 isAllUploaded
-                  ? 'bg-terracotta hover:bg-terracotta-light text-white'
+                  ? 'bg-terracotta hover:bg-terracotta-light text-white active:scale-95'
                   : 'bg-vintage-200 text-vintage-400 cursor-not-allowed'
               }`}
             >
@@ -596,19 +632,19 @@ export default function AIAppraisalPage() {
             </div>
 
             {/* Certificate Footer Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-vintage-800 relative z-10">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-6 border-t border-vintage-800 relative z-10">
               <button
                 onClick={handleReset}
-                className="px-4 py-2.5 rounded-xl border border-vintage-700 text-vintage-300 hover:text-white hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-vintage-700 text-vintage-300 hover:text-white hover:bg-white/5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>다른 기기 감정하기</span>
               </button>
 
-              <div className="flex flex-wrap gap-2.5">
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5">
                 <button
                   onClick={() => setIsCertModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-95"
                 >
                   <Award className="w-4 h-4 text-amber-200" />
                   <span>📜 9:16 감정서 발급 & 인스타 공유</span>
@@ -616,22 +652,22 @@ export default function AIAppraisalPage() {
 
                 <button
                   onClick={() => setIsConsignmentModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-vintage-800 hover:bg-vintage-700 text-white text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-vintage-800 hover:bg-vintage-700 text-white text-xs font-bold transition-colors text-center"
                 >
-                  위탁 판매 신청 ({appraisalResult.recommendedConsignmentPrice.toLocaleString()}원 추천)
+                  위탁 판매 신청 ({appraisalResult.recommendedConsignmentPrice.toLocaleString()}원)
                 </button>
 
                 <button
                   onClick={handleRegisterToCabinet}
                   disabled={isCabinetRegistered}
-                  className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 ${
+                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
                     isCabinetRegistered
                       ? 'bg-emerald-600 text-white cursor-default'
-                      : 'bg-terracotta hover:bg-terracotta-light text-white'
+                      : 'bg-terracotta hover:bg-terracotta-light text-white active:scale-95'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>{isCabinetRegistered ? '캐비닛 등록 완료' : '내 캐비닛에 보증서 등록하기'}</span>
+                  <span>{isCabinetRegistered ? '캐비닛 등록 완료' : '내 캐비닛에 보증서 등록'}</span>
                 </button>
               </div>
             </div>
