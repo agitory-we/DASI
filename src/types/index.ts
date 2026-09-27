@@ -154,6 +154,8 @@ export interface UserCoupon {
   barcode?: string;
   code?: string;
   isUsed: boolean;
+  discountRate?: string;
+  minSpend?: string;
 }
 
 export interface EventOrHotSpot {
@@ -218,6 +220,54 @@ export interface PhotoMeetup {
   included: string[];
   tags: string[];
   isUserCreated?: boolean;
+}
+
+export interface MeetupPhotoRoll {
+  id: string;
+  meetupId: string;
+  meetupTitle?: string;
+  photographerName: string;
+  photographerAvatar?: string;
+  imageUrl: string;
+  photos?: string[];
+  cameraModel: string;
+  filmType: string;
+  labName: string;
+  caption: string;
+  likesCount: number;
+  rating?: number; // 호스트 평점 (1~5)
+  reviewText?: string; // 출사 후기
+  createdAt: string;
+}
+
+export interface PhotoCrew {
+  id: string;
+  name: string;
+  tagline: string;
+  region: string;
+  coverImage: string;
+  leaderName: string;
+  leaderAvatar: string;
+  membersCount: number;
+  maxMembers: number;
+  schedule: string;
+  preferredGearTheme: string;
+  isJoined?: boolean;
+  tags: string[];
+}
+
+export interface WeeklyPlaygroundPlan {
+  weekNumber: number; // 1 ~ 52
+  month: number; // 1 ~ 12
+  season: 'spring' | 'summer' | 'autumn' | 'winter';
+  theme: string;
+  spotName: string;
+  region?: string;
+  recommendedFilm: string;
+  recommendedCamera: string;
+  highlight: string;
+  meetupCount: number;
+  festivalName?: string;
 }
 
 export interface ProConsultationItem {

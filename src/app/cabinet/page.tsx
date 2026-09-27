@@ -170,6 +170,7 @@ function CabinetContent() {
     coupons,
     useCoupon,
     addCoupon,
+    issueLabVoucherForSpot,
     showToast,
     openMapModal,
   } = useDasi();
@@ -775,24 +776,38 @@ function CabinetContent() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                       <button
-                        onClick={() => setSelectedTicket({ type: 'experience', data: exp })}
-                        className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                        <span>모바일 입장 티켓 열기</span>
-                      </button>
-                      <button
+                        type="button"
                         onClick={() => {
-                          if (confirm(`'${exp.title}' 티켓을 취소하시겠습니까?`)) {
-                            cancelExperienceTicket(exp.ticketCode);
-                          }
+                          const coupon = issueLabVoucherForSpot(exp.location);
+                          if (coupon) setSelectedBarcodeCoupon(coupon);
                         }}
-                        className="px-3.5 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-600 text-xs font-semibold transition-colors"
+                        className="w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                       >
-                        취소
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>출사지 인근 제휴 현상소 20% 스캔 바우처 발급</span>
                       </button>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedTicket({ type: 'experience', data: exp })}
+                          className="flex-1 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                          <span>모바일 입장 티켓 열기</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`'${exp.title}' 티켓을 취소하시겠습니까?`)) {
+                              cancelExperienceTicket(exp.ticketCode);
+                            }
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl border border-vintage-300 hover:bg-vintage-100 text-vintage-600 text-xs font-semibold transition-colors"
+                        >
+                          취소
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2103,6 +2118,32 @@ function CabinetContent() {
                     className="w-full py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-vintage-950 font-bold text-[11px] transition-colors"
                   >
                     단톡방 참여 링크 복사하기
+                  </button>
+                </div>
+
+                {/* Lab Voucher Quick Claim Banner */}
+                <div className="p-3 bg-vintage-100/80 rounded-2xl border border-vintage-200 text-left space-y-1.5">
+                  <div className="text-[11px] font-bold text-vintage-900 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <span>🧪 출사지 인근 제휴 현상소 20% 스캔 바우처</span>
+                    </span>
+                    <span className="text-[9px] bg-terracotta/10 text-terracotta px-1.5 py-0.5 rounded font-bold">DASI 특전</span>
+                  </div>
+                  <p className="text-[10px] text-vintage-600">
+                    촬영을 마치고 바로 필름을 맡길 수 있도록 인근 제휴 현상소의 20% 할인권을 즉시 발급해 드립니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cp = issueLabVoucherForSpot(selectedTicket.data.location);
+                      if (cp) {
+                        setSelectedTicket(null);
+                        setSelectedBarcodeCoupon(cp);
+                      }
+                    }}
+                    className="w-full py-1.5 rounded-lg bg-vintage-900 hover:bg-terracotta text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1"
+                  >
+                    <span>현상소 20% 바우처 발급 &amp; 바코드 열기</span>
                   </button>
                 </div>
 

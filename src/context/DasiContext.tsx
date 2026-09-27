@@ -9,6 +9,9 @@ import {
   PhotoGig,
   Experience,
   PhotoMeetup,
+  MeetupPhotoRoll,
+  PhotoCrew,
+  WeeklyPlaygroundPlan,
   UserCoupon,
   ProConsultationItem,
   CommunityPhoto
@@ -22,6 +25,9 @@ import {
   mockPhotoGigs,
   mockExperiences,
   mockPhotoMeetups,
+  mockMeetupPhotoRolls,
+  mockPhotoCrews,
+  mockWeeklyPlans,
   mockCommunityPhotos
 } from '@/data/mockData';
 import {
@@ -106,6 +112,9 @@ interface DasiContextType {
   photoGigs: PhotoGig[];
   experiences: Experience[];
   meetups: PhotoMeetup[];
+  photoRolls: MeetupPhotoRoll[];
+  crews: PhotoCrew[];
+  weeklyPlans: WeeklyPlaygroundPlan[];
   isLoadingData: boolean;
   refreshData: () => Promise<void>;
 
@@ -121,6 +130,10 @@ interface DasiContextType {
   communityPhotos: CommunityPhoto[];
   uploadCommunityPhoto: (photo: Omit<CommunityPhoto, 'id' | 'likesCount' | 'createdAt'>) => string;
   likeCommunityPhoto: (photoId: string) => void;
+  uploadPhotoRoll: (item: Omit<MeetupPhotoRoll, 'id' | 'likesCount' | 'createdAt'>) => string;
+  togglePhotoRollLike: (rollId: string) => void;
+  joinCrew: (crewId: string) => void;
+  issueLabVoucherForSpot: (location: string) => UserCoupon | null;
   bookCameraRental: (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => void;
   convertToOwn: (rentingId: string) => void;
   addOwnedCamera: (item: Omit<OwnedCameraItem, 'id'>) => string;
@@ -160,6 +173,9 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [photoGigs, setPhotoGigs] = useState<PhotoGig[]>(mockPhotoGigs);
   const [experiences, setExperiences] = useState<Experience[]>(mockExperiences);
   const [meetups, setMeetups] = useState<PhotoMeetup[]>(mockPhotoMeetups);
+  const [photoRolls, setPhotoRolls] = useState<MeetupPhotoRoll[]>(mockMeetupPhotoRolls);
+  const [crews, setCrews] = useState<PhotoCrew[]>(mockPhotoCrews);
+  const [weeklyPlans] = useState<WeeklyPlaygroundPlan[]>(mockWeeklyPlans);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
 
   // User state
@@ -373,6 +389,16 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setMeetups(JSON.parse(savedMeetups));
       }
 
+      const savedPhotoRolls = localStorage.getItem('dasi_photo_rolls');
+      if (savedPhotoRolls) {
+        setPhotoRolls(JSON.parse(savedPhotoRolls));
+      }
+
+      const savedCrews = localStorage.getItem('dasi_crews');
+      if (savedCrews) {
+        setCrews(JSON.parse(savedCrews));
+      }
+
       if (savedWelcome) {
         setIsWelcomeClaimed(JSON.parse(savedWelcome));
       }
@@ -396,10 +422,12 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('dasi_saved_spot_ids', JSON.stringify(savedSpotIds));
       localStorage.setItem('dasi_welcome_claimed', JSON.stringify(isWelcomeClaimed));
       localStorage.setItem('dasi_meetups', JSON.stringify(meetups));
+      localStorage.setItem('dasi_photo_rolls', JSON.stringify(photoRolls));
+      localStorage.setItem('dasi_crews', JSON.stringify(crews));
     } catch (e) {
       console.error('Failed to save dasi storage', e);
     }
-  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, proConsultations, savedSpotIds, isWelcomeClaimed, meetups, isHydrated]);
+  }, [rentingItems, ownedItems, coupons, bookedGigs, bookedExperiences, repairEstimates, proConsultations, savedSpotIds, isWelcomeClaimed, meetups, photoRolls, crews, isHydrated]);
 
   const bookCameraRental = (item: Omit<RentingCameraItem, 'bookedAt' | 'isConvertedToOwn'>) => {
     const newItem: RentingCameraItem = {
@@ -703,6 +731,87 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const uploadPhotoRoll = (item: Omit<MeetupPhotoRoll, 'id' | 'likesCount' | 'createdAt'>): string => {
+    const newId = `roll-${Date.now()}`;
+    const newRoll: MeetupPhotoRoll = {
+      ...item,
+      id: newId,
+      likesCount: 0,
+      createdAt: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    };
+    setPhotoRolls((prev) => [newRoll, ...prev]);
+    showToast('🎞️ 출사 롤 사진이 아카이빙되었습니다! (+150P 지급)', 'success');
+    return newId;
+  };
+
+  const togglePhotoRollLike = (rollId: string) => {
+    setPhotoRolls((prev) =>
+      prev.map((r) => (r.id === rollId ? { ...r, likesCount: r.likesCount + 1 } : r))
+    );
+  };
+
+  const joinCrew = (crewId: string) => {
+    setCrews((prev) =>
+      prev.map((c) => {
+        if (c.id === crewId) {
+          const nextJoined = !c.isJoined;
+          showToast(
+            nextJoined
+              ? `🎉 [${c.name}] 크루원이 되셨습니다! (+100P 지급)`
+              : `👋 [${c.name}] 크루 탈퇴가 완료되었습니다.`,
+            nextJoined ? 'success' : 'info'
+          );
+          return {
+            ...c,
+            isJoined: nextJoined,
+            membersCount: nextJoined ? c.membersCount + 1 : Math.max(1, c.membersCount - 1),
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const issueLabVoucherForSpot = (location: string): UserCoupon | null => {
+    let labName = '충무로 고래사진관';
+    let labCode = 'GORAELAB-DASI-20';
+    const locLower = (location || '').toLowerCase();
+
+    if (locLower.includes('성수') || locLower.includes('서울숲') || locLower.includes('뚝섬')) {
+      labName = '팔레트사진관 (성수 본점)';
+      labCode = 'PALETTE-DASI-20';
+    } else if (locLower.includes('을지로') || locLower.includes('세운') || locLower.includes('종로') || locLower.includes('청계천')) {
+      labName = '을지로 망우삼림';
+      labCode = 'MANGWOO-DASI-20';
+    } else if (locLower.includes('홍대') || locLower.includes('마포') || locLower.includes('연남') || locLower.includes('망원')) {
+      labName = '홍대 필름로그 현상소';
+      labCode = 'FILMBOX-DASI-20';
+    }
+
+    const existing = coupons.find((c) => c.code === labCode && !c.isUsed);
+    if (existing) {
+      showToast(`이미 발급된 [${labName}] 바우처가 캐비닛에 보관되어 있습니다.`, 'info');
+      return existing;
+    }
+
+    const newCoupon: UserCoupon = {
+      id: `lab-cp-${Date.now()}`,
+      code: labCode,
+      title: `[제휴 현상소] ${labName} 20% 스캔 할인권`,
+      issuerName: labName,
+      discountText: '20% 할인',
+      discountRate: '20% OFF',
+      minSpend: '스캔 1롤 이상',
+      validUntil: '2026.12.31',
+      isUsed: false,
+      category: 'lab'
+    };
+
+    setCoupons((prev) => [newCoupon, ...prev]);
+    showToast(`🧪 [${labName}] 20% 스캔 할인 바우처가 발급되었습니다!`, 'success');
+    return newCoupon;
+  };
+
   return (
     <DasiContext.Provider
       value={{
@@ -713,6 +822,13 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         photoGigs,
         experiences,
         meetups,
+        photoRolls,
+        crews,
+        weeklyPlans,
+        uploadPhotoRoll,
+        togglePhotoRollLike,
+        joinCrew,
+        issueLabVoucherForSpot,
         isLoadingData,
         refreshData,
         rentingItems,

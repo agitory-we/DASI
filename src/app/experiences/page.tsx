@@ -28,11 +28,16 @@ import {
   ExternalLink,
   MessageCircle,
   Sliders,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  Star,
+  Upload,
+  Layers,
+  Sparkle
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
-import { PhotoMeetup, MeetupCategory } from '@/types';
+import { PhotoMeetup, MeetupCategory, MeetupPhotoRoll } from '@/types';
 
 // URL 파라미터 감지하여 모임 개설 모달 자동 오픈 (?action=create&spotTitle=...)
 function ExperienceQuerySync({
@@ -63,13 +68,35 @@ export default function ExperiencesPage() {
     joinMeetup,
     cancelMeetup,
     closeMeetup,
+    photoRolls,
+    crews,
+    weeklyPlans,
+    uploadPhotoRoll,
+    togglePhotoRollLike,
+    joinCrew,
     showToast
   } = useDasi();
 
+  const [activeView, setActiveView] = useState<'meetups' | 'calendar' | 'crews'>('meetups');
+  const [calendarSeasonFilter, setCalendarSeasonFilter] = useState<'all' | 'spring' | 'summer' | 'autumn' | 'winter'>('all');
   const [selectedCategory, setSelectedCategory] = useState<MeetupCategory | 'all'>('all');
   
-  // 모임 상세 보기 모달 상태
+  // 모임 상세 보기 모달 상태 및 탭
   const [selectedDetailMeetup, setSelectedDetailMeetup] = useState<PhotoMeetup | null>(null);
+  const [detailTab, setDetailTab] = useState<'info' | 'photos' | 'reviews'>('info');
+
+  // 사진 롤 업로드 모달 상태
+  const [isUploadRollOpen, setIsUploadRollOpen] = useState(false);
+  const [rollForm, setRollForm] = useState({
+    authorName: '',
+    cameraModel: 'Olympus PEN EE-3',
+    filmStock: 'Kodak Portra 400',
+    labName: '을지로 망우삼림 (SP3000)',
+    rating: 5,
+    caption: '',
+    reviewText: '',
+    selectedSampleIndex: 0,
+  });
 
   // 모임 개설 모달 상태
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -172,6 +199,56 @@ export default function ExperiencesPage() {
     setIssuedTicketCode(code);
   };
 
+  const sampleUploadPhotos = [
+    'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?auto=format&fit=crop&w=1000&q=80',
+  ];
+
+  const handleUploadRollSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDetailMeetup) return;
+    if (!rollForm.caption.trim()) {
+      showToast('사진 롤의 한 줄 소개(캡션)를 입력해주세요.', 'warning');
+      return;
+    }
+
+    playShutterSound('slr');
+    const chosenPhoto = sampleUploadPhotos[rollForm.selectedSampleIndex] || sampleUploadPhotos[0];
+    const secondPhoto = sampleUploadPhotos[(rollForm.selectedSampleIndex + 1) % sampleUploadPhotos.length];
+
+    uploadPhotoRoll({
+      meetupId: selectedDetailMeetup.id,
+      meetupTitle: selectedDetailMeetup.title,
+      photographerName: rollForm.authorName.trim() || '익명의 필름러',
+      photographerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+      imageUrl: chosenPhoto,
+      photos: [chosenPhoto, secondPhoto],
+      cameraModel: rollForm.cameraModel,
+      filmType: rollForm.filmStock,
+      labName: rollForm.labName,
+      caption: rollForm.caption,
+      rating: rollForm.rating,
+      reviewText: rollForm.reviewText.trim() || '동료 필름러들과 좋은 풍경을 담을 수 있어 정말 뜻깊은 시간이었습니다.',
+    });
+
+    setIsUploadRollOpen(false);
+    setDetailTab('photos');
+    setRollForm({
+      authorName: '',
+      cameraModel: 'Olympus PEN EE-3',
+      filmStock: 'Kodak Portra 400',
+      labName: '을지로 망우삼림 (SP3000)',
+      rating: 5,
+      caption: '',
+      reviewText: '',
+      selectedSampleIndex: 0,
+    });
+  };
+
   const handleCopyChatLink = () => {
     navigator.clipboard.writeText('https://open.kakao.com/o/dasi_photowalk_2026');
     setIsCopiedChatLink(true);
@@ -225,39 +302,81 @@ export default function ExperiencesPage() {
         </div>
       </div>
 
-      {/* Categories & Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-vintage-200 pb-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {[
-            { id: 'all', label: '전체 모임' },
-            { id: 'flash_walk', label: '⚡ 즉석 번개 출사' },
-            { id: 'golden_hour', label: '🌅 노을·골든아워' },
-            { id: 'theme_walk', label: '🎞️ 테마 스트리트' },
-            { id: 'master_class', label: '🔧 40년 명장 클래스' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id as MeetupCategory | 'all')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                selectedCategory === cat.id
-                  ? 'bg-vintage-900 text-white shadow-xs'
-                  : 'bg-vintage-100 text-vintage-600 hover:bg-vintage-200'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+      {/* 3대 핵심 뷰 전환 탭: [출사 모임] / [52주 캘린더] / [시즌 정기 크루] */}
+      <div className="flex p-1.5 rounded-2xl bg-vintage-100 border border-vintage-200/80 gap-1.5 shadow-inner">
+        <button
+          onClick={() => setActiveView('meetups')}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeView === 'meetups'
+              ? 'bg-vintage-900 text-white shadow-md'
+              : 'text-vintage-600 hover:text-vintage-900 hover:bg-white/60'
+          }`}
+        >
+          <Flame className={`w-4 h-4 ${activeView === 'meetups' ? 'text-amber-300' : 'text-vintage-500'}`} />
+          <span>주말 출사 모임·번개 ({meetups.length})</span>
+        </button>
 
-        <div className="text-xs text-vintage-500 font-medium shrink-0 flex items-center gap-2">
-          <span>총 <strong className="text-terracotta">{filteredMeetups.length}개</strong> 모임 진행 중</span>
-          <span className="text-vintage-300">|</span>
-          <span className="text-emerald-700 font-semibold">내 참여/주최 {bookedExperiences.length}건</span>
-        </div>
+        <button
+          onClick={() => setActiveView('calendar')}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeView === 'calendar'
+              ? 'bg-vintage-900 text-white shadow-md'
+              : 'text-vintage-600 hover:text-vintage-900 hover:bg-white/60'
+          }`}
+        >
+          <Calendar className={`w-4 h-4 ${activeView === 'calendar' ? 'text-amber-300' : 'text-vintage-500'}`} />
+          <span>52주 아날로그 캘린더 ({weeklyPlans.length}주차)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('crews')}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeView === 'crews'
+              ? 'bg-vintage-900 text-white shadow-md'
+              : 'text-vintage-600 hover:text-vintage-900 hover:bg-white/60'
+          }`}
+        >
+          <Users className={`w-4 h-4 ${activeView === 'crews' ? 'text-amber-300' : 'text-vintage-500'}`} />
+          <span>시즌 정기 크루 ({crews.length})</span>
+        </button>
       </div>
 
-      {/* Meetups Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      {/* VIEW 1: MEETUPS */}
+      {activeView === 'meetups' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* Categories & Filter Tabs */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-vintage-200 pb-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'all', label: '전체 모임' },
+                { id: 'flash_walk', label: '⚡ 즉석 번개 출사' },
+                { id: 'golden_hour', label: '🌅 노을·골든아워' },
+                { id: 'theme_walk', label: '🎞️ 테마 스트리트' },
+                { id: 'master_class', label: '🔧 40년 명장 클래스' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id as MeetupCategory | 'all')}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                    selectedCategory === cat.id
+                      ? 'bg-vintage-900 text-white shadow-xs'
+                      : 'bg-vintage-100 text-vintage-600 hover:bg-vintage-200'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-xs text-vintage-500 font-medium shrink-0 flex items-center gap-2">
+              <span>총 <strong className="text-terracotta">{filteredMeetups.length}개</strong> 모임 진행 중</span>
+              <span className="text-vintage-300">|</span>
+              <span className="text-emerald-700 font-semibold">내 참여/주최 {bookedExperiences.length}건</span>
+            </div>
+          </div>
+
+          {/* Meetups Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {filteredMeetups.map((meetup) => {
           const isFull = meetup.currentAttendees >= meetup.maxAttendees;
           const seatsLeft = Math.max(0, meetup.maxAttendees - meetup.currentAttendees);
@@ -503,7 +622,258 @@ export default function ExperiencesPage() {
             </div>
           );
         })}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 2: 52-WEEK CALENDAR */}
+      {activeView === 'calendar' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* Calendar Intro & Season Filter */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-vintage-200 pb-4">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-vintage-900 flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-terracotta" />
+                <span>52주 아날로그 출사 캘린더 (연간 로드맵)</span>
+              </h2>
+              <p className="text-xs text-vintage-600 mt-1">
+                계절의 빛과 날씨에 가장 어울리는 전국 감성 출사 스팟과 최적의 필름·카메라 매칭 큐레이션입니다.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'all', label: '전체 (52주)' },
+                { id: 'spring', label: '🌸 봄 (3~5월)' },
+                { id: 'summer', label: '🌿 여름 (6~8월)' },
+                { id: 'autumn', label: '🍂 가을 (9~11월)' },
+                { id: 'winter', label: '❄️ 겨울 (12~2월)' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setCalendarSeasonFilter(s.id as any)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                    calendarSeasonFilter === s.id
+                      ? 'bg-vintage-900 text-white shadow-xs'
+                      : 'bg-vintage-100 text-vintage-600 hover:bg-vintage-200'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Calendar Weekly Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(calendarSeasonFilter === 'all'
+              ? weeklyPlans
+              : weeklyPlans.filter((p) => p.season === calendarSeasonFilter)
+            ).map((plan) => (
+              <div
+                key={plan.weekNumber}
+                className="bg-white rounded-3xl border border-vintage-200/90 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-mono font-bold">
+                      WEEK {plan.weekNumber}
+                    </span>
+                    <span className="text-2xs font-semibold text-vintage-500">
+                      {plan.month}월 추천 테마
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="font-serif text-lg font-bold text-vintage-900 leading-snug">
+                      {plan.theme}
+                    </h3>
+                    <div className="text-xs text-terracotta font-semibold mt-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{plan.spotName}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-vintage-600 leading-relaxed">
+                    {plan.highlight}
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-vintage-50 border border-vintage-100 space-y-1.5 text-xs">
+                    <div className="flex items-center gap-1.5 text-vintage-700">
+                      <Camera className="w-3.5 h-3.5 text-terracotta shrink-0" />
+                      <span className="text-vintage-500">추천 기종:</span>
+                      <Link href="/rent" className="font-semibold text-vintage-900 hover:text-terracotta underline">
+                        {plan.recommendedCamera}
+                      </Link>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-vintage-700">
+                      <Film className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                      <span className="text-vintage-500">추천 필름:</span>
+                      <Link href="/films" className="font-semibold text-vintage-900 hover:text-emerald-800 underline">
+                        {plan.recommendedFilm}
+                      </Link>
+                    </div>
+                  </div>
+
+                  {plan.festivalName && (
+                    <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 text-2xs text-amber-900 flex items-start gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                      <span><strong>시즌 페스티벌:</strong> {plan.festivalName}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-vintage-100">
+                  <button
+                    onClick={() => handleOpenCreateWithSpot(plan.spotName)}
+                    className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5 text-amber-300" />
+                    <span>이 코스로 번개 모임 개설하기 (+300P)</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 3: SEASONAL CREWS */}
+      {activeView === 'crews' && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* Crews Intro Banner */}
+          <div className="rounded-3xl bg-linear-to-r from-vintage-900 via-vintage-800 to-terracotta/90 text-white p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md">
+            <div className="space-y-2 max-w-2xl">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-vintage-950 text-xs font-bold">
+                DASI 시즌 정기 크루 (Photo Crews)
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold">
+                혼자가 아닌, 깊이 있게 기록하는 동료 필름러
+              </h2>
+              <p className="text-xs sm:text-sm text-vintage-200 leading-relaxed">
+                격주 또는 월 단위로 정기 출사를 떠나며, 시즌 말 멤버들과 공동 필름 사진집 출판 및 전시에 참여할 수 있습니다.
+                크루원에게는 <strong>DASI 카메라 렌탈 20% 상시 할인</strong> 혜택이 적용됩니다.
+              </p>
+            </div>
+            <div className="text-xs bg-white/10 p-4 rounded-2xl border border-white/15 space-y-1 shrink-0">
+              <div className="text-amber-300 font-bold">🎁 크루원 정기 혜택</div>
+              <div>• 시즌 종료 후 공동 zine(사진집) 발간 지원</div>
+              <div>• 매월 제휴 현상소 2롤 무료 스캔 쿠폰</div>
+              <div>• 장인 수리실 1회 무상 오버홀 정기 점검권</div>
+            </div>
+          </div>
+
+          {/* Crews Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {crews.map((crew) => (
+              <div
+                key={crew.id}
+                className="bg-white rounded-3xl border border-vintage-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="relative h-48 w-full overflow-hidden bg-vintage-100">
+                    <img
+                      src={crew.coverImage}
+                      alt={crew.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3 flex gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-amber-300 text-xs font-bold border border-white/20">
+                        {crew.preferredGearTheme}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold border border-white/20">
+                        {crew.region}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-3 left-4 right-4 text-white">
+                      <h3 className="font-serif text-xl font-bold">{crew.name}</h3>
+                      <p className="text-xs text-vintage-200">{crew.tagline}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-4 text-xs">
+                    {/* Leader info */}
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-vintage-50 border border-vintage-100">
+                      <img
+                        src={crew.leaderAvatar}
+                        alt={crew.leaderName}
+                        className="w-10 h-10 rounded-full object-cover border border-vintage-200"
+                      />
+                      <div>
+                        <div className="font-bold text-vintage-900 text-xs">크루장: {crew.leaderName}</div>
+                        <div className="text-2xs text-vintage-500">{crew.preferredGearTheme}</div>
+                      </div>
+                    </div>
+
+                    {/* Schedule and Spots */}
+                    <div className="space-y-2 text-vintage-700">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-terracotta shrink-0" />
+                        <span>정기 출사: <strong>{crew.schedule}</strong></span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
+                        <span>활동 거점: <strong>{crew.region}</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {crew.tags.map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-md bg-vintage-100 text-vintage-700 text-2xs font-medium">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Capacity progress */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex justify-between text-2xs text-vintage-600">
+                        <span>크루 정원</span>
+                        <span><strong>{crew.membersCount}</strong> / {crew.maxMembers}명</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-vintage-100 overflow-hidden">
+                        <div
+                          className="h-full bg-terracotta rounded-full transition-all"
+                          style={{ width: `${Math.min(100, (crew.membersCount / crew.maxMembers) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 pt-0">
+                  <button
+                    onClick={() => {
+                      playShutterSound('slr');
+                      joinCrew(crew.id);
+                    }}
+                    className={`w-full py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                      crew.isJoined
+                        ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                        : 'bg-terracotta hover:bg-terracotta-light text-white'
+                    }`}
+                  >
+                    {crew.isJoined ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                        <span>✓ 크루원 활동 중 (클릭 시 탈퇴)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Users className="w-4 h-4" />
+                        <span>정기 크루 합류 신청 (+100P)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 3-Step Hobby Ecosystem Banner */}
       <div className="rounded-3xl border border-vintage-200 bg-white p-8 sm:p-10 shadow-xs space-y-6">
@@ -608,79 +978,335 @@ export default function ExperiencesPage() {
               </div>
             </div>
 
-            {/* Content Details */}
-            <div className="space-y-4 text-xs sm:text-sm">
-              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100">
-                <div className="flex items-center gap-2 text-vintage-700">
-                  <Calendar className="w-4 h-4 text-terracotta" />
-                  <span>일시: <strong>{selectedDetailMeetup.dateTime}</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-vintage-700">
-                  <Clock className="w-4 h-4 text-terracotta" />
-                  <span>소요 시간: <strong>{selectedDetailMeetup.duration}</strong></span>
-                </div>
-                <div className="col-span-2 flex items-center gap-2 text-vintage-700">
-                  <MapPin className="w-4 h-4 text-terracotta shrink-0" />
-                  <span>집결 장소: <strong>{selectedDetailMeetup.location}</strong></span>
-                </div>
-              </div>
+            {/* Internal Modal Tabs */}
+            {(() => {
+              const currentRolls = photoRolls.filter((r) => r.meetupId === selectedDetailMeetup.id);
+              const currentReviews = currentRolls.filter((r) => r.reviewText);
 
-              <div className="space-y-1">
-                <div className="font-bold text-vintage-900 text-xs">출사 코스 및 모임 소개</div>
-                <p className="text-vintage-600 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                  {selectedDetailMeetup.description}
-                </p>
-              </div>
-
-              {/* Included Perks */}
-              {selectedDetailMeetup.included && selectedDetailMeetup.included.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="font-bold text-vintage-900 text-xs">포함 내역 및 혜택</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedDetailMeetup.included.map((inc, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        <span>{inc}</span>
+              return (
+                <>
+                  <div className="flex border-b border-vintage-200 gap-4 text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setDetailTab('info')}
+                      className={`pb-2.5 border-b-2 transition-all cursor-pointer ${
+                        detailTab === 'info'
+                          ? 'border-vintage-900 text-vintage-900'
+                          : 'border-transparent text-vintage-400 hover:text-vintage-700'
+                      }`}
+                    >
+                      📋 모임 안내
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDetailTab('photos')}
+                      className={`pb-2.5 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                        detailTab === 'photos'
+                          ? 'border-terracotta text-terracotta'
+                          : 'border-transparent text-vintage-400 hover:text-vintage-700'
+                      }`}
+                    >
+                      <Film className="w-3.5 h-3.5" />
+                      <span>📸 참가자 필름 롤</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-terracotta/10 text-terracotta text-[10px]">
+                        {currentRolls.length}
                       </span>
-                    ))}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDetailTab('reviews')}
+                      className={`pb-2.5 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                        detailTab === 'reviews'
+                          ? 'border-emerald-700 text-emerald-800'
+                          : 'border-transparent text-vintage-400 hover:text-vintage-700'
+                      }`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>💬 생생 후기</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">
+                        {currentReviews.length}
+                      </span>
+                    </button>
                   </div>
-                </div>
-              )}
 
-              {/* Recommended Gear & Film */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                {selectedDetailMeetup.recommendedGear && (
-                  <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
-                    <span className="font-bold text-amber-900 text-2xs flex items-center gap-1">
-                      <Camera className="w-3 h-3 text-amber-700" /> 추천 카메라 기종
-                    </span>
-                    <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedGear}</div>
-                  </div>
-                )}
-                {selectedDetailMeetup.recommendedFilm && (
-                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-                    <span className="font-bold text-emerald-900 text-2xs flex items-center gap-1">
-                      <Film className="w-3 h-3 text-emerald-700" /> 추천 필름
-                    </span>
-                    <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedFilm}</div>
-                  </div>
-                )}
-              </div>
+                  {/* TAB 1: INFO */}
+                  {detailTab === 'info' && (
+                    <div className="space-y-4 text-xs sm:text-sm animate-fadeIn">
+                      <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-vintage-50 border border-vintage-100">
+                        <div className="flex items-center gap-2 text-vintage-700">
+                          <Calendar className="w-4 h-4 text-terracotta shrink-0" />
+                          <span>일시: <strong>{selectedDetailMeetup.dateTime}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2 text-vintage-700">
+                          <Clock className="w-4 h-4 text-terracotta shrink-0" />
+                          <span>소요 시간: <strong>{selectedDetailMeetup.duration}</strong></span>
+                        </div>
+                        <div className="col-span-2 flex items-center gap-2 text-vintage-700">
+                          <MapPin className="w-4 h-4 text-terracotta shrink-0" />
+                          <span>집결 장소: <strong>{selectedDetailMeetup.location}</strong></span>
+                        </div>
+                      </div>
 
-              {/* Attendees & Chat Notice */}
-              <div className="p-3.5 rounded-xl bg-vintage-100/60 border border-vintage-200/80 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-vintage-700">
-                  <Users className="w-4 h-4 text-terracotta" />
-                  <span>
-                    참여 인원: <strong>{selectedDetailMeetup.currentAttendees} / {selectedDetailMeetup.maxAttendees}명</strong>
-                  </span>
-                </div>
-                <div className="text-amber-800 font-bold text-xs flex items-center gap-1">
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>참여 확정 시 단톡방 링크 안내</span>
-                </div>
-              </div>
-            </div>
+                      <div className="space-y-1">
+                        <div className="font-bold text-vintage-900 text-xs">출사 코스 및 모임 소개</div>
+                        <p className="text-vintage-600 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                          {selectedDetailMeetup.description}
+                        </p>
+                      </div>
+
+                      {/* Included Perks */}
+                      {selectedDetailMeetup.included && selectedDetailMeetup.included.length > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="font-bold text-vintage-900 text-xs">포함 내역 및 혜택</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedDetailMeetup.included.map((inc, i) => (
+                              <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-semibold flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span>{inc}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Recommended Gear & Film */}
+                      <div className="grid grid-cols-2 gap-3 pt-1">
+                        {selectedDetailMeetup.recommendedGear && (
+                          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
+                            <span className="font-bold text-amber-900 text-2xs flex items-center gap-1">
+                              <Camera className="w-3 h-3 text-amber-700" /> 추천 카메라 기종
+                            </span>
+                            <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedGear}</div>
+                          </div>
+                        )}
+                        {selectedDetailMeetup.recommendedFilm && (
+                          <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                            <span className="font-bold text-emerald-900 text-2xs flex items-center gap-1">
+                              <Film className="w-3 h-3 text-emerald-700" /> 추천 필름
+                            </span>
+                            <div className="text-xs text-vintage-800">{selectedDetailMeetup.recommendedFilm}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Attendees & Chat Notice */}
+                      <div className="p-3.5 rounded-xl bg-vintage-100/60 border border-vintage-200/80 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-vintage-700">
+                          <Users className="w-4 h-4 text-terracotta" />
+                          <span>
+                            참여 인원: <strong>{selectedDetailMeetup.currentAttendees} / {selectedDetailMeetup.maxAttendees}명</strong>
+                          </span>
+                        </div>
+                        <div className="text-amber-800 font-bold text-xs flex items-center gap-1">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>참여 확정 시 단톡방 링크 안내</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: PHOTO ROLLS ARCHIVE */}
+                  {detailTab === 'photos' && (
+                    <div className="space-y-4 animate-fadeIn">
+                      <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80">
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <span>출사 롤을 공유하고 150P를 받으세요!</span>
+                          </div>
+                          <p className="text-2xs text-vintage-600">
+                            동료들과 함께 촬영한 필름 스캔본을 아카이빙할 수 있습니다.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRollForm((prev) => ({
+                              ...prev,
+                              cameraModel: selectedDetailMeetup.recommendedGear?.split('또는')[0]?.trim() || prev.cameraModel,
+                              filmStock: selectedDetailMeetup.recommendedFilm?.split('또는')[0]?.trim() || prev.filmStock,
+                            }));
+                            setIsUploadRollOpen(true);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
+                        >
+                          <Upload className="w-3.5 h-3.5 text-amber-300" />
+                          <span>내 롤 올리기 (+150P)</span>
+                        </button>
+                      </div>
+
+                      {currentRolls.length === 0 ? (
+                        <div className="text-center py-10 rounded-2xl border border-dashed border-vintage-200 p-6 space-y-2">
+                          <Film className="w-8 h-8 text-vintage-300 mx-auto" />
+                          <p className="text-xs font-semibold text-vintage-700">아직 등록된 출사 사진 롤이 없습니다.</p>
+                          <p className="text-2xs text-vintage-400">첫 번째로 현상·스캔 사진 롤을 공유해 보세요!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+                          {currentRolls.map((roll) => (
+                            <div
+                              key={roll.id}
+                              className="p-4 rounded-2xl bg-vintage-50/80 border border-vintage-200/80 space-y-3"
+                            >
+                              {/* Roll Author & Rating */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={roll.photographerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
+                                    alt={roll.photographerName}
+                                    className="w-7 h-7 rounded-full object-cover border border-vintage-200"
+                                  />
+                                  <div>
+                                    <span className="font-bold text-vintage-900 text-xs">{roll.photographerName}</span>
+                                    <span className="text-2xs text-vintage-400 ml-2 font-mono">{roll.createdAt}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-0.5">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-3.5 h-3.5 ${
+                                        i < (roll.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-vintage-200'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Gear Tags */}
+                              <div className="flex flex-wrap gap-1.5 text-2xs">
+                                <Link
+                                  href="/rent"
+                                  className="px-2 py-0.5 rounded-md bg-white border border-vintage-200 text-vintage-800 font-semibold hover:border-terracotta hover:text-terracotta transition-colors flex items-center gap-1"
+                                >
+                                  <Camera className="w-3 h-3 text-terracotta" />
+                                  <span>{roll.cameraModel} (렌탈)</span>
+                                </Link>
+                                <Link
+                                  href="/films"
+                                  className="px-2 py-0.5 rounded-md bg-white border border-vintage-200 text-emerald-800 font-semibold hover:border-emerald-500 transition-colors flex items-center gap-1"
+                                >
+                                  <Film className="w-3 h-3 text-emerald-600" />
+                                  <span>{roll.filmType}</span>
+                                </Link>
+                                <Link
+                                  href="/studios"
+                                  className="px-2 py-0.5 rounded-md bg-white border border-vintage-200 text-vintage-700 font-medium hover:text-vintage-900 transition-colors"
+                                >
+                                  🧪 {roll.labName}
+                                </Link>
+                              </div>
+
+                              {/* Photos Gallery */}
+                              <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
+                                {(roll.photos && roll.photos.length > 0 ? roll.photos : [roll.imageUrl]).map((p: string, idx: number) => (
+                                  <div key={idx} className="relative h-40 bg-black/10 overflow-hidden group/pic">
+                                    <img
+                                      src={p}
+                                      alt={`${roll.photographerName}-${idx}`}
+                                      className="w-full h-full object-cover group-hover/pic:scale-105 transition-transform duration-300"
+                                    />
+                                    <Link
+                                      href="/frame"
+                                      className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/70 backdrop-blur-md text-white text-[10px] font-bold opacity-0 group-hover/pic:opacity-100 transition-opacity flex items-center gap-1"
+                                    >
+                                      <Layers className="w-3 h-3 text-amber-300" />
+                                      <span>프레임 입히기</span>
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Caption */}
+                              <p className="text-xs text-vintage-700 font-medium leading-relaxed">
+                                {roll.caption}
+                              </p>
+
+                              {/* Roll Actions */}
+                              <div className="flex items-center justify-between pt-1 border-t border-vintage-200/60 text-xs">
+                                <button
+                                  type="button"
+                                  onClick={() => togglePhotoRollLike(roll.id)}
+                                  className="flex items-center gap-1.5 text-vintage-600 hover:text-red-500 transition-colors font-medium cursor-pointer"
+                                >
+                                  <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                                  <span>좋아요 {roll.likesCount}</span>
+                                </button>
+
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    href="/frame"
+                                    className="px-2.5 py-1 rounded-lg bg-vintage-100 hover:bg-vintage-200 text-vintage-800 text-2xs font-bold transition-colors"
+                                  >
+                                    🖼️ DASI 프레임 입히기
+                                  </Link>
+                                  <Link
+                                    href="/rent"
+                                    className="px-2.5 py-1 rounded-lg bg-terracotta/10 hover:bg-terracotta/20 text-terracotta text-2xs font-bold transition-colors"
+                                  >
+                                    📷 이 카메라 렌트투온
+                                  </Link>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* TAB 3: REVIEWS */}
+                  {detailTab === 'reviews' && (
+                    <div className="space-y-3 animate-fadeIn">
+                      {currentReviews.length === 0 ? (
+                        <div className="text-center py-10 rounded-2xl border border-dashed border-vintage-200 p-6 space-y-2">
+                          <MessageCircle className="w-8 h-8 text-vintage-300 mx-auto" />
+                          <p className="text-xs font-semibold text-vintage-700">아직 등록된 출사 후기가 없습니다.</p>
+                          <p className="text-2xs text-vintage-400">참가자 필름 롤을 업로드하면서 후기를 함께 남겨주세요!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                          {currentReviews.map((r) => (
+                            <div
+                              key={r.id}
+                              className="p-4 rounded-2xl bg-vintage-50 border border-vintage-200/80 space-y-2"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={r.photographerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
+                                    alt={r.photographerName}
+                                    className="w-7 h-7 rounded-full object-cover"
+                                  />
+                                  <span className="font-bold text-vintage-900 text-xs">{r.photographerName}</span>
+                                </div>
+                                <div className="flex items-center gap-0.5">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-3.5 h-3.5 ${
+                                        i < (r.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-vintage-200'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-xs text-vintage-700 leading-relaxed">
+                                {r.reviewText}
+                              </p>
+                              <div className="text-2xs text-vintage-500 font-mono flex items-center justify-between pt-1">
+                                <span>사용 기종: {r.cameraModel} • {r.filmType}</span>
+                                <span>{r.createdAt}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Modal Actions */}
             <div className="pt-2 flex items-center justify-between border-t border-vintage-100">
@@ -1164,6 +1790,187 @@ export default function ExperiencesPage() {
                 </form>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* UPLOAD PHOTO ROLL MODAL */}
+      {isUploadRollOpen && selectedDetailMeetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-vintage-200 relative my-8 animate-in fade-in zoom-in-95 duration-200 space-y-5">
+            <button
+              onClick={() => setIsUploadRollOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-full text-vintage-400 hover:text-vintage-800 hover:bg-vintage-100 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
+                <Sparkles className="w-3 h-3 text-amber-600" />
+                <span>필름 롤 아카이빙 보너스 +150P 지급</span>
+              </div>
+              <h3 className="font-serif text-2xl font-bold text-vintage-900">
+                출사 필름 롤 &amp; 후기 등록
+              </h3>
+              <p className="text-xs text-vintage-600">
+                <strong>{selectedDetailMeetup.title}</strong> 출사에서 담은 소중한 빛과 색감을 동료들과 공유하세요.
+              </p>
+            </div>
+
+            <form onSubmit={handleUploadRollSubmit} className="space-y-4 text-xs sm:text-sm">
+              {/* Author & Rating */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-vintage-800 text-xs">작성자 닉네임 *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="김필름러"
+                    value={rollForm.authorName}
+                    onChange={(e) => setRollForm({ ...rollForm, authorName: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-vintage-200 focus:border-terracotta outline-none text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-vintage-800 text-xs">모임 만족도 (별점)</label>
+                  <div className="flex items-center gap-1 py-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setRollForm({ ...rollForm, rating: star })}
+                        className="cursor-pointer"
+                      >
+                        <Star
+                          className={`w-5 h-5 transition-transform hover:scale-110 ${
+                            star <= rollForm.rating ? 'text-amber-400 fill-amber-400' : 'text-vintage-200'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-vintage-700 ml-1.5">{rollForm.rating}점</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gear selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="space-y-1">
+                  <label className="font-bold text-vintage-800 text-2xs">사용 카메라 바디 *</label>
+                  <select
+                    value={rollForm.cameraModel}
+                    onChange={(e) => setRollForm({ ...rollForm, cameraModel: e.target.value })}
+                    className="w-full px-2.5 py-2 rounded-xl border border-vintage-200 bg-white text-xs text-vintage-800"
+                  >
+                    <option value="Olympus PEN EE-3">Olympus PEN EE-3</option>
+                    <option value="Canon Canonet QL17 G-III">Canon Canonet QL17</option>
+                    <option value="Rollei 35">Rollei 35</option>
+                    <option value="Nikon FM2">Nikon FM2</option>
+                    <option value="Minolta X-700">Minolta X-700</option>
+                    <option value="Leica M6">Leica M6</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-vintage-800 text-2xs">사용 필름 스톡 *</label>
+                  <select
+                    value={rollForm.filmStock}
+                    onChange={(e) => setRollForm({ ...rollForm, filmStock: e.target.value })}
+                    className="w-full px-2.5 py-2 rounded-xl border border-vintage-200 bg-white text-xs text-vintage-800"
+                  >
+                    <option value="Kodak Portra 400">Kodak Portra 400</option>
+                    <option value="Kodak Gold 200">Kodak Gold 200</option>
+                    <option value="Kodak UltraMax 400">Kodak UltraMax 400</option>
+                    <option value="Fujicolor C200">Fujicolor C200</option>
+                    <option value="Ilford HP5 Plus 400">Ilford HP5 Plus 400</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-vintage-800 text-2xs">스캔 현상소 *</label>
+                  <select
+                    value={rollForm.labName}
+                    onChange={(e) => setRollForm({ ...rollForm, labName: e.target.value })}
+                    className="w-full px-2.5 py-2 rounded-xl border border-vintage-200 bg-white text-xs text-vintage-800"
+                  >
+                    <option value="을지로 망우삼림 (SP3000)">을지로 망우삼림</option>
+                    <option value="충무로 고래사진관 (Noritsu)">충무로 고래사진관</option>
+                    <option value="성수 팔레트사진관">성수 팔레트사진관</option>
+                    <option value="홍대 필름로그">홍대 필름로그</option>
+                    <option value="자가 현상소 (Self Scan)">자가 현상/스캔</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Sample Photo Selector */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-vintage-800 text-xs">
+                  필름 스캔 컷 선택 (대표 2컷 아카이빙)
+                </label>
+                <div className="grid grid-cols-6 gap-2">
+                  {sampleUploadPhotos.map((url, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setRollForm({ ...rollForm, selectedSampleIndex: idx })}
+                      className={`relative h-16 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
+                        rollForm.selectedSampleIndex === idx
+                          ? 'border-terracotta ring-2 ring-terracotta/30 scale-105'
+                          : 'border-vintage-200 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={url} alt={`sample-${idx}`} className="w-full h-full object-cover" />
+                      {rollForm.selectedSampleIndex === idx && (
+                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-terracotta text-white flex items-center justify-center text-[9px] font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Caption */}
+              <div className="space-y-1">
+                <label className="font-bold text-vintage-800 text-xs">필름 롤 한 줄 소개 (캡션) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="예: 늦은 오후 골목 어귀에서 만난 주황빛 햇살과 차분한 입자감"
+                  value={rollForm.caption}
+                  onChange={(e) => setRollForm({ ...rollForm, caption: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-vintage-200 focus:border-terracotta outline-none text-xs"
+                />
+              </div>
+
+              {/* Review Text */}
+              <div className="space-y-1">
+                <label className="font-bold text-vintage-800 text-xs">출사 생생 후기 (선택)</label>
+                <textarea
+                  rows={2}
+                  placeholder="모임의 분위기, 호스트님의 팁 코칭, 다른 참가자분들과의 교류 경험을 들려주세요."
+                  value={rollForm.reviewText}
+                  onChange={(e) => setRollForm({ ...rollForm, reviewText: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-vintage-200 focus:border-terracotta outline-none text-xs"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-vintage-100">
+                <button
+                  type="button"
+                  onClick={() => setIsUploadRollOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-vintage-300 text-vintage-700 font-semibold text-xs cursor-pointer hover:bg-vintage-100"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-light text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>필름 롤 아카이빙 등록 (+150P)</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
