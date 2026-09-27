@@ -58,7 +58,7 @@ export const mockCameras: Camera[] = [
     shopId: 'shop-1',
     shopName: '을지로 신성카메라',
     pickupLocation: '을지로3가역 대림상가 3층 341호',
-    imageUrl: 'https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
       'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',

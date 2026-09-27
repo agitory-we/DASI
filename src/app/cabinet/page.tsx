@@ -353,10 +353,10 @@ function CabinetContent() {
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>DASI 생태계 멤버십 &amp; 디지털 캐비닛</span>
+            <span>DASI 생태계 멤버십 & 디지털 캐비닛</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">
-            {profile ? `${profile.nickname || '익명 필름러'}님의 캐비닛` : '마이 캐비닛 (통합 예약 &amp; 소장 센터)'}
+            {profile ? `${profile.nickname || '익명 필름러'}님의 캐비닛` : '마이 캐비닛 (통합 예약 & 소장 센터)'}
           </h1>
           <p className="text-xs text-vintage-300">
             {profile
@@ -459,11 +459,16 @@ function CabinetContent() {
                 </div>
               ) : (
                 <div className="space-y-6 divide-y divide-vintage-100">
-                  {activeRentings.map((rentItem, idx) => (
+                  {activeRentings.map((rentItem, idx) => {
+                    const validImageUrl =
+                      rentItem.imageUrl && !rentItem.imageUrl.includes('photo-1512790182412') && !rentItem.imageUrl.includes('photo-1526170375885')
+                        ? rentItem.imageUrl
+                        : 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=800&auto=format&fit=crop&q=80';
+                    return (
                     <div key={rentItem.id} className={`grid grid-cols-1 md:grid-cols-12 gap-8 items-center ${idx > 0 ? 'pt-6' : ''}`}>
                       <div className="md:col-span-4 relative aspect-[4/3] rounded-2xl overflow-hidden bg-vintage-100">
                         <img
-                          src={rentItem.imageUrl}
+                          src={validImageUrl}
                           alt={rentItem.name}
                           className="w-full h-full object-cover"
                         />
@@ -493,9 +498,9 @@ function CabinetContent() {
                             </span>
                             <span className="text-emerald-700 font-bold">기결제 대여료 {rentItem.rentalPaid.toLocaleString()}원 100% 공제</span>
                           </div>
-                          <div className="flex items-baseline justify-between text-xs pt-1">
+                          <div className="flex items-baseline justify-between text-xs pt-1 flex-wrap gap-1">
                             <span className="text-vintage-600">정상가 {rentItem.purchaseTotal.toLocaleString()}원 - 대여료 {rentItem.rentalPaid.toLocaleString()}원 =</span>
-                            <span className="text-lg font-bold text-terracotta">
+                            <span className="text-lg font-bold text-terracotta whitespace-nowrap">
                               {Math.max(0, rentItem.purchaseTotal - rentItem.rentalPaid).toLocaleString()}원
                             </span>
                           </div>
@@ -526,7 +531,8 @@ function CabinetContent() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -537,7 +543,7 @@ function CabinetContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-vintage-900">
-                  내 소장 컬렉션 &amp; 디지털 보증서 (Passport)
+                  내 소장 컬렉션 & 디지털 보증서 (Passport)
                 </h2>
                 <p className="text-xs text-vintage-600 mt-0.5">
                   DASI에서 검증된 정품 이력과 장인 점검 로그로 추후 원클릭 재판매(Resell)가 가능합니다.

@@ -278,7 +278,14 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedWelcome = localStorage.getItem('dasi_welcome_claimed');
 
       if (savedRenting) {
-        setRentingItems(JSON.parse(savedRenting));
+        const parsed: RentingCameraItem[] = JSON.parse(savedRenting);
+        const migrated = parsed.map(item => {
+          if (item.name.includes('Olympus PEN EE-3')) {
+            return { ...item, imageUrl: 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=800&auto=format&fit=crop&q=80' };
+          }
+          return item;
+        });
+        setRentingItems(migrated);
       } else {
         setRentingItems([
           {
@@ -289,7 +296,7 @@ export const DasiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             purchaseTotal: 190000,
             rentalDays: 2,
             shopName: '을지로 신성카메라 (대림상가 3층)',
-            imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+            imageUrl: 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=800&auto=format&fit=crop&q=80',
             bookedAt: '2026.09.21',
             isConvertedToOwn: false,
           },
