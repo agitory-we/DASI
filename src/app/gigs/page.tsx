@@ -26,6 +26,8 @@ import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80';
+
 export default function GigsPage() {
   const { photoGigs, isLoadingData, bookGig, showToast } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
@@ -57,17 +59,23 @@ export default function GigsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold mb-2">
-            <Users className="w-3.5 h-3.5" />
-            <span>취향 기반 C2C 생활형 스냅 마켓</span>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
+              <Users className="w-3.5 h-3.5" />
+              <span>취향 기반 C2C 생활형 스냅 마켓</span>
+            </div>
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-2xs font-semibold border border-emerald-200">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+              <span>누적 1,420건 매칭 · 만족도 99.2%</span>
+            </div>
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
             DASI 로컬 포토 긱 (Photo Gig)
           </h1>
-          <p className="text-xs sm:text-sm text-vintage-600 mt-1 max-w-2xl leading-relaxed">
-            비싸고 부담스러운 상업 스튜디오 대신, 감성 카메라를 가진 로컬 작가에게 소소한 일상 스냅을 의뢰하세요.
-            성수동 외국인 투어 스냅부터 결혼식 하객 시선의 가성비 서브 웨딩까지 합리적인 가격에 매칭됩니다.
+          <p className="text-xs sm:text-sm text-vintage-600 max-w-2xl leading-relaxed">
+            비싸고 부담스러운 상업 스튜디오 대신, 감성 카메라를 가진 검증된 로컬 작가에게 소소한 일상 스냅을 의뢰하세요.
+            성수동 외국인 투어 스냅부터 가성비 서브 웨딩까지 합리적인 가격과 100% 안심 에스크로로 매칭됩니다.
           </p>
         </div>
 
@@ -75,21 +83,21 @@ export default function GigsPage() {
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Link
             href="/explore"
-            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white hover:bg-vintage-50 border border-vintage-300 text-vintage-800 text-xs sm:text-sm font-bold transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-vintage-50 border border-vintage-300 text-vintage-800 text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <MapPin className="w-4 h-4 text-terracotta" />
             <span>52주 출사지 보기</span>
           </Link>
           <Link
             href="/cabinet?tab=tickets"
-            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-vintage-100 hover:bg-vintage-200 border border-vintage-300 text-vintage-900 text-xs sm:text-sm font-bold transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-vintage-100 hover:bg-vintage-200 border border-vintage-300 text-vintage-900 text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <Ticket className="w-4 h-4 text-emerald-700" />
             <span>내 예약 티켓 확인</span>
           </Link>
           <button
             onClick={() => setIsRegisterOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-terracotta text-white text-xs sm:text-sm font-bold hover:bg-terracotta-light transition-all shadow-sm active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>내 카메라로 스냅 알바 등록</span>
@@ -98,32 +106,38 @@ export default function GigsPage() {
       </div>
 
       {/* Safety & Escrow Guarantee Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-vintage-200 shadow-2xs grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-        <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
           <div>
             <div className="font-bold text-vintage-900">100% 안심 에스크로 정산</div>
-            <div className="text-[11px] text-vintage-500">사진 수령 확인 후 작가에게 정산 완료</div>
+            <div className="text-[11px] text-vintage-500 leading-snug">고객 사진 최종 수령 및 승인 후 작가에게 대금 정산</div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
-          <Camera className="w-5 h-5 text-terracotta shrink-0" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0">
+            <Camera className="w-5 h-5" />
+          </div>
           <div>
             <div className="font-bold text-vintage-900">실제 촬영 장비 투명 공개</div>
-            <div className="text-[11px] text-vintage-500">라이카, 후지필름, 콘탁스 기종 표기</div>
+            <div className="text-[11px] text-vintage-500 leading-snug">라이카, 후지필름, 콘탁스 등 작가 소장 명기 기종 표기</div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
-          <HeartHandshake className="w-5 h-5 text-amber-600 shrink-0" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+            <HeartHandshake className="w-5 h-5" />
+          </div>
           <div>
             <div className="font-bold text-vintage-900">부담 없는 3~7만 원대 단가</div>
-            <div className="text-[11px] text-vintage-500">불필요한 거품 없는 1시간 단위 소소한 스냅</div>
+            <div className="text-[11px] text-vintage-500 leading-snug">불필요한 거품 없는 1시간 단위 캐주얼 감성 스냅</div>
           </div>
         </div>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-vintage-200 pb-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-vintage-200 pb-3">
         {[
           { id: 'all', label: '전체 스냅 긱' },
           { id: 'foreigner_tour', label: '🌏 성수·북촌 외국인/여행 스냅' },
@@ -133,7 +147,7 @@ export default function GigsPage() {
           <button
             key={tab.id}
             onClick={() => setSelectedCategory(tab.id as GigCategory | 'all')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               selectedCategory === tab.id
                 ? 'bg-vintage-900 text-white shadow-xs'
                 : 'bg-white text-vintage-700 hover:bg-vintage-100 border border-vintage-200'
@@ -161,25 +175,29 @@ export default function GigsPage() {
           {filteredGigs.map((gig) => (
           <div
             key={gig.id}
-            className="rounded-3xl bg-white border border-vintage-200 overflow-hidden shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between group"
+            className="rounded-3xl bg-white border border-vintage-200/80 overflow-hidden shadow-xs hover:shadow-xl transition-all flex flex-col justify-between group"
           >
             <div>
               {/* Portfolio Main Image Preview */}
               <div
-                onClick={() => setActivePortfolioImg(gig.portfolioImages[0])}
-                className="relative aspect-[16/10] bg-vintage-100 overflow-hidden cursor-pointer"
+                onClick={() => setActivePortfolioImg(gig.portfolioImages[0] || FALLBACK_IMAGE)}
+                className="relative aspect-[16/10] bg-vintage-900 overflow-hidden cursor-pointer"
               >
                 <img
-                  src={gig.portfolioImages[0]}
+                  src={gig.portfolioImages[0] || FALLBACK_IMAGE}
                   alt={gig.title}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium flex items-center gap-1 shadow-xs">
+                  <MapPin className="w-3 h-3 text-terracotta-light" />
                   <span>{gig.location}</span>
                 </div>
-                <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-white/90 text-vintage-900 text-[10px] font-bold shadow-xs">
-                  포트폴리오 {gig.portfolioImages.length}장 보기 🔍
+                <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-bold shadow-xs flex items-center gap-1 hover:bg-black/90 transition-colors">
+                  <span>포트폴리오 {gig.portfolioImages.length}장 보기</span>
+                  <span>🔍</span>
                 </span>
               </div>
 
@@ -191,13 +209,16 @@ export default function GigsPage() {
                     <img
                       src={gig.creatorAvatar}
                       alt={gig.creatorName}
-                      className="w-8 h-8 rounded-full object-cover border border-vintage-200"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                      }}
+                      className="w-8 h-8 rounded-full object-cover border border-vintage-200 shrink-0"
                     />
                     <div>
                       <div className="text-xs font-bold text-vintage-900 flex items-center gap-1">
                         <span>{gig.creatorName}</span>
                         {gig.isVerified && (
-                          <CheckCircle2 className="w-3 h-3 text-terracotta" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-terracotta" />
                         )}
                       </div>
                       <div className="text-[10px] text-vintage-500">
@@ -206,14 +227,14 @@ export default function GigsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs font-bold text-amber-600">
+                  <div className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
                     <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                     <span>{gig.rating}</span>
                     <span className="text-[10px] text-vintage-400">({gig.reviewsCount})</span>
                   </div>
                 </div>
 
-                <h3 className="font-serif text-base font-bold text-vintage-900 leading-snug group-hover:text-terracotta transition-colors">
+                <h3 className="font-serif text-base font-bold text-vintage-900 leading-snug group-hover:text-terracotta transition-colors line-clamp-2">
                   {gig.title}
                 </h3>
 
@@ -221,14 +242,23 @@ export default function GigsPage() {
                   {gig.description}
                 </p>
 
-                {/* Gear Tag */}
-                <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-100 text-[11px] text-vintage-700 flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5 text-terracotta shrink-0" />
-                  <span className="font-medium truncate">{gig.gearUsed.join(' + ')}</span>
+                {/* Gear Tag with Rent Bridge Hook */}
+                <div className="p-2.5 rounded-xl bg-vintage-50 border border-vintage-100 text-[11px] text-vintage-700 flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Camera className="w-3.5 h-3.5 text-terracotta shrink-0" />
+                    <span className="font-medium truncate">{gig.gearUsed.join(' + ')}</span>
+                  </div>
+                  <Link
+                    href={`/rent?search=${encodeURIComponent(gig.gearUsed[0] || '')}`}
+                    className="text-[10px] text-terracotta hover:underline font-bold shrink-0 bg-white px-2 py-0.5 rounded border border-vintage-200/80 shadow-2xs"
+                    title={`${gig.gearUsed[0] || '장비'} 렌탈 보기`}
+                  >
+                    장비 체험 →
+                  </Link>
                 </div>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-1 pt-1">
+                <div className="flex flex-wrap gap-1 pt-0.5">
                   {gig.tags.map((tag) => (
                     <span
                       key={tag}
@@ -244,7 +274,12 @@ export default function GigsPage() {
             {/* Price & Booking Footer */}
             <div className="p-5 pt-0 border-t border-vintage-100 flex items-center justify-between mt-2">
               <div>
-                <span className="text-[10px] text-vintage-400 font-medium">1시간(60분) 기준</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-vintage-400 font-medium">1시간 기준</span>
+                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                    1만 쿠폰 가능
+                  </span>
+                </div>
                 <div className="text-base font-bold text-terracotta">
                   {gig.pricePerHour.toLocaleString()}원
                 </div>
@@ -255,7 +290,7 @@ export default function GigsPage() {
                   setSelectedGig(gig);
                   setIsBooked(false);
                 }}
-                className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-colors shadow-xs"
+                className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
               >
                 촬영 문의 &amp; 예약
               </button>
@@ -275,6 +310,9 @@ export default function GigsPage() {
             <img
               src={activePortfolioImg}
               alt="Portfolio detail"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+              }}
               className="w-full h-full object-contain"
             />
             <button
@@ -296,6 +334,9 @@ export default function GigsPage() {
                 <img
                   src={selectedGig.creatorAvatar}
                   alt={selectedGig.creatorName}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                  }}
                   className="w-10 h-10 rounded-full object-cover border"
                 />
                 <div>
