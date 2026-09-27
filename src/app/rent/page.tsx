@@ -236,12 +236,12 @@ function RentContent() {
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          이번 주말 내 손에 꼭 맞는 아날로그 카메라 찾기
+          카메라 체험 &amp; 소장 (Rent-to-Own)
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           고가의 클래식 필름카메라를 무턱대고 구입하기 부담스러우셨나요?
           충무로·을지로 40년 명장의 손을 거쳐 완벽하게 오버홀된 기기를 주말 동안 편안하게 체험해 보세요.
-          매장에서 <strong>장인의 10분 온보딩 강습</strong>을 듣고 손맛을 만끽한 뒤, 반하면 <strong>대여료 전액을 공제받고 잔금만으로 소장</strong>할 수 있습니다.
+          매장에서 <strong>장인의 10분 온보딩 강습</strong>을 듣고 손맛을 만끽한 뒤, 반하면 <strong>대여료 전액(100%)을 공제받고 잔금만으로 소장</strong>할 수 있습니다.
         </p>
 
         {/* 출사지 연계 쿼리스트링 동기화 & 안내 배너 */}
@@ -503,6 +503,10 @@ function RentContent() {
                 <img
                   src={camera.imageUrl}
                   alt={camera.name}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-3 left-3 flex gap-1.5">
@@ -550,45 +554,62 @@ function RentContent() {
                   <div>배터리: <span className="font-semibold text-vintage-900">{camera.specs.battery}</span></div>
                 </div>
 
-                {/* Pricing & CTA */}
-                <div className="pt-2 border-t border-vintage-100 flex items-center justify-between">
-                  <div>
-                    <div className="text-[11px] text-vintage-500">1일 대여료</div>
-                    <div className="text-base sm:text-lg font-bold text-terracotta">
-                      {camera.rentalPricePerDay.toLocaleString()}원
+                {/* Pricing & CTA Section */}
+                <div className="pt-3 border-t border-vintage-150 space-y-3">
+                  {/* Row 1: 1일 대여료 & 소장 전환 혜택 안내 */}
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-[11px] text-vintage-500 font-medium">1일 체험 대여료</div>
+                      <div className="text-lg font-serif font-bold text-terracotta">
+                        {camera.rentalPricePerDay.toLocaleString()}
+                        <span className="text-xs font-normal text-vintage-600 ml-0.5">원 / 일</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
+                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                        구매 시 전액 공제
+                      </span>
+                      <div className="text-[10px] text-vintage-400 mt-0.5">
+                        소장 전환 가능
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 justify-end">
+                  {/* Row 2: 대여 예약 & 리뷰 액션 버튼 */}
+                  <div className="grid grid-cols-5 gap-2">
                     <button
+                      type="button"
                       onClick={() => setReviewTargetCamera(camera)}
-                      className="mt-1 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition-colors"
+                      className="col-span-2 py-2 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-all text-center"
                       title="실제 사용 후기 및 사진 등록하고 +100P 받기"
                     >
-                      <span>✍️ 리뷰 (+100P)</span>
+                      ✍️ 리뷰 쓰기
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleOpenBooking(camera)}
-                      className="mt-1 px-3.5 py-2 rounded-xl bg-vintage-900 text-white text-xs font-bold hover:bg-terracotta transition-colors flex items-center gap-1.5 shadow-xs"
+                      className="col-span-3 py-2 px-3 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
                     >
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>대여 예약</span>
+                      <span>주말 렌탈 신청</span>
                     </button>
                   </div>
 
+                  {/* Row 3: 52주 출사지 & 추천 필름 인라인 링크 */}
                   <div className="pt-2 border-t border-vintage-100/60 flex items-center justify-between text-[11px] text-vintage-500">
                     <Link
                       href="/explore"
-                      className="hover:text-terracotta flex items-center gap-1 transition-colors font-medium"
+                      className="hover:text-terracotta flex items-center gap-1 transition-colors font-medium truncate"
                     >
-                      <Compass className="w-3 h-3 text-amber-600" />
-                      <span>이 기종으로 갈 만한 52주 출사지 보기 →</span>
+                      <Compass className="w-3 h-3 text-amber-600 shrink-0" />
+                      <span className="truncate">추천 출사지 보기 →</span>
                     </Link>
                     <Link
                       href="/films"
-                      className="hover:text-rose-700 flex items-center gap-1 transition-colors font-medium"
+                      className="hover:text-rose-700 flex items-center gap-1 transition-colors font-medium shrink-0"
                     >
-                      <Film className="w-3 h-3 text-rose-500" />
+                      <Film className="w-3 h-3 text-rose-500 shrink-0" />
                       <span>추천 필름</span>
                     </Link>
                   </div>

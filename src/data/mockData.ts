@@ -58,7 +58,7 @@ export const mockCameras: Camera[] = [
     shopId: 'shop-1',
     shopName: '을지로 신성카메라',
     pickupLocation: '을지로3가역 대림상가 3층 341호',
-    imageUrl: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
       'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
@@ -88,9 +88,9 @@ export const mockCameras: Camera[] = [
     shopId: 'shop-2',
     shopName: '충무로 보성광학',
     pickupLocation: '충무로역 5번 출구 100m 충무스퀘어',
-    imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1500634245200-e5245c7574ef?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
-      'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80',
     ],
     description: '세계 최초 1/4000초 셔터 속도를 달성한 완전 기계식 SLR의 표준. 사진학과 학생들의 영원한 교과서.',
@@ -148,7 +148,7 @@ export const mockCameras: Camera[] = [
     shopId: 'shop-3',
     shopName: '남대문 중앙사',
     pickupLocation: '남대문시장 중앙상가 B1',
-    imageUrl: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1516724562728-afc824a36e84?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
       'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
     ],
@@ -177,7 +177,7 @@ export const mockCameras: Camera[] = [
     shopId: 'shop-1',
     shopName: '을지로 신성카메라',
     pickupLocation: '을지로3가역 대림상가 3층 341호',
-    imageUrl: 'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80',
     sampleImages: [
       'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
     ],
