@@ -236,7 +236,7 @@ function RentContent() {
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          카메라 체험 &amp; 소장 (Rent-to-Own)
+          카메라 체험 & 소장 (Rent-to-Own)
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           고가의 클래식 필름카메라를 무턱대고 구입하기 부담스러우셨나요?
@@ -279,7 +279,7 @@ function RentContent() {
               <Calendar className="w-4 h-4 text-purple-700" />
               <div>
                 <div className="text-xs font-bold">이번 주말 어디로 떠날까요?</div>
-                <div className="text-[11px] text-purple-700">서울 52주 축제 &amp; 골목 출사지 둘러보기</div>
+                <div className="text-[11px] text-purple-700">서울 52주 축제 & 골목 출사지 둘러보기</div>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
@@ -293,7 +293,7 @@ function RentContent() {
               <Film className="w-4 h-4 text-rose-700" />
               <div>
                 <div className="text-xs font-bold">출사용 필름이 필요하신가요?</div>
-                <div className="text-[11px] text-rose-700">서울 3시간 당일 퀵 &amp; 대량 벌크샵 바로가기</div>
+                <div className="text-[11px] text-rose-700">서울 3시간 당일 퀵 & 대량 벌크샵 바로가기</div>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
@@ -312,7 +312,7 @@ function RentContent() {
           </div>
           <h2 className="text-lg sm:text-xl font-serif font-bold text-white flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-400" />
-            후지필름 X100VI &amp; 리코 GR IIIx 한정 렌탈 드롭
+            후지필름 X100VI & 리코 GR IIIx 한정 렌탈 드롭
           </h2>
           <p className="text-xs text-vintage-200">
             품절 대란 하이엔드 기종을 주말 3일간 특별가에 대여할 수 있는 기회 (기종별 선착순 2대)
@@ -350,7 +350,7 @@ function RentContent() {
           </div>
           <div>
             <div className="text-xs font-bold text-vintage-900">1:1 장인 10분 강습</div>
-            <div className="text-[11px] text-vintage-500">현장 픽업 시 필름 장착 &amp; 조작법 전수</div>
+            <div className="text-[11px] text-vintage-500">현장 픽업 시 필름 장착 & 조작법 전수</div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -374,12 +374,12 @@ function RentContent() {
               </span>
               <span className="text-xs font-bold text-amber-900 flex items-center gap-1">
                 <Truck className="w-3.5 h-3.5 text-amber-700" />
-                서울 전역 3시간 당일 퀵 &amp; 명장 매장 즉시 픽업
+                서울 전역 3시간 당일 퀵 & 명장 매장 즉시 픽업
               </span>
             </div>
             <h2 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 flex items-center gap-2">
               <Film className="w-5 h-5 text-terracotta" />
-              <span>출사용 필름 대량 구매(벌크) 할인 &amp; 즉시 공급</span>
+              <span>출사용 필름 대량 구매(벌크) 할인 & 즉시 공급</span>
             </h2>
             <p className="text-xs text-vintage-600">
               카메라 대여 없이 필름만 필요하신가요? 3롤 이상 묶음 구매 시 최대 12% 할인 및 서울 시내 당일 퀵 배송 혜택을 드립니다.
@@ -676,7 +676,7 @@ function RentContent() {
                       <span className="font-bold text-vintage-900">{startDate} ~ {endDate} ({rentalDays}일간)</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-vintage-200">
-                      <span className="text-vintage-500">픽업 장소 &amp; 시간</span>
+                      <span className="text-vintage-500">픽업 장소 & 시간</span>
                       <span className="font-bold text-terracotta">{currentShop?.name} ({pickupTime})</span>
                     </div>
                     <div className="flex justify-between py-1">
@@ -802,7 +802,7 @@ function RentContent() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
-                        2. 방문 픽업 &amp; 10분 강습 매장 선택
+                        2. 방문 픽업 & 10분 강습 매장 선택
                       </label>
                       <button
                         type="button"
@@ -925,7 +925,7 @@ function RentContent() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-vintage-800 uppercase tracking-wider">
-                        3. 패키지 &amp; 케어 부가 옵션 선택
+                        3. 패키지 & 케어 부가 옵션 선택
                       </label>
                       {isBundleSelected && (
                         <span className="text-[10px] font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full">

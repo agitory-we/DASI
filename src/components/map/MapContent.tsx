@@ -484,7 +484,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
             </Link>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>실시간 당일 픽업 &amp; 아날로그 스팟</span>
+              <span>실시간 당일 픽업 & 아날로그 스팟</span>
             </div>
             <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/60 text-[11px] font-medium">
               <Zap className="w-3 h-3 text-amber-600" />
@@ -492,7 +492,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
             </div>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-            내 주변 당일 수령 &amp; 아날로그 지도
+            내 주변 당일 수령 & 아날로그 지도
           </h1>
           <p className="text-xs sm:text-sm text-vintage-600 mt-1.5 max-w-2xl leading-relaxed">
             을지로·충무로·성수동 즉시 수령 카메라 거점, 당일 스캔 현상소, 24시 필름 자판기 및 40년 명장 수리실의 실시간 위치와 색감을 확인하세요.
@@ -851,7 +851,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-vintage-900 flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-emerald-600" />
-                      실시간 가동 현황 &amp; 작업 소요 시간
+                      실시간 가동 현황 & 작업 소요 시간
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
                       {activeSpot.sameDayAvailable ? '🟢 당일 작업 즉시 가능' : '🟡 순차 처리 중'}
@@ -1121,7 +1121,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                     className="flex-1 py-3.5 px-4 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs text-center group"
                   >
                     <ShoppingBag className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
-                    <span>이 장소 맞춤 카메라 주말 대여 &amp; 픽업 &gt;</span>
+                    <span>이 장소 맞춤 카메라 주말 대여 & 픽업 &gt;</span>
                   </Link>
 
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -1302,7 +1302,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
               <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-terracotta" />
                 <h3 className="font-serif text-xl font-bold text-vintage-900">
-                  아날로그 스팟 입점 &amp; 소액 홍보
+                  아날로그 스팟 입점 & 소액 홍보
                 </h3>
               </div>
               <button

@@ -80,7 +80,7 @@ export default function ClinicPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-xs font-bold">
             <Wrench className="w-3.5 h-3.5" />
-            <span>닥터 DASI · 장인 클리닉 &amp; 제휴 케어</span>
+            <span>닥터 DASI · 장인 클리닉 & 제휴 케어</span>
           </div>
           <span className="text-xs text-vintage-400">·</span>
           <span className="text-xs text-vintage-600 font-medium">서울 3대 공인 명장 · 표준 정찰제 · 비대면 무료 견적</span>

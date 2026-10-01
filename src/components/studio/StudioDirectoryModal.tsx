@@ -135,7 +135,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
                 <Store className="w-4 h-4" />
               </span>
               <h3 className="font-serif text-lg font-bold text-vintage-900">
-                서울시 사진관 &amp; 공식 제휴 현상소
+                서울시 사진관 & 공식 제휴 현상소
               </h3>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono font-bold">
                 공공데이터 + 소상공인 융합
@@ -212,7 +212,7 @@ export const StudioDirectoryModal: React.FC<StudioDirectoryModalProps> = ({ isOp
             <div className="py-20 text-center space-y-3">
               <div className="w-8 h-8 mx-auto border-3 border-terracotta border-t-transparent rounded-full animate-spin" />
               <p className="text-xs text-vintage-500 font-mono">
-                소상공인 상권정보 &amp; 서울시 인허가 데이터 융합 로딩 중...
+                소상공인 상권정보 & 서울시 인허가 데이터 융합 로딩 중...
               </p>
             </div>
           ) : studios.length === 0 ? (

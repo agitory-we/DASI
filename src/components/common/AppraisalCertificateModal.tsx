@@ -198,7 +198,7 @@ export const AppraisalCertificateModal: React.FC<AppraisalCertificateModalProps>
               <h3 className="font-serif font-bold text-base text-cream">
                 DASI 공인 디지털 감정서
               </h3>
-              <p className="text-[11px] text-amber-300/80">9:16 모바일 &amp; 인스타 규격</p>
+              <p className="text-[11px] text-amber-300/80">9:16 모바일 & 인스타 규격</p>
             </div>
           </div>
           <button

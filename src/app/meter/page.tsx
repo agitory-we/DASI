@@ -409,7 +409,7 @@ export default function LightMeterPage() {
         className="w-full py-4 rounded-2xl bg-gradient-to-r from-terracotta via-amber-600 to-terracotta bg-[length:200%_auto] hover:bg-right text-white font-serif font-bold text-base shadow-lg shadow-terracotta/25 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 mb-4"
       >
         <Camera className="w-5 h-5 text-amber-200" />
-        <span>셔터 햅틱 &amp; 효과음 테스트 (SLR Click)</span>
+        <span>셔터 햅틱 & 효과음 테스트 (SLR Click)</span>
       </button>
 
       {/* 6. DASI 52주 취미 생태계 연계 브릿지 */}

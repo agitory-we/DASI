@@ -154,7 +154,7 @@ export default function FilmsPage() {
           <span>신선 냉장 보관 100% 정품 필름 당일 긴급 공급</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          필름 주문 &amp; 대량 벌크샵
+          필름 주문 & 대량 벌크샵
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           출사 현장에서 필름이 떨어졌을 때도 당황하지 마세요. 서울 전역 <strong>3시간 당일 퀵 배송</strong>과 
@@ -208,7 +208,7 @@ export default function FilmsPage() {
             </div>
             <div>
               <div className="text-xs font-bold">다 찍은 필름은 어디에 맡길까요?</div>
-              <div className="text-[11px] text-amber-800">서울 40년 노포 &amp; 제휴 현상소 20% 할인 QR 받기</div>
+              <div className="text-[11px] text-amber-800">서울 40년 노포 & 제휴 현상소 20% 할인 QR 받기</div>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
@@ -224,7 +224,7 @@ export default function FilmsPage() {
             </div>
             <div>
               <div className="text-xs font-bold">필름 들고 어디로 떠날까요?</div>
-              <div className="text-[11px] text-purple-800">서울 52주 축제 &amp; 골목길 출사 핫스팟 가이드</div>
+              <div className="text-[11px] text-purple-800">서울 52주 축제 & 골목길 출사 핫스팟 가이드</div>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-purple-600 group-hover:translate-x-0.5 transition-transform" />
@@ -309,7 +309,7 @@ export default function FilmsPage() {
                 onClick={() => setSelectedFilm(prod)}
                 className="w-full py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
               >
-                <span>신청 &amp; 당일 수령하기</span>
+                <span>신청 & 당일 수령하기</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -405,7 +405,7 @@ export default function FilmsPage() {
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-lg text-vintage-900">
-                    필름 주문 &amp; 배송 신청
+                    필름 주문 & 배송 신청
                   </h3>
                   <p className="text-xs text-vintage-500">신선 냉장 필름 즉시 출고</p>
                 </div>

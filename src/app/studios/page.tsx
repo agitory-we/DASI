@@ -161,7 +161,7 @@ export default function StudiosPage() {
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          서울 제휴 현상소 &amp; 사진관 (QR 20%↓)
+          서울 제휴 현상소 & 사진관 (QR 20%↓)
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           40년 넘게 서울 충무로와 을지로의 아날로그 감성을 지켜온 장인 노포 현상소부터, 

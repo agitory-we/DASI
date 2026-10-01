@@ -31,17 +31,17 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs text-vintage-300">
               <li>
                 <Link href="/rent" className="hover:text-cream transition-colors">
-                  카메라 주말 렌탈 &amp; Rent-to-Own
+                  카메라 주말 렌탈 & Rent-to-Own
                 </Link>
               </li>
               <li>
                 <Link href="/map" className="hover:text-cream transition-colors">
-                  전국 현상소 &amp; 필름 자판기 지도
+                  전국 현상소 & 필름 자판기 지도
                 </Link>
               </li>
               <li>
                 <Link href="/gigs" className="hover:text-cream transition-colors">
-                  로컬 포토 긱 (스냅 알바 &amp; 투어)
+                  로컬 포토 긱 (스냅 알바 & 투어)
                 </Link>
               </li>
               <li>
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link href="/explore" className="hover:text-cream transition-colors">
-                  [Phase 2] 서울 축제 &amp; 출사 핫스팟
+                  [Phase 2] 서울 축제 & 출사 핫스팟
                 </Link>
               </li>
             </ul>
@@ -121,7 +121,7 @@ export const Footer: React.FC = () => {
         <div className="mt-12 pt-6 border-t border-vintage-800 text-[11px] text-vintage-400 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span>본 서비스의 출사 명소, 축제 캘린더, 고화질 사진 갤러리 및 관광 100선 정보는 <strong>한국관광공사(TourAPI 4.0 &amp; PhotoGalleryService)</strong> 및 <strong>공공데이터포털</strong>의 공인 공공데이터를 실시간 연동하여 제공합니다.</span>
+            <span>본 서비스의 출사 명소, 축제 캘린더, 고화질 사진 갤러리 및 관광 100선 정보는 <strong>한국관광공사(TourAPI 4.0 & PhotoGalleryService)</strong> 및 <strong>공공데이터포털</strong>의 공인 공공데이터를 실시간 연동하여 제공합니다.</span>
           </div>
           <div className="font-mono text-[10px] text-vintage-500">
             KOREA TOURISM ORGANIZATION · TOUR API 4.0 VERIFIED

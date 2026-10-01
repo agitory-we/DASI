@@ -112,7 +112,7 @@ export function ReviewModal({ isOpen, onClose, targetType, targetId, targetName,
               <span>실사용 1컷 리뷰 (+100P 적립)</span>
             </div>
             <h2 className="font-serif text-lg font-bold text-vintage-900">
-              [{targetName}] 실사용 후기 &amp; 팁
+              [{targetName}] 실사용 후기 & 팁
             </h2>
           </div>
           <button onClick={onClose} className="p-1.5 text-vintage-400 hover:text-vintage-800 rounded-full hover:bg-vintage-100">
@@ -198,7 +198,7 @@ export function ReviewModal({ isOpen, onClose, targetType, targetId, targetName,
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-vintage-700">
-              조작감 &amp; 촬영 팁 <span className="text-terracotta">*</span>
+              조작감 & 촬영 팁 <span className="text-terracotta">*</span>
             </label>
             <textarea
               rows={3}

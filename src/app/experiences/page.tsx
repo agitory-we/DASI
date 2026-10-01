@@ -271,7 +271,7 @@ export default function ExperiencesPage() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-200 text-xs font-bold border border-white/15">
             <Compass className="w-3.5 h-3.5 text-amber-300" />
-            <span>52주 필름 출사 클럽 &amp; 주말 번개 놀이터</span>
+            <span>52주 필름 출사 클럽 & 주말 번개 놀이터</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
@@ -1461,7 +1461,7 @@ export default function ExperiencesPage() {
                 {/* Location & Time */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="font-bold text-vintage-800 text-xs">집결 장소 &amp; 코스 *</label>
+                    <label className="font-bold text-vintage-800 text-xs">집결 장소 & 코스 *</label>
                     <input
                       type="text"
                       required
@@ -1826,7 +1826,7 @@ export default function ExperiencesPage() {
                 <span>필름 롤 아카이빙 보너스 +150P 지급</span>
               </div>
               <h3 className="font-serif text-2xl font-bold text-vintage-900">
-                출사 필름 롤 &amp; 후기 등록
+                출사 필름 롤 & 후기 등록
               </h3>
               <p className="text-xs text-vintage-600">
                 <strong>{selectedDetailMeetup.title}</strong> 출사에서 담은 소중한 빛과 색감을 동료들과 공유하세요.

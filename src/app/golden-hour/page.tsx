@@ -199,7 +199,7 @@ export default function GoldenHourPage() {
           <span>실시간 천문 기상 알고리즘 (SunCalc 서울 천구 기준)</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 tracking-tight">
-          서울 실시간 골든아워 &amp; 매직아워 출사 예보
+          서울 실시간 골든아워 & 매직아워 출사 예보
         </h1>
         <p className="text-sm sm:text-base text-vintage-700 max-w-3xl leading-relaxed">
           필름카메라 사진이 가장 아름답게 물드는 하루 1시간, 태양의 고도가 6도 이하로 내려앉는 
@@ -336,7 +336,7 @@ export default function GoldenHourPage() {
       <div className="space-y-6">
         <div>
           <h2 className="font-serif text-2xl font-bold text-vintage-900">
-            서울 4대 골든아워 일몰 출사 명소 &amp; 추천 세팅
+            서울 4대 골든아워 일몰 출사 명소 & 추천 세팅
           </h2>
           <p className="text-xs sm:text-sm text-vintage-600 mt-1">
             아날로그 필름의 입자와 색감을 가장 드라마틱하게 담을 수 있는 서울의 검증된 포인트입니다.

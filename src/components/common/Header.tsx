@@ -326,7 +326,7 @@ export const Header: React.FC<HeaderProps> = ({
                       className="block text-center text-[10px] font-bold text-terracotta hover:text-terracotta/80 py-1.5 border-t border-vintage-100"
                       onClick={() => setIsNotifOpen(false)}
                     >
-                      전체 내역 &amp; 성지순례 패스포트 보기 →
+                      전체 내역 & 성지순례 패스포트 보기 →
                     </Link>
                   </div>
                 )}
@@ -354,7 +354,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onMouseLeave={() => setIsMoreMenuOpen(false)}
                 >
                   <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-2 py-1">
-                    취미 클래스 &amp; 스마트 도구
+                    취미 클래스 & 스마트 도구
                   </div>
                   {moreNavItems.map((item) => {
                     const IconComponent = item.icon;
@@ -382,7 +382,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   <div className="border-t border-vintage-100 my-1 pt-1">
                     <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-2 py-1">
-                      손맛 체험 &amp; 접근성
+                      손맛 체험 & 접근성
                     </div>
                     <div className="grid grid-cols-2 gap-1 px-1">
                       <button
@@ -507,7 +507,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="pt-2 border-t border-vintage-100 space-y-1">
             <div className="text-[10px] font-bold text-vintage-400 uppercase tracking-wider px-1">
-              부가 서비스 &amp; 도구
+              부가 서비스 & 도구
             </div>
             {moreNavItems.map((item) => {
               const Icon = item.icon;
@@ -532,7 +532,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Store className="w-4 h-4 text-terracotta" />
-                  <span>서울 사진관 &amp; DASI 제휴 현상소</span>
+                  <span>서울 사진관 & DASI 제휴 현상소</span>
                 </div>
                 <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">
                   20% 할인 QR

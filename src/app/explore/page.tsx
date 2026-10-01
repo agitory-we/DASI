@@ -352,10 +352,10 @@ function ExploreContent() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
             <Calendar className="w-3.5 h-3.5 text-amber-700" />
-            <span>서울 52주 출사 &amp; 축제 큐레이션 — 52-Week Shutter Guide</span>
+            <span>서울 52주 출사 & 축제 큐레이션 — 52-Week Shutter Guide</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
-            서울 52주 축제 &amp; 골목 출사 Hot Spot 가이드
+            서울 52주 축제 & 골목 출사 Hot Spot 가이드
           </h1>
           <p className="text-xs sm:text-sm text-vintage-600 max-w-3xl leading-relaxed">
             1년 52주, 서울의 숨은 골목과 축제는 매주 새로운 감성을 선물합니다.
@@ -898,7 +898,7 @@ function ExploreContent() {
               <div>
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 flex items-center gap-2">
                   <FileText className="w-6 h-6 text-amber-600" />
-                  <span>대한민국 구석구석 추천 출사 리포트 &amp; 기사</span>
+                  <span>대한민국 구석구석 추천 출사 리포트 & 기사</span>
                 </h3>
                 <p className="text-xs text-vintage-500 mt-1">
                   사광과 일몰이 아름다운 대한민국 대표 출사지를 집중 취재한 공식 여행 기사입니다.

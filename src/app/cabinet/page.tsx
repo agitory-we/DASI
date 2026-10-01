@@ -713,7 +713,7 @@ function CabinetContent() {
               <div>
                 <h2 className="font-serif text-2xl font-bold text-vintage-900 flex items-center gap-2">
                   <Ticket className="w-6 h-6 text-terracotta" />
-                  <span>출사 &amp; 암실 클래스 모바일 티켓 ({bookedExperiences.length})</span>
+                  <span>출사 & 암실 클래스 모바일 티켓 ({bookedExperiences.length})</span>
                 </h2>
                 <p className="text-xs text-vintage-600 mt-0.5">
                   현장 방문 시 모바일 QR 코드를 제시하여 즉시 입장하고 카메라 패키지를 수령할 수 있습니다.
@@ -728,7 +728,7 @@ function CabinetContent() {
                   href="/experiences"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-vintage-900 text-white text-xs font-semibold hover:bg-terracotta transition-colors"
                 >
-                  <span>주말 골목 출사 &amp; 암실 클래스 둘러보기</span>
+                  <span>주말 골목 출사 & 암실 클래스 둘러보기</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -916,7 +916,7 @@ function CabinetContent() {
               <div>
                 <h2 className="font-serif text-2xl font-bold text-vintage-900 flex items-center gap-2">
                   <Film className="w-6 h-6 text-terracotta" />
-                  <span>내 보관 필름 롤 &amp; 현상소 스캔 ({mockFilmRolls.length})</span>
+                  <span>내 보관 필름 롤 & 현상소 스캔 ({mockFilmRolls.length})</span>
                 </h2>
                 <p className="text-xs text-vintage-600 mt-0.5">
                   제휴 현상소에서 스캔 완료된 원본 사진을 다운로드하거나 프레임 생성기로 바로 보낼 수 있습니다.
@@ -1099,7 +1099,7 @@ function CabinetContent() {
                 <div className="flex items-center gap-2">
                   <Ticket className="w-4 h-4 text-terracotta" />
                   <h2 className="font-serif text-lg font-bold text-vintage-900">
-                    내 보유 멤버십 쿠폰 &amp; 바우처 ({coupons.length})
+                    내 보유 멤버십 쿠폰 & 바우처 ({coupons.length})
                   </h2>
                 </div>
                 <p className="text-xs text-vintage-600 mt-0.5">
@@ -1204,7 +1204,7 @@ function CabinetContent() {
                   DASI CONTRIBUTE-TO-EARN ECOSYSTEM
                 </span>
                 <h2 className="font-serif text-2xl font-bold text-vintage-900">
-                  내 DASI 포인트 &amp; 생태계 기여 리워드
+                  내 DASI 포인트 & 생태계 기여 리워드
                 </h2>
                 <p className="text-xs text-vintage-600">
                   내가 올린 출사지 팁과 솔직한 리뷰는 다른 필름러들에게 큰 영감이 되며, 모인 포인트는 렌탈비와 현상 쿠폰으로 돌려받습니다.
@@ -1548,7 +1548,7 @@ function CabinetContent() {
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
-                  완주 시 +1,000P &amp; 한정판 황동 스트랩
+                  완주 시 +1,000P & 한정판 황동 스트랩
                 </span>
               </div>
 
@@ -1624,7 +1624,7 @@ function CabinetContent() {
                   <span className="text-xl">🌿</span>
                   <div>
                     <h3 className="font-serif text-lg font-bold text-vintage-900">
-                      코스 2: 성수·서울숲 붉은 벽돌 &amp; 자연광 코스 (3선)
+                      코스 2: 성수·서울숲 붉은 벽돌 & 자연광 코스 (3선)
                     </h3>
                     <p className="text-xs text-vintage-500">
                       붉은 벽돌 카페거리와 싱그러운 메타세콰이어 숲속 햇살
@@ -2102,7 +2102,7 @@ function CabinetContent() {
                   <div>📍 <strong>집합 장소:</strong> {selectedTicket.data.location}</div>
                   <div>🕒 <strong>일시:</strong> {selectedTicket.data.dateTime}</div>
                   {selectedTicket.data.hasRentalPackage && (
-                    <div className="text-amber-800 font-bold">📷 <strong>특전:</strong> 대여 카메라 &amp; 필름 1롤 현장 수령</div>
+                    <div className="text-amber-800 font-bold">📷 <strong>특전:</strong> 대여 카메라 & 필름 1롤 현장 수령</div>
                   )}
                 </div>
 
@@ -2149,7 +2149,7 @@ function CabinetContent() {
                     }}
                     className="w-full py-1.5 rounded-lg bg-vintage-900 hover:bg-terracotta text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1"
                   >
-                    <span>현상소 20% 바우처 발급 &amp; 바코드 열기</span>
+                    <span>현상소 20% 바우처 발급 & 바코드 열기</span>
                   </button>
                 </div>
 
@@ -2327,7 +2327,7 @@ function CabinetContent() {
                   className="mt-3 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-terracotta text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all"
                 >
                   <Award className="w-3.5 h-3.5" />
-                  <span>마스터 수료증 &amp; 인스타 공유</span>
+                  <span>마스터 수료증 & 인스타 공유</span>
                 </button>
               </div>
             </div>

@@ -43,7 +43,7 @@ export const SpotMapModal: React.FC<SpotMapModalProps> = ({ isOpen: propIsOpen, 
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-serif font-bold text-sm sm:text-base text-white tracking-tight">
-                  전국 아날로그 스팟 &amp; 당일 현상소 팝업 지도
+                  전국 아날로그 스팟 & 당일 현상소 팝업 지도
                 </span>
                 <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
                   웹 내 실시간 팝업 뷰

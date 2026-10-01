@@ -292,7 +292,7 @@ export default function GigsPage() {
                 }}
                 className="px-4 py-2.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
               >
-                촬영 문의 &amp; 예약
+                촬영 문의 & 예약
               </button>
             </div>
           </div>
@@ -621,7 +621,7 @@ export default function GigsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-bold text-vintage-800">주 보유 카메라 &amp; 렌즈 기종</label>
+                    <label className="font-bold text-vintage-800">주 보유 카메라 & 렌즈 기종</label>
                     <input
                       type="text"
                       value={gigForm.camera}
