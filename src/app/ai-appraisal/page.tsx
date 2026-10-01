@@ -612,7 +612,7 @@ export default function AIAppraisalPage() {
                   <div>⚙️ <strong>구동계 소견:</strong> {appraisalResult.mechanicalCondition}</div>
                   <div>✨ <strong>외관 소견:</strong> {appraisalResult.cosmeticCondition}</div>
                   <div className="pt-2 border-t border-white/10 text-amber-300 italic">
-                    "{appraisalResult.expertComment}"
+                    &ldquo;{appraisalResult.expertComment}&rdquo;
                   </div>
                 </div>
 

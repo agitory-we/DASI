@@ -28,7 +28,7 @@ import {
 import { playShutterSound } from '@/utils/shutterAudio';
 
 export default function ClinicPage() {
-  const { repairMasters, isLoadingData, coupons, useCoupon, submitRepairEstimate, showToast } = useDasi();
+  const { repairMasters, isLoadingData, coupons, useCoupon: applyCoupon, submitRepairEstimate, showToast } = useDasi();
   const [selectedMaster, setSelectedMaster] = useState<RepairMaster | null>(null);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState<boolean>(false);
   const [activeCoupon, setActiveCoupon] = useState<UserCoupon | null>(null);
@@ -48,7 +48,7 @@ export default function ClinicPage() {
 
   const handleUseCoupon = (couponId: string) => {
     playShutterSound('slr');
-    useCoupon(couponId);
+    applyCoupon(couponId);
     showToast('쿠폰이 성공적으로 사용되었습니다. 혜택이 즉시 적용됩니다.', 'success');
     setActiveCoupon(null);
   };
@@ -221,7 +221,7 @@ export default function ClinicPage() {
 
                   {/* Master Quote */}
                   <div className="p-3 rounded-2xl bg-vintage-50 border border-vintage-100 text-xs text-vintage-700 italic leading-relaxed">
-                    "{master.quote}"
+                    &ldquo;{master.quote}&rdquo;
                   </div>
 
                   {/* Specialty Tag */}

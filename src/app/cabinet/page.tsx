@@ -168,7 +168,7 @@ function CabinetContent() {
     repairEstimates,
     proConsultations,
     coupons,
-    useCoupon,
+    useCoupon: applyCoupon,
     addCoupon,
     issueLabVoucherForSpot,
     showToast,
@@ -2647,7 +2647,7 @@ function CabinetContent() {
             <div className="space-y-2 pt-1">
               <button
                 onClick={() => {
-                  useCoupon(selectedBarcodeCoupon.id);
+                  applyCoupon(selectedBarcodeCoupon.id);
                   setSelectedBarcodeCoupon(null);
                   showToast(`${selectedBarcodeCoupon.title} 쿠폰 사용이 완료되었습니다!`, 'success');
                 }}

@@ -1281,7 +1281,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
             현상소·필름샵·수리실 사장님이신가요? DASI 지도에 황금 핀을 꽂으세요
           </h2>
           <p className="text-xs text-vintage-300 leading-relaxed">
-            비싼 인스타 광고 대신, 주말마다 출사 나가는 100% 진성 필름 유저들에게 '오늘 당일 스캔 가능', '실시간 필름 재고 현황', '색감 갤러리'를 직접 알릴 수 있습니다.
+            비싼 인스타 광고 대신, 주말마다 출사 나가는 100% 진성 필름 유저들에게 &apos;오늘 당일 스캔 가능&apos;, &apos;실시간 필름 재고 현황&apos;, &apos;색감 갤러리&apos;를 직접 알릴 수 있습니다.
           </p>
         </div>
 
@@ -1315,7 +1315,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
 
             <p className="text-xs text-vintage-600 leading-relaxed">
               현상소, 필름 자판기, 빈티지 샵을 운영 중이신가요?
-              DASI 지도 상단 노출 및 '오늘 당일 스캔' 실시간 마감 알림을 통해 주말 출사객을 직접 매장으로 유치하세요.
+              DASI 지도 상단 노출 및 &apos;오늘 당일 스캔&apos; 실시간 마감 알림을 통해 주말 출사객을 직접 매장으로 유치하세요.
             </p>
 
             <div className="space-y-3 text-xs">

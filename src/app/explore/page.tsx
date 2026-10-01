@@ -678,7 +678,7 @@ function ExploreContent() {
                   <div className="p-5 space-y-3">
                     {/* 대한민국구석구석 공식 캐치프레이즈 */}
                     <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200/60 text-vintage-800 text-xs italic font-serif leading-relaxed">
-                      "{spot.catchphrase}"
+                      &ldquo;{spot.catchphrase}&rdquo;
                     </div>
 
                     <div>
@@ -1337,7 +1337,7 @@ function ExploreContent() {
             </div>
 
             <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs italic font-serif text-vintage-800">
-              "{selectedTopSpot.catchphrase}"
+              &ldquo;{selectedTopSpot.catchphrase}&rdquo;
             </div>
 
             {/* 연관 관광지 추천 코스 (TarRlteTarService1 연계) */}
