@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useDasi } from '@/context/DasiContext';
 import { playShutterSound } from '@/utils/shutterAudio';
-import { PhotoMeetup, MeetupCategory, MeetupPhotoRoll } from '@/types';
+import { PhotoMeetup, MeetupCategory, MeetupPhotoRoll, WeeklyPlaygroundPlan } from '@/types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80';
 
@@ -132,6 +132,22 @@ export default function ExperiencesPage() {
   });
   const [issuedTicketCode, setIssuedTicketCode] = useState<string | null>(null);
   const [isCopiedChatLink, setIsCopiedChatLink] = useState(false);
+  const [aiCuratedPlan, setAiCuratedPlan] = useState<WeeklyPlaygroundPlan | null>(null);
+
+  useEffect(() => {
+    let isSubscribed = true;
+    fetch('/api/cron/curate-weekly')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isSubscribed && data.plan) {
+          setAiCuratedPlan(data.plan);
+        }
+      })
+      .catch((err) => console.warn('AI 큐레이션 로드 실패:', err));
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
   const handleOpenCreateWithSpot = React.useCallback((spotTitle?: string, type?: MeetupCategory) => {
     setCreateForm((prev) => ({
@@ -672,6 +688,69 @@ export default function ExperiencesPage() {
               ))}
             </div>
           </div>
+
+          {/* AI Real-time Weekly Curation Highlight */}
+          {aiCuratedPlan && (
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-stone-900 via-vintage-900 to-terracotta text-white p-6 sm:p-8 shadow-xl border border-vintage-700/50 space-y-4 animate-fadeIn">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-300/30">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                  AI 이번 주말 맞춤 큐레이션 (TourAPI 실시간 축제 연계)
+                </span>
+                <span className="text-xs text-vintage-300 font-mono">
+                  WEEK {aiCuratedPlan.weekNumber} · {aiCuratedPlan.month}월 실시간
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-amber-100">
+                  {aiCuratedPlan.theme}
+                </h3>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-vintage-200">
+                  <span className="flex items-center gap-1 text-amber-300 font-semibold">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {aiCuratedPlan.spotName} ({aiCuratedPlan.region})
+                  </span>
+                  {aiCuratedPlan.festivalName && (
+                    <span className="bg-white/10 px-2 py-0.5 rounded-full border border-white/20">
+                      🏮 {aiCuratedPlan.festivalName}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-vintage-200 leading-relaxed max-w-3xl">
+                {aiCuratedPlan.highlight}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/15">
+                <div className="flex flex-wrap items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
+                    <Camera className="w-3.5 h-3.5 text-amber-300" />
+                    <span className="text-vintage-300">추천 기종:</span>
+                    <Link href="/rent" className="font-bold text-white hover:text-amber-300 underline">
+                      {aiCuratedPlan.recommendedCamera}
+                    </Link>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
+                    <Film className="w-3.5 h-3.5 text-emerald-300" />
+                    <span className="text-vintage-300">추천 필름:</span>
+                    <Link href="/films" className="font-bold text-white hover:text-emerald-300 underline">
+                      {aiCuratedPlan.recommendedFilm}
+                    </Link>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleOpenCreateWithSpot(aiCuratedPlan.spotName)}
+                  className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-vintage-950 font-bold text-xs transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
+                >
+                  <PlusCircle className="w-4 h-4 text-vintage-950" />
+                  이 코스로 출사 번개 열기
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Calendar Weekly Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
