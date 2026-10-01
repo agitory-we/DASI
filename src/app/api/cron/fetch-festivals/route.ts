@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     const rows = items.map((item) => {
       const isSeoul = item.addr1?.includes('서울');
       const area = isSeoul ? '서울' : (item.addr1?.split(' ')[0] || '전국');
+
       return {
         source_id: item.contentid,
         title: item.title,
