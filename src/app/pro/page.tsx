@@ -54,7 +54,7 @@ export default function ProStudioPage() {
       pricing: '하프 데이(4시간) 1,200,000원부터',
       portfolio: [
         'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
       ],
       philosophy: '인공적인 조명을 배제하고, 오직 공간이 머금은 자연광과 필름의 질감만으로 브랜드의 정체성을 완성합니다.',
     },
@@ -68,12 +68,12 @@ export default function ProStudioPage() {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
               <Award className="w-3.5 h-3.5 text-amber-400" />
-              <span>DASI PRO ARTISTS &amp; STUDIOS</span>
+              <span>DASI PRO ARTISTS & STUDIOS</span>
             </div>
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
+            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight break-keep keep-all">
               하이엔드 전문 작가의 단독 브랜드관
             </h1>
-            <p className="text-xs sm:text-sm text-vintage-400 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-vintage-400 max-w-2xl leading-relaxed break-keep keep-all">
               DASI 메인의 캐주얼한 로컬 긱을 넘어, 본식 웨딩과 하이엔드 룩북을 책임지는 
               준프로·프로 사진작가의 독점 포트폴리오 샵입니다.
             </p>
@@ -92,14 +92,14 @@ export default function ProStudioPage() {
           {proArtists.map((artist) => (
             <div
               key={artist.id}
-              className="rounded-3xl border border-vintage-800 bg-vintage-900/60 p-8 sm:p-12 space-y-8"
+              className="rounded-3xl border border-vintage-800 bg-vintage-900/60 p-6 sm:p-12 space-y-8"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-mono text-amber-400 tracking-wider uppercase">
                     {artist.category}
                   </span>
-                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white mt-1 break-keep keep-all">
                     {artist.studioName}
                   </h2>
                   <div className="text-xs text-vintage-400 mt-1">
@@ -107,9 +107,9 @@ export default function ProStudioPage() {
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-[11px] text-vintage-400">촬영 패키지 견적</span>
-                  <div className="text-xl font-serif font-bold text-amber-300">
+                <div className="text-left md:text-right mt-2 md:mt-0 shrink-0">
+                  <span className="text-[11px] text-vintage-400 block">촬영 패키지 견적</span>
+                  <div className="text-lg sm:text-xl font-serif font-bold text-amber-300 break-keep whitespace-nowrap">
                     {artist.pricing}
                   </div>
                 </div>
