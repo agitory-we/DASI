@@ -181,10 +181,10 @@ export default function FrameMakerPage() {
           <Sparkles className="w-3.5 h-3.5" />
           <span>DASI Analog Frame Maker</span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-vintage-900 break-keep keep-all">
           인스타그램 필름 프레임 생성기
         </h1>
-        <p className="text-xs sm:text-sm text-vintage-600">
+        <p className="text-xs sm:text-sm text-vintage-600 break-keep keep-all">
           내 스마트폰의 실제 사진을 올리고 감성 프레임을 입혀 <strong>고화질 4:5 인스타 규격 이미지</strong>로 다운로드하세요.
         </p>
       </div>
@@ -335,7 +335,7 @@ export default function FrameMakerPage() {
               className="w-full py-3 rounded-xl bg-vintage-900 hover:bg-vintage-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors shadow-xs"
             >
               <Box className="w-4 h-4 text-amber-300" />
-              <span>장인 수제 원목 액자 &amp; 파인아트 인화 주문 제작</span>
+              <span>장인 수제 원목 액자 & 파인아트 인화 주문 제작</span>
             </button>
 
             <button
