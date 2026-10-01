@@ -183,8 +183,12 @@ export async function getPhotoGigs(): Promise<PhotoGig[]> {
       pricePerHour: item.price_per_hour,
       durationMinutes: item.duration_minutes,
       rating: Number(item.rating),
-      reviewsCount: item.reviews_count,
-      portfolioImages: (item.portfolio_images as string[]) || [],
+      reviewsCount: item.reviews_count || 0,
+      portfolioImages: ((item.portfolio_images as string[]) || []).map(img =>
+        img.includes('photo-1477959858617-67f30bc75b82')
+          ? 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80'
+          : img
+      ),
       tags: (item.tags as string[]) || [],
       description: item.description,
       isVerified: item.is_verified,

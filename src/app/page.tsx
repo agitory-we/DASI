@@ -76,17 +76,17 @@ export default function HomePage() {
                 />
                 <span className="text-terracotta font-bold">DASI 아날로그</span>
                 <span className="text-vintage-300">|</span>
-                <span>서울 52주 아날로그 사진 놀이터 &amp; 라이프스타일 허브</span>
+                <span>서울 52주 아날로그 사진 놀이터 & 라이프스타일 허브</span>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-vintage-900 leading-[1.15]">
+              <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-vintage-900 leading-[1.15] break-keep keep-all">
                 서울 52주 아날로그 사진 놀이터, <br />
                 <span className="text-terracotta underline decoration-vintage-300 decoration-wavy underline-offset-8">
                   매주 발견하는 새로운 셔터 찬스.
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-vintage-700 leading-relaxed max-w-2xl font-sans">
+              <p className="text-base sm:text-lg text-vintage-700 leading-relaxed max-w-2xl font-sans break-keep keep-all">
                 고궁의 붉은 노을빛부터 숨은 골목의 따스한 빛까지. 
                 이번 주말 떠날 출사지와 골든아워를 확인하고, 장비가 고민이라면 명장의 카메라로 부담 없이 시작해 보세요.
               </p>
@@ -95,7 +95,7 @@ export default function HomePage() {
               <div className="grid grid-cols-3 gap-3 pt-2 max-w-xl">
                 <div className="p-3 rounded-2xl bg-white/80 border border-vintage-200 shadow-2xs">
                   <div className="text-terracotta font-serif font-bold text-lg sm:text-xl">52주 코스</div>
-                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">시즌 축제 &amp; 골든아워</div>
+                  <div className="text-[11px] sm:text-xs text-vintage-600 font-medium">시즌 축제 & 골든아워</div>
                 </div>
                 <div className="p-3 rounded-2xl bg-white/80 border border-vintage-200 shadow-2xs">
                   <div className="text-vintage-900 font-serif font-bold text-lg sm:text-xl">취미 서포트</div>
@@ -114,7 +114,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-terracotta text-white text-sm sm:text-base font-semibold hover:bg-terracotta-light active:scale-98 transition-all shadow-md"
                 >
                   <Compass className="w-4 h-4" />
-                  <span>이번 주말 52주 출사지 &amp; 축제 탐험</span>
+                  <span>이번 주말 52주 출사지 & 축제 탐험</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
@@ -123,7 +123,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-50 text-amber-900 border border-amber-300/80 text-sm sm:text-base font-semibold hover:bg-amber-100 active:scale-98 transition-all shadow-2xs"
                 >
                   <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>내 취향 맞춤 출사 코스 &amp; 500P</span>
+                  <span>내 취향 맞춤 출사 코스 & 500P</span>
                 </Link>
 
                 <Link
@@ -166,7 +166,7 @@ export default function HomePage() {
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-serif text-xl sm:text-2xl font-bold text-white leading-snug">
-                      가을 고궁 달빛 야간기행 &amp; 매직아워
+                      가을 고궁 달빛 야간기행 & 매직아워
                     </h3>
                     <p className="text-xs text-vintage-300 mt-1 line-clamp-2 leading-relaxed">
                       궁궐 처마 뒤로 물드는 붉은 노을 실루엣과 달빛 아래 단풍. 고감도 필름이나 밝은 조리개 단렌즈와 최고의 궁합입니다.
@@ -241,7 +241,7 @@ export default function HomePage() {
                 <span className="text-[10px] text-amber-700 font-medium">대량 벌크샵</span>
               </div>
               <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
-                출사 전 필름 급구! 24시 자판기 지도 &amp; 3시간 당일 퀵
+                출사 전 필름 급구! 24시 자판기 지도 & 3시간 당일 퀵
               </p>
             </div>
           </Link>
@@ -255,7 +255,7 @@ export default function HomePage() {
             </div>
             <div>
               <div className="text-xs font-bold text-vintage-900 group-hover:text-indigo-700 transition-colors flex items-center justify-between">
-                <span>로컬 사진가 동행 &amp; 긱</span>
+                <span>로컬 사진가 동행 & 긱</span>
                 <span className="text-[10px] text-indigo-700 font-medium">1:1 출사</span>
               </div>
               <p className="text-[11px] text-vintage-500 mt-1 leading-snug">
@@ -311,7 +311,7 @@ export default function HomePage() {
             <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-terracotta/40 transition-all">
               <div className="flex items-center justify-between">
                 <span className="w-7 h-7 rounded-lg bg-vintage-100 text-vintage-800 text-xs font-bold flex items-center justify-center font-mono">01</span>
-                <span className="text-xs font-bold text-terracotta">대여 &amp; 소장</span>
+                <span className="text-xs font-bold text-terracotta">대여 & 소장</span>
               </div>
               <div className="text-2xl">🎞️</div>
               <div>
@@ -333,7 +333,7 @@ export default function HomePage() {
               </div>
               <div className="text-2xl">📍</div>
               <div>
-                <h3 className="text-sm font-bold text-vintage-900">현장 인증 &amp; 제보</h3>
+                <h3 className="text-sm font-bold text-vintage-900">현장 인증 & 제보</h3>
                 <p className="text-xs text-vintage-500 mt-1 leading-snug">
                   출사지 GPS 체크인, 골든아워 촬영 팁과 현상소 1초 접수 QR로 실시간 데이터 등록
                 </p>
@@ -351,7 +351,7 @@ export default function HomePage() {
               </div>
               <div className="text-2xl">🧪</div>
               <div>
-                <h3 className="text-sm font-bold text-vintage-900">AI 추천 &amp; 지도 확장</h3>
+                <h3 className="text-sm font-bold text-vintage-900">AI 추천 & 지도 확장</h3>
                 <p className="text-xs text-vintage-500 mt-1 leading-snug">
                   집단 지성으로 축적된 데이터로 한국관광공사 TourAPI와 일몰/일출 시각이 결합된 맞춤 코스 제공
                 </p>
@@ -365,11 +365,11 @@ export default function HomePage() {
             <div className="p-4 sm:p-5 rounded-2xl bg-white border border-vintage-200/90 shadow-2xs space-y-3 relative group hover:border-amber-400/40 transition-all">
               <div className="flex items-center justify-between">
                 <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-900 text-xs font-bold flex items-center justify-center font-mono">04</span>
-                <span className="text-xs font-bold text-amber-700">혜택 환원 &amp; 상생</span>
+                <span className="text-xs font-bold text-amber-700">혜택 환원 & 상생</span>
               </div>
               <div className="text-2xl">🤝</div>
               <div>
-                <h3 className="text-sm font-bold text-vintage-900">포인트 재사용 &amp; 긱</h3>
+                <h3 className="text-sm font-bold text-vintage-900">포인트 재사용 & 긱</h3>
                 <p className="text-xs text-vintage-500 mt-1 leading-snug">
                   적립 포인트로 대여료·현상비 차감, 내 카메라로 주말 로컬 스냅 알바(+300P) 등록까지
                 </p>
@@ -566,7 +566,7 @@ export default function HomePage() {
                     href="/rent"
                     className="w-full mt-2 py-2 rounded-xl bg-vintage-100 hover:bg-terracotta hover:text-white text-vintage-800 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                   >
-                    <span>날짜 선택 &amp; 픽업 예약</span>
+                    <span>날짜 선택 & 픽업 예약</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -585,11 +585,11 @@ export default function HomePage() {
                 <MapPin className="w-3.5 h-3.5" />
                 <span>실시간 아날로그 맵</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-vintage-900">
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-vintage-900 break-keep keep-all">
                 다 찍은 필름, <br />
                 어디서 가장 예쁘게 나올까요?
               </h2>
-              <p className="text-sm text-vintage-700 leading-relaxed">
+              <p className="text-sm text-vintage-700 leading-relaxed break-keep keep-all">
                 서울 시내 전문 현상소, 24시 무인 필름 자판기, 그리고 40년 수리 명장실의 위치와 실시간 정보를 제공합니다.
                 현상소별 스캐너(노리츠 vs 후지 프론티어) 색감 갤러리를 미리 비교해 보세요.
               </p>
@@ -656,7 +656,7 @@ export default function HomePage() {
                         href="/map"
                         className="px-3.5 py-1.5 rounded-lg bg-white border border-vintage-300 text-xs font-semibold text-vintage-800 hover:bg-vintage-100 text-center shrink-0"
                       >
-                        색감 비교 &amp; 길찾기
+                        색감 비교 & 길찾기
                       </Link>
                     </div>
                   ))}
@@ -675,10 +675,10 @@ export default function HomePage() {
               <Users className="w-4 h-4" />
               <span>DASI Local Photo Gig</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              내 카메라로 주말에 용돈 벌기 &amp; 로컬 스냅
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900 break-keep keep-all">
+              내 카메라로 주말에 용돈 벌기 & 로컬 스냅
             </h2>
-            <p className="text-sm text-vintage-600 mt-1">
+            <p className="text-sm text-vintage-600 mt-1 break-keep keep-all">
               성수동 외국인 여행자 스냅부터 친구 시선의 가성비 서브 웨딩까지, 취향을 공유하는 작가와 매칭됩니다.
             </p>
           </div>
@@ -686,7 +686,7 @@ export default function HomePage() {
             href="/gigs"
             className="inline-flex items-center gap-1 text-sm font-semibold text-terracotta hover:underline"
           >
-            <span>스냅 작가 목록 &amp; 등록하기</span>
+            <span>스냅 작가 목록 & 등록하기</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -700,8 +700,11 @@ export default function HomePage() {
               <div>
                 <div className="relative aspect-[16/10] bg-vintage-100 overflow-hidden">
                   <img
-                    src={gig.portfolioImages[0]}
+                    src={gig.portfolioImages?.[0] || 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80'}
                     alt={gig.title}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&auto=format&fit=crop&q=80';
+                    }}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-medium">
@@ -714,6 +717,9 @@ export default function HomePage() {
                     <img
                       src={gig.creatorAvatar}
                       alt={gig.creatorName}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                      }}
                       className="w-8 h-8 rounded-full object-cover border border-vintage-300"
                     />
                     <div>
@@ -830,12 +836,12 @@ export default function HomePage() {
           <div>
             <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
               <Calendar className="w-4 h-4" />
-              <span>서울 52주 축제 &amp; 골든아워 출사 가이드</span>
+              <span>서울 52주 축제 & 골든아워 출사 가이드</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900 break-keep keep-all">
               이번 주말 어디로 출사 갈까? 52주 테마 코스
             </h2>
-            <p className="text-sm text-vintage-600 mt-1">
+            <p className="text-sm text-vintage-600 mt-1 break-keep keep-all">
               달빛기행부터 여의도 불꽃축제까지, 아날로그 카메라에 최적화된 화각과 골든아워를 안내합니다.
             </p>
           </div>
@@ -867,7 +873,7 @@ export default function HomePage() {
               <div className="sm:w-3/5 p-5 flex flex-col justify-between space-y-3">
                 <div>
                   <div className="text-[11px] text-terracotta font-semibold">{item.periodOrTime}</div>
-                  <h3 className="font-serif text-base font-bold text-vintage-900 mt-0.5">
+                  <h3 className="font-serif text-base font-bold text-vintage-900 mt-0.5 break-keep keep-all">
                     {item.title}
                   </h3>
                   <div className="text-xs text-vintage-600 mt-2 space-y-1">
@@ -880,7 +886,7 @@ export default function HomePage() {
                   href="/explore"
                   className="text-xs font-bold text-terracotta hover:underline inline-flex items-center gap-1"
                 >
-                  <span>상세 촬영 팁 &amp; 설정값 보기</span>
+                  <span>상세 촬영 팁 & 설정값 보기</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -895,12 +901,12 @@ export default function HomePage() {
           <div>
             <div className="flex items-center gap-2 text-terracotta text-xs font-bold tracking-wider uppercase mb-1">
               <Compass className="w-4 h-4" />
-              <span>DASI Photo Club &amp; Meetup Playground</span>
+              <span>DASI Photo Club & Meetup Playground</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900">
-              52주 필름 출사 모임 &amp; 주말 번개 놀이터
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-900 break-keep keep-all">
+              52주 필름 출사 모임 & 주말 번개 놀이터
             </h2>
-            <p className="text-sm text-vintage-600 mt-1">
+            <p className="text-sm text-vintage-600 mt-1 break-keep keep-all">
               혼자 걷던 골목길에서 함께 걷는 낭만으로. 원하는 스팟에서 직접 번개를 열고(+300P), 동료들과 참여(+150P)하세요.
             </p>
           </div>
@@ -1079,12 +1085,12 @@ export default function HomePage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-100 text-amber-900 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-              <span>DASI Pro Artists &amp; Studios</span>
+              <span>DASI Pro Artists & Studios</span>
             </div>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900">
+            <h3 className="font-serif text-xl sm:text-2xl font-bold text-vintage-900 break-keep keep-all">
               하이엔드 전문 작가의 단독 스냅 샵을 찾으시나요?
             </h3>
-            <p className="text-xs sm:text-sm text-vintage-600">
+            <p className="text-xs sm:text-sm text-vintage-600 break-keep keep-all">
               본식 웨딩, 브랜드 화보, 개인 프로필 전문 준프로·프로 사진작가의 독점 포트폴리오 관으로 연결됩니다.
             </p>
           </div>
