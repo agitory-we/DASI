@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { SafeImage } from '@/components/common/SafeImage';
 import {
   Search,
   X,
@@ -274,13 +274,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                         className="group p-3 bg-white dark:bg-stone-850 hover:bg-vintage-50 dark:hover:bg-stone-800 border border-vintage-200/80 dark:border-stone-800 rounded-2xl flex items-center gap-3 cursor-pointer transition-all hover:shadow-md hover:border-emerald-500/50"
                       >
                         <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-vintage-100 shrink-0">
-                          <Image
+                          <SafeImage
                             src={spot.imageUrl}
                             alt={spot.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                             sizes="56px"
-                            unoptimized
+                            category={spot.category === 'festival' ? 'festival' : 'spot'}
                           />
                           {spot.category === 'festival' && (
                             <span className="absolute bottom-1 left-1 bg-amber-500 text-white text-[9px] px-1 py-0.2 rounded font-bold">
@@ -330,13 +330,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                       >
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-vintage-100 shrink-0">
-                            <Image
+                            <SafeImage
                               src={cam.imageUrl}
                               alt={cam.name}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform"
                               sizes="48px"
-                              unoptimized
+                              category="camera"
                             />
                           </div>
                           <div>

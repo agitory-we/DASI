@@ -44,6 +44,7 @@ import {
 import { FilmVendingMachineModal } from '@/components/fun/FilmVendingMachineModal';
 import { ViewfinderToyModal } from '@/components/fun/ViewfinderToyModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
+import { LiveGoldenHourPulse } from '@/components/common/LiveGoldenHourPulse';
 
 export interface HeaderProps {
   onOpenMobileSidebar?: () => void;
@@ -431,6 +432,9 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
+            {/* Live Golden Hour Pulse Widget */}
+            <LiveGoldenHourPulse className="hidden md:inline-flex" />
+
             {/* Search Trigger */}
             <button
               onClick={() => setIsSearchOpen(true)}
@@ -476,6 +480,11 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-vintage-200 bg-white p-4 space-y-3 animate-fadeIn">
+          {/* Mobile Live Golden Hour Pulse */}
+          <div className="flex justify-center pb-1">
+            <LiveGoldenHourPulse className="w-full justify-center py-2" />
+          </div>
+
           {/* Quick Cabinet Access in Mobile Menu */}
           <Link
             href="/cabinet"
