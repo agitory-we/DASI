@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Sparkles,
   Upload,
@@ -43,8 +44,47 @@ const SAMPLE_PHOTOS = [
   }
 ];
 
-export default function FilmLogbookPage() {
+function FilmLogbookContent() {
   const { showToast } = useDasi();
+  const searchParams = useSearchParams();
+  const meterAperture = searchParams.get('aperture');
+  const meterShutter = searchParams.get('shutter');
+  const meterIso = searchParams.get('iso');
+  const meterEv = searchParams.get('ev');
+
+  const [receivedMeterReading, setReceivedMeterReading] = useState<{
+    aperture: string;
+    shutter: string;
+    iso: string;
+    ev: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (meterAperture && meterShutter) {
+      setReceivedMeterReading({
+        aperture: meterAperture,
+        shutter: meterShutter,
+        iso: meterIso || '400',
+        ev: meterEv || '12',
+      });
+    } else {
+      try {
+        const cached = localStorage.getItem('dasi_active_meter_reading');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.timestamp < 1000 * 60 * 60) {
+            setReceivedMeterReading({
+              aperture: String(parsed.aperture),
+              shutter: parsed.shutter,
+              iso: String(parsed.iso),
+              ev: String(parsed.ev),
+            });
+          }
+        }
+      } catch {}
+    }
+  }, [meterAperture, meterShutter, meterIso, meterEv]);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<FilmExifResponse | null>(null);
@@ -149,6 +189,35 @@ export default function FilmLogbookPage() {
             당시 사용된 필름 스톡, 조리개값, 셔터스피드를 복원하고 소장용 아날로그 티켓을 발행합니다.
           </p>
         </div>
+
+        {/* ⚡ 노출계(/meter) 실시간 측정값 연동 배너 */}
+        {receivedMeterReading && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <Gauge className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-amber-300 flex items-center gap-2">
+                  <span>⚡ 노출계(/meter) 실시간 측정값 연동됨</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono">LIVE SYNC</span>
+                </div>
+                <div className="text-[11px] text-stone-300 mt-0.5 font-mono">
+                  F{receivedMeterReading.aperture} · {receivedMeterReading.shutter} · ISO {receivedMeterReading.iso} (EV {receivedMeterReading.ev})
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/frame?aperture=${receivedMeterReading.aperture}&shutter=${encodeURIComponent(receivedMeterReading.shutter)}&iso=${receivedMeterReading.iso}&ev=${receivedMeterReading.ev}`}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                <span>이 값으로 4:5 프레임 생성</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Upload & Workspace */}
         <div className="bg-stone-950/80 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
@@ -447,6 +516,17 @@ export default function FilmLogbookPage() {
                 <span>티켓 인쇄 / PDF 저장</span>
               </button>
 
+              {analysisResult && (
+                <Link
+                  href={`/frame?model=${encodeURIComponent(analysisResult.estimatedCamera)}&lab=${encodeURIComponent(analysisResult.filmStock)}&aperture=${encodeURIComponent(analysisResult.estimatedAperture)}&shutter=${encodeURIComponent(analysisResult.estimatedShutter)}&iso=${analysisResult.iso}&img=${encodeURIComponent(selectedImage || '')}`}
+                  className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-terracotta hover:bg-terracotta/90 text-white flex items-center gap-2 transition-all shadow-md shadow-terracotta/25"
+                  title="복원된 메타데이터를 인스타그램 4:5 감성 프레임에 자동 각인합니다"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-200" />
+                  <span>이 메타데이터로 4:5 감성 프레임 생성 ➡️</span>
+                </Link>
+              )}
+
               <button
                 onClick={() => setIsStoryModalOpen(true)}
                 className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white flex items-center gap-2 transition-all shadow-md"
@@ -637,5 +717,19 @@ export default function FilmLogbookPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function FilmLogbookPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <FilmLogbookContent />
+    </Suspense>
   );
 }

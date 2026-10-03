@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Sparkles,
   Camera,
@@ -14,20 +15,39 @@ import {
   Box,
   Gift,
   X,
-  Printer
+  Printer,
+  Gauge
 } from 'lucide-react';
 import { playShutterSound } from '@/utils/shutterAudio';
 import { useDasi } from '@/context/DasiContext';
 
-export default function FrameMakerPage() {
+function FrameMakerContent() {
   const { showToast } = useDasi();
-  const [selectedModel, setSelectedModel] = useState<string>('Nikon FM2 / Nikkor 50mm F1.4');
-  const [selectedLab, setSelectedLab] = useState<string>('망우삼림 을지로 (Fuji Frontier SP3000)');
+  const searchParams = useSearchParams();
+  const paramModel = searchParams.get('model');
+  const paramLab = searchParams.get('lab');
+  const paramAperture = searchParams.get('aperture');
+  const paramShutter = searchParams.get('shutter');
+  const paramIso = searchParams.get('iso');
+  const paramImg = searchParams.get('img');
+
+  const [selectedModel, setSelectedModel] = useState<string>(
+    paramModel || 'Nikon FM2 / Nikkor 50mm F1.4'
+  );
+  const [selectedLab, setSelectedLab] = useState<string>(
+    paramLab || '망우삼림 을지로 (Fuji Frontier SP3000)'
+  );
+  const [exposureText, setExposureText] = useState<string>(() => {
+    if (paramAperture && paramShutter) {
+      return `F${paramAperture} · ${paramShutter} · ISO ${paramIso || '400'}`;
+    }
+    return '';
+  });
   const [dateText, setDateText] = useState<string>('2026.09.22');
   const [frameColor, setFrameColor] = useState<'cream' | 'white' | 'black'>('cream');
   const [filmTone, setFilmTone] = useState<'natural' | 'classic_neg' | 'kodak_warm' | 'monochrome'>('natural');
   const [uploadedImageSrc, setUploadedImageSrc] = useState<string>(
-    'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80'
+    paramImg || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1000&auto=format&fit=crop&q=80'
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPhysicalOrderModalOpen, setIsPhysicalOrderModalOpen] = useState(false);
@@ -42,7 +62,7 @@ export default function FrameMakerPage() {
   // Redraw canvas whenever settings change
   useEffect(() => {
     drawFrame();
-  }, [selectedModel, selectedLab, dateText, frameColor, filmTone, uploadedImageSrc]);
+  }, [selectedModel, selectedLab, exposureText, dateText, frameColor, filmTone, uploadedImageSrc]);
 
   const drawFrame = () => {
     const canvas = canvasRef.current;
@@ -100,7 +120,10 @@ export default function FrameMakerPage() {
 
       ctx.fillStyle = frameColor === 'black' ? '#A39990' : '#736458';
       ctx.font = '22px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-      ctx.fillText(`LAB: ${selectedLab}`, paddingX + 5, bottomAreaY + 70);
+      const labWithExposure = exposureText
+        ? `LAB: ${selectedLab}  ·  ⚡ ${exposureText}`
+        : `LAB: ${selectedLab}`;
+      ctx.fillText(labWithExposure, paddingX + 5, bottomAreaY + 70);
 
       // Right-aligned Date and DASI branding
       ctx.textAlign = 'right';
@@ -317,6 +340,31 @@ export default function FrameMakerPage() {
                 className="w-full p-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta font-mono text-xs"
               />
             </div>
+
+            {/* Exposure / EXIF Metadata Input */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-vintage-800 flex items-center gap-1.5">
+                  <Gauge className="w-3.5 h-3.5 text-amber-600" />
+                  <span>노출 메타데이터 각인 (선택)</span>
+                </label>
+                {exposureText && (
+                  <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
+                    ⚡ 연동 완료
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={exposureText}
+                placeholder="예: F2.8 · 1/250s · ISO 400"
+                onChange={(e) => setExposureText(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-vintage-300 focus:outline-none focus:border-terracotta font-mono text-xs placeholder:text-vintage-400"
+              />
+              <p className="text-[10px] text-vintage-500">
+                입력 시 프레임 하단 현상소 정보 옆에 아날로그 타자기 폰트로 자동 각인됩니다.
+              </p>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -487,5 +535,19 @@ export default function FrameMakerPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function FrameMakerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-vintage-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-terracotta border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <FrameMakerContent />
+    </Suspense>
   );
 }

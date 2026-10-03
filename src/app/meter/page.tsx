@@ -18,8 +18,12 @@ import {
   AlertCircle,
   MapPin,
   Film,
-  Compass
+  Compass,
+  BookOpen,
+  Image as ImageIcon
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useDasi } from '@/context/DasiContext';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { playShutterSound } from '@/utils/shutterAudio';
 
@@ -62,6 +66,8 @@ const LIGHT_PRESETS = [
 
 export default function LightMeterPage() {
   const { triggerHaptic } = useDevicePlatform();
+  const { showToast } = useDasi();
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -192,6 +198,29 @@ export default function LightMeterPage() {
     setTimeout(() => {
       setIsFlashing(false);
     }, 150);
+  };
+
+  const handleSaveToLogbook = () => {
+    triggerHaptic('selection');
+    const reading = {
+      aperture: selectedAperture,
+      shutter: calculatedShutter,
+      iso: selectedIso,
+      ev: currentEv100,
+      timestamp: Date.now()
+    };
+    try {
+      localStorage.setItem('dasi_active_meter_reading', JSON.stringify(reading));
+      showToast(`📝 컷 노출값(F${selectedAperture} · ${calculatedShutter} · ISO ${selectedIso})이 로그북에 연동되었습니다!`, 'success');
+      router.push(`/film-logbook?aperture=${selectedAperture}&shutter=${encodeURIComponent(calculatedShutter)}&iso=${selectedIso}&ev=${currentEv100}`);
+    } catch {
+      router.push(`/film-logbook?aperture=${selectedAperture}&shutter=${encodeURIComponent(calculatedShutter)}&iso=${selectedIso}&ev=${currentEv100}`);
+    }
+  };
+
+  const handleMakeFrameWithReading = () => {
+    triggerHaptic('selection');
+    router.push(`/frame?aperture=${selectedAperture}&shutter=${encodeURIComponent(calculatedShutter)}&iso=${selectedIso}&ev=${currentEv100}`);
   };
 
   return (
@@ -401,6 +430,43 @@ export default function LightMeterPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* 4.5 원스톱 파이프라인: 노출값 기록 및 프레임 생성 브릿지 */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <button
+          onClick={handleSaveToLogbook}
+          className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-left transition-all group flex items-center justify-between"
+          title="현재 측광값을 필름 촬영 로그북에 자동 연동합니다"
+        >
+          <div>
+            <div className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              <span>로그북에 이 컷 기록</span>
+            </div>
+            <div className="text-[10px] text-white/60 mt-0.5 font-mono">
+              F{selectedAperture} · {calculatedShutter} · ISO {selectedIso}
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/40 group-hover:translate-x-0.5 group-hover:text-amber-300 transition-all shrink-0" />
+        </button>
+
+        <button
+          onClick={handleMakeFrameWithReading}
+          className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-left transition-all group flex items-center justify-between"
+          title="이 노출값 메타데이터를 인스타그램 4:5 프레임에 자동 각인합니다"
+        >
+          <div>
+            <div className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+              <span>감성 프레임 생성</span>
+            </div>
+            <div className="text-[10px] text-white/60 mt-0.5">
+              EXIF 각인 인스타 4:5
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/40 group-hover:translate-x-0.5 group-hover:text-amber-300 transition-all shrink-0" />
+        </button>
       </div>
 
       {/* 5. 하단 셔터 시뮬레이션 및 햅틱 테스트 버튼 */}
