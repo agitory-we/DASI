@@ -44,6 +44,7 @@ import { AiFilmTicketsVault } from '@/components/cabinet/AiFilmTicketsVault';
 import { TradeInTracker } from '@/components/cabinet/TradeInTracker';
 import { DarkroomLiveViewer } from '@/components/cabinet/DarkroomLiveViewer';
 import { PassportSubscriptionCard } from '@/components/cabinet/PassportSubscriptionCard';
+import { GoogleDriveSyncCard } from '@/components/cabinet/GoogleDriveSyncCard';
 
 // 아날로그 성지순례 스팟별 공식 실측 인증 컷 프리뷰 (스탬프 날인 시 자동 박제 아카이빙)
 const SPOT_PREVIEWS: Record<string, string> = {
@@ -619,6 +620,9 @@ function CabinetContent() {
       {/* ======================================================== */}
       {activeTab === 'vault' && (
         <div className="space-y-12 animate-fadeIn">
+          {/* GOOGLE ONE CLOUD STORAGE SYNC & BACKUP */}
+          <GoogleDriveSyncCard />
+
           <AiFilmTicketsVault />
           <TradeInTracker />
         </div>
