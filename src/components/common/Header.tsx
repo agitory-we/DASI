@@ -27,6 +27,9 @@ import {
   Sun,
   Gift,
   Users,
+  Coins,
+  Globe,
+  Flame,
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/common/GlobalSearchModal';
 import { useDasi } from '@/context/DasiContext';
@@ -42,6 +45,7 @@ import {
   checkNotificationPermission,
 } from '@/utils/webPush';
 import { FilmVendingMachineModal } from '@/components/fun/FilmVendingMachineModal';
+import { FilmVendingLiveModal } from '@/components/fun/FilmVendingLiveModal';
 import { ViewfinderToyModal } from '@/components/fun/ViewfinderToyModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
 import { LiveGoldenHourPulse } from '@/components/common/LiveGoldenHourPulse';
@@ -66,6 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isVendingOpen, setIsVendingOpen] = useState(false);
+  const [isLiveVendingOpen, setIsLiveVendingOpen] = useState(false);
   const [isViewfinderOpen, setIsViewfinderOpen] = useState(false);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -148,8 +153,12 @@ export const Header: React.FC<HeaderProps> = ({
     { href: '/clinic', label: '명장 케어' },
   ];
 
-  // 더보기 드롭다운 라우트
+  // 더보기 드롭다운 라우트 (C-Level 플래그십 혁신 기능 포함)
   const moreNavItems = [
+    { href: '/film-logbook', label: 'AI 필름 EXIF 복원 & 티켓', desc: '사진 한 장으로 필름 스톡, 조리개, 셔터속도 복원', icon: Sparkles },
+    { href: '/trade-in', label: '장롱 카메라 명장 트레이드인', desc: '유휴 카메라 40년 명장 감정 · 120% 크레딧 보상', icon: Coins },
+    { href: '/passport', label: '필름 패스포트 & 롤 구독', desc: '매월 계절 필름 배송 · 4만 건 스탬프 북', icon: Film },
+    { href: '/experiences/inbound-tour', label: 'K-헤리티지 포토길드', desc: '방한 외국인 & MZ 올인원 골든아워 투어 키트', icon: Globe },
     { href: '/experiences', label: '출사 & 장인 클래스', desc: '작가 골목 출사 및 렌즈 분해 세척 원데이', icon: Compass },
     { href: '/gigs', label: '로컬 포토긱 동행', desc: '동네 사진가와 함께하는 1:1 스냅 & 출사 매칭', icon: Users },
     { href: '/meter', label: '스마트폰 실시간 노출계', desc: '스마트폰 조도 센서 측정 · 적정 F값/셔터 산출', icon: Sliders },
@@ -390,6 +399,17 @@ export const Header: React.FC<HeaderProps> = ({
                         type="button"
                         onClick={() => {
                           setIsMoreMenuOpen(false);
+                          setIsLiveVendingOpen(true);
+                        }}
+                        className="col-span-2 p-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                      >
+                        <Flame className="w-3 h-3 text-stone-950" />
+                        <span>24시 자판기 실시간 픽업 & 드롭</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMoreMenuOpen(false);
                           setIsVendingOpen(true);
                         }}
                         className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
@@ -548,6 +568,17 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </Link>
 
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsLiveVendingOpen(true);
+                }}
+                className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 text-xs font-bold flex items-center justify-center gap-2 shadow-xs"
+              >
+                <Flame className="w-4 h-4 text-stone-950" />
+                <span>24시 자판기 실시간 픽업 & 드롭</span>
+              </button>
+
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => {
@@ -577,6 +608,9 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Global Search Modal */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* 24h Live Vending Machine & Drop Box Modal */}
+      <FilmVendingLiveModal isOpen={isLiveVendingOpen} onClose={() => setIsLiveVendingOpen(false)} />
 
       {/* Film Vending Machine Modal */}
       <FilmVendingMachineModal isOpen={isVendingOpen} onClose={() => setIsVendingOpen(false)} />
