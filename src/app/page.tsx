@@ -27,10 +27,12 @@ import {
 } from 'lucide-react';
 import { mockEventsAndHotSpots } from '@/data/mockData';
 import { useDasi } from '@/context/DasiContext';
+import { FilmVendingLiveModal } from '@/components/fun/FilmVendingLiveModal';
 
-import { Bell, Heart } from 'lucide-react';
+import { Bell, Heart, Coins, Globe } from 'lucide-react';
 
 export default function HomePage() {
+  const [isLiveVendingOpen, setIsLiveVendingOpen] = useState(false);
   const {
     cameras,
     analogSpots,
@@ -281,6 +283,154 @@ export default function HomePage() {
               </p>
             </div>
           </Link>
+        </div>
+      </section>
+ 
+      {/* C-LEVEL FLAGSHIP INNOVATION SUITE (52-WEEK EXPANSION) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-[#201A16] text-stone-100 p-6 sm:p-10 border border-stone-800 shadow-2xl relative overflow-hidden">
+          {/* Subtle glow effect */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="max-w-3xl mb-8 space-y-3 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-600/30 text-amber-400 text-xs font-mono">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              <span>C-SUITE FLAGSHIP · 아날로그 라이프스타일 5대 혁신</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-stone-50">
+              아날로그와 디지털의 만남, <span className="text-amber-400 underline decoration-amber-600 decoration-wavy underline-offset-8">5대 플래그십 인프라</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed font-sans">
+              단순한 대여를 넘어 필름 사진의 소장 가치와 일상 경험을 완성하는 DASI의 독창적 인프라를 직접 경험해 보세요.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+            {/* 1. AI EXIF Logbook */}
+            <Link
+              href="/film-logbook"
+              className="p-5 rounded-2xl bg-stone-900/90 border border-stone-800 hover:border-amber-500/50 transition-all group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    CTO & CPO
+                  </span>
+                  <Sparkles className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-stone-100 group-hover:text-amber-400 transition-colors">
+                  AI 아날로그 EXIF 복원 & 티켓
+                </h3>
+                <p className="text-xs text-stone-400 leading-relaxed">
+                  사진 한 장으로 필름 스톡, 조리개, 셔터속도를 AI로 복원하고 바코드 각인 소장용 티켓을 발급합니다.
+                </p>
+              </div>
+              <div className="pt-4 mt-2 border-t border-stone-800 flex items-center justify-between text-xs font-mono text-amber-400 font-semibold">
+                <span>무료 티켓 발급하기</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 2. Trade-In Valuation */}
+            <Link
+              href="/trade-in"
+              className="p-5 rounded-2xl bg-stone-900/90 border border-stone-800 hover:border-emerald-500/50 transition-all group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    CFO & 명장
+                  </span>
+                  <Coins className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-stone-100 group-hover:text-emerald-400 transition-colors">
+                  장롱 카메라 안심 감정 & 트레이드인
+                </h3>
+                <p className="text-xs text-stone-400 leading-relaxed">
+                  잠자는 카메라를 40년 명장이 무상 오버홀하고, 현금 또는 120% DASI 렌탈 크레딧으로 보상합니다.
+                </p>
+              </div>
+              <div className="pt-4 mt-2 border-t border-stone-800 flex items-center justify-between text-xs font-mono text-emerald-400 font-semibold">
+                <span>실시간 보상 계산기</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 3. Film Passport */}
+            <Link
+              href="/passport"
+              className="p-5 rounded-2xl bg-stone-900/90 border border-stone-800 hover:border-yellow-500/50 transition-all group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    CEO · 정기 구독
+                  </span>
+                  <Film className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-stone-100 group-hover:text-yellow-400 transition-colors">
+                  필름 패스포트 & 계절 롤 구독
+                </h3>
+                <p className="text-xs text-stone-400 leading-relaxed">
+                  매월 계절 맞춤 롤과 스캔권 배송, 4만 건 골든아워 스탬프 북, 렌탈 기기 인수금 자동 차감 혜택.
+                </p>
+              </div>
+              <div className="pt-4 mt-2 border-t border-stone-800 flex items-center justify-between text-xs font-mono text-yellow-400 font-semibold">
+                <span>월 19,900원 멤버십</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 4. 24h Vending Live Drop */}
+            <div
+              onClick={() => setIsLiveVendingOpen(true)}
+              className="p-5 rounded-2xl bg-stone-900/90 border border-stone-800 hover:border-rose-500/50 transition-all group flex flex-col justify-between cursor-pointer"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                    CPO · O2O 긴급 픽업
+                  </span>
+                  <Flame className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-stone-100 group-hover:text-rose-400 transition-colors">
+                  24시 자판기 실시간 픽업 & 드롭
+                </h3>
+                <p className="text-xs text-stone-400 leading-relaxed">
+                  현장에서 필름/배터리가 떨어졌을 때, 15분 내 현장 QR로 즉시 수령하고 다 찍은 롤은 당일 현상 드롭.
+                </p>
+              </div>
+              <div className="pt-4 mt-2 border-t border-stone-800 flex items-center justify-between text-xs font-mono text-rose-400 font-semibold">
+                <span>실시간 재고 핑 확인</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* 5. K-Heritage Photo Guild */}
+            <Link
+              href="/experiences/inbound-tour"
+              className="p-5 rounded-2xl bg-stone-900/90 border border-stone-800 hover:border-indigo-500/50 transition-all group flex flex-col justify-between md:col-span-2 lg:col-span-2"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                    CMO · 글로벌 인바운드
+                  </span>
+                  <Globe className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-stone-100 group-hover:text-indigo-400 transition-colors">
+                  성수·을지로 K-헤리티지 포토길드 (3개 국어 지원)
+                </h3>
+                <p className="text-xs text-stone-400 leading-relaxed">
+                  방한 외국인과 MZ를 위한 올인원 골든아워 투어 키트. 호텔/공항 배송 틴케이스와 당일 야간 디지털 스캔 전송을 지원합니다.
+                </p>
+              </div>
+              <div className="pt-4 mt-2 border-t border-stone-800 flex items-center justify-between text-xs font-mono text-indigo-400 font-semibold">
+                <span>KO / EN / JA 다국어 코스 둘러보기</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -1103,6 +1253,9 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* 24h Live Vending Machine & Drop Box Modal */}
+      <FilmVendingLiveModal isOpen={isLiveVendingOpen} onClose={() => setIsLiveVendingOpen(false)} />
     </div>
   );
 }

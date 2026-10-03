@@ -39,6 +39,7 @@ import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { SpotCheckInModal } from '@/components/explore/SpotCheckInModal';
 import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
 import { StudioDirectoryModal } from '@/components/studio/StudioDirectoryModal';
+import { FilmVendingLiveModal } from '@/components/fun/FilmVendingLiveModal';
 import { KOREA_TOP_100_SPOTS } from '@/data/koreaTop100Spots';
 import { GoogleMapCanvas } from '@/components/map/GoogleMapCanvas';
 
@@ -84,6 +85,7 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState<boolean>(false);
   const [isSpotCheckInOpen, setIsSpotCheckInOpen] = useState<boolean>(false);
   const [isStudioModalOpen, setIsStudioModalOpen] = useState<boolean>(false);
+  const [isLiveVendingOpen, setIsLiveVendingOpen] = useState<boolean>(false);
   const [selectedCouponSpot, setSelectedCouponSpot] = useState<AnalogSpot | null>(null);
   const [selectedShotToRent, setSelectedShotToRent] = useState<ShotToRentPackage | null>(null);
   const [filterSameDayOnly, setFilterSameDayOnly] = useState<boolean>(false);
@@ -531,6 +533,15 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
           >
             <Store className="w-3.5 h-3.5 text-terracotta" />
             <span>제휴 사진관 QR</span>
+          </button>
+
+          <button
+            onClick={() => setIsLiveVendingOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl border border-amber-400 bg-amber-500 hover:bg-amber-400 text-xs font-bold text-stone-950 transition-colors flex items-center gap-1.5 shadow-2xs"
+            title="24시 자판기 실시간 재고 핑 & 15분 긴급 픽업 QR"
+          >
+            <Flame className="w-3.5 h-3.5 text-stone-950" />
+            <span>24시 자판기 픽업 & 드롭</span>
           </button>
 
           <button
@@ -1415,6 +1426,12 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
       <StudioDirectoryModal
         isOpen={isStudioModalOpen}
         onClose={() => setIsStudioModalOpen(false)}
+      />
+
+      {/* 24시 자판기 실시간 라이브 픽업 & 무인 드롭박스 모달 */}
+      <FilmVendingLiveModal
+        isOpen={isLiveVendingOpen}
+        onClose={() => setIsLiveVendingOpen(false)}
       />
     </div>
   );
