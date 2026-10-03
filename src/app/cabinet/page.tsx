@@ -40,6 +40,10 @@ import { LabQrDropModal } from '@/components/common/LabQrDropModal';
 import { useDevicePlatform } from '@/hooks/useDevicePlatform';
 import { AnalogMasterCertificateModal } from '@/components/cabinet/AnalogMasterCertificateModal';
 import { QrCouponModal } from '@/components/cabinet/QrCouponModal';
+import { AiFilmTicketsVault } from '@/components/cabinet/AiFilmTicketsVault';
+import { TradeInTracker } from '@/components/cabinet/TradeInTracker';
+import { DarkroomLiveViewer } from '@/components/cabinet/DarkroomLiveViewer';
+import { PassportSubscriptionCard } from '@/components/cabinet/PassportSubscriptionCard';
 
 // 아날로그 성지순례 스팟별 공식 실측 인증 컷 프리뷰 (스탬프 날인 시 자동 박제 아카이빙)
 const SPOT_PREVIEWS: Record<string, string> = {
@@ -150,7 +154,7 @@ function TabQuerySync({ onTabChange }: { onTabChange: (tab: any) => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['camera', 'tickets', 'repairs', 'pro', 'coupons', 'points', 'passport'].includes(tabParam)) {
+    if (tabParam && ['camera', 'vault', 'tickets', 'repairs', 'pro', 'coupons', 'points', 'passport'].includes(tabParam)) {
       onTabChange(tabParam);
     }
   }, [searchParams, onTabChange]);
@@ -176,7 +180,7 @@ function CabinetContent() {
   } = useDasi();
   const { user, profile, openLoginModal, awardPoints } = useAuth();
   const { triggerHaptic } = useDevicePlatform();
-  const [activeTab, setActiveTab] = useState<'camera' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'vault' | 'tickets' | 'repairs' | 'pro' | 'coupons' | 'points' | 'passport'>('camera');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLabQrModalOpen, setIsLabQrModalOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
@@ -396,6 +400,7 @@ function CabinetContent() {
       <div className="flex border-b border-vintage-200 gap-2 pb-2 overflow-x-auto">
         {[
           { id: 'camera', label: '📷 카메라 렌탈 & 소장 컬렉션', count: rentingItems.filter(r => !r.isConvertedToOwn).length + ownedItems.length },
+          { id: 'vault', label: '📂 디지털 자산 금고 & 티켓', count: '신규' },
           { id: 'tickets', label: '🎟️ 스냅 & 출사 클래스 티켓', count: bookedGigs.length + bookedExperiences.length },
           { id: 'repairs', label: '🔧 명장 수리 & 필름 보관함', count: repairEstimates.length + mockFilmRolls.length },
           { id: 'pro', label: '🏆 PRO 스튜디오 VIP 상담', count: proConsultations.length },
@@ -606,6 +611,16 @@ function CabinetContent() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB: DIGITAL ASSET VAULT (AI TICKETS & TRADE-IN)         */}
+      {/* ======================================================== */}
+      {activeTab === 'vault' && (
+        <div className="space-y-12 animate-fadeIn">
+          <AiFilmTicketsVault />
+          <TradeInTracker />
         </div>
       )}
 
@@ -827,7 +842,10 @@ function CabinetContent() {
       {/* TAB 3: REPAIRS & SCANNED FILM ROLLS                      */}
       {/* ======================================================== */}
       {activeTab === 'repairs' && (
-        <div className="space-y-10 animate-fadeIn">
+        <div className="space-y-12 animate-fadeIn">
+          {/* DARKROOM LIVE TIMELINE & NEGATIVE LIGHTBOX VIEWER */}
+          <DarkroomLiveViewer />
+
           {/* A. REPAIR ESTIMATES */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -2266,7 +2284,10 @@ function CabinetContent() {
       {/* TAB 7: ANALOG HERITAGE PASSPORT (성지순례 패스포트)     */}
       {/* ======================================================== */}
       {activeTab === 'passport' && (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="space-y-10 animate-fadeIn">
+          {/* PASSPORT SUBSCRIPTION & RENT-TO-OWN EQUITY CARD */}
+          <PassportSubscriptionCard />
+
           {/* PASSPORT COVER & STATUS HEADER */}
           <div className="rounded-3xl bg-gradient-to-r from-[#20150F] via-[#2F2016] to-[#20150F] border-2 border-amber-500/40 p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
             {/* Subtle vintage watermark */}
