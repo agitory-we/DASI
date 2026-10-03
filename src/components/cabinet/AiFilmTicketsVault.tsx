@@ -260,20 +260,37 @@ export const AiFilmTicketsVault: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-6 border-t border-dashed border-stone-300 mt-5">
+              {/* Cloud Backup Status & Passport Subscription CTA */}
+              <div className="mt-4 p-3.5 rounded-2xl bg-amber-100/60 border border-amber-300/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px] font-bold text-stone-800">
+                    Google One 스토리지 동기화 완료
+                  </span>
+                </div>
+                <Link
+                  href="/passport"
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-[11px] flex items-center gap-1 transition-colors shrink-0"
+                >
+                  <Film className="w-3 h-3" />
+                  <span>{selectedTicket.filmStock} 25% 할인 구독 &gt;</span>
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4 border-t border-dashed border-stone-300 mt-4">
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5 text-amber-400" />
                   <span>티켓 인쇄 / PDF</span>
                 </button>
                 <button
                   onClick={() => handleShare(selectedTicket)}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-colors"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span>공유하기</span>
+                  <span>스토리 공유</span>
                 </button>
               </div>
             </div>

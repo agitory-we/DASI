@@ -49,6 +49,7 @@ export default function FilmLogbookPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<FilmExifResponse | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ticketRef = useRef<HTMLDivElement>(null);
 
@@ -447,6 +448,14 @@ export default function FilmLogbookPage() {
               </button>
 
               <button
+                onClick={() => setIsStoryModalOpen(true)}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white flex items-center gap-2 transition-all shadow-md"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>인스타 스토리(9:16) 내보내기</span>
+              </button>
+
+              <button
                 onClick={handleShare}
                 className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 flex items-center gap-2 transition-all"
               >
@@ -454,6 +463,176 @@ export default function FilmLogbookPage() {
                 <span>공유하기</span>
               </button>
             </div>
+
+            {/* Cross-Funnel Ecosystem Booster Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+              {/* Google One Cloud Sync CTA */}
+              <div className="p-5 rounded-2xl bg-stone-800/80 border border-stone-700/80 hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>구글원(Google One) 스토리지 연동</span>
+                  </div>
+                  <h4 className="font-serif font-bold text-stone-100 text-sm">
+                    복원된 AI 메타데이터 영구 동기화
+                  </h4>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    회원님의 개인 Google Drive 15GB 무료 용량으로 원클릭 안전 자동 보관됩니다.
+                  </p>
+                </div>
+                <Link
+                  href="/cabinet?tab=vault"
+                  className="w-full py-2 px-3 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-100 text-xs font-bold text-center block transition-colors"
+                >
+                  클라우드 자동 백업 설정 &gt;
+                </Link>
+              </div>
+
+              {/* Film Passport Cross-Sell */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-950/60 to-stone-900 border border-amber-600/30 hover:border-amber-500/60 transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                    <Film className="w-3.5 h-3.5" />
+                    <span>{analysisResult.filmStock} 정기구독</span>
+                  </div>
+                  <h4 className="font-serif font-bold text-amber-100 text-sm">
+                    월 19,900원에 2롤 정기 배송
+                  </h4>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    이 필름의 매력을 계속 담아보세요. 전용 틴케이스와 무료 현상권이 매월 집으로 찾아갑니다.
+                  </p>
+                </div>
+                <Link
+                  href="/passport"
+                  className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 text-xs font-bold text-center block transition-colors"
+                >
+                  필름 여권 25% 할인 구독 &gt;
+                </Link>
+              </div>
+
+              {/* Recommended Spots Loop */}
+              <div className="p-5 rounded-2xl bg-stone-800/80 border border-stone-700/80 hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-rose-400">
+                    <Sun className="w-3.5 h-3.5" />
+                    <span>추천 서울 골든아워 출사지</span>
+                  </div>
+                  <h4 className="font-serif font-bold text-stone-100 text-sm">
+                    {analysisResult.colorTemp.includes('Warm') ? '을지로 & 정동 골목길' : '성수 & 청계천 야경'}
+                  </h4>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    이 필름 색감과 가장 잘 어울리는 명소와 실시간 일몰 매직아워를 지금 지도에서 확인하세요.
+                  </p>
+                </div>
+                <Link
+                  href="/map"
+                  className="w-full py-2 px-3 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-100 text-xs font-bold text-center block transition-colors"
+                >
+                  출사 지도에서 스팟 보기 &gt;
+                </Link>
+              </div>
+            </div>
+
+            {/* Instagram Story 9:16 Modal */}
+            {isStoryModalOpen && (
+              <div className="fixed inset-0 z-50 bg-stone-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+                <div className="relative max-w-sm w-full bg-stone-900 border border-amber-500/30 rounded-3xl p-5 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-400 font-mono">
+                      <Sparkles className="w-4 h-4" />
+                      <span>INSTAGRAM STORY (9:16)</span>
+                    </div>
+                    <button
+                      onClick={() => setIsStoryModalOpen(false)}
+                      className="p-1 rounded-full text-stone-400 hover:text-stone-100 hover:bg-stone-800"
+                    >
+                      <RotateCcw className="w-4 h-4 hidden" />
+                      <span className="text-sm font-bold">✕</span>
+                    </button>
+                  </div>
+
+                  {/* 9:16 Aspect Card Preview */}
+                  <div className="aspect-[9/16] w-full rounded-2xl bg-gradient-to-b from-stone-950 via-stone-900 to-amber-950 p-5 flex flex-col justify-between border border-amber-500/30 text-stone-100 shadow-inner relative overflow-hidden">
+                    {/* Background Vintage Texture */}
+                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
+                    {/* Story Header */}
+                    <div className="relative z-10 flex items-center justify-between border-b border-stone-700/60 pb-3">
+                      <div>
+                        <div className="text-[10px] font-mono tracking-widest text-amber-400 uppercase">DASI OPTICAL AI</div>
+                        <div className="text-xs font-serif font-bold text-stone-200">ANALOG ARCHIVE</div>
+                      </div>
+                      <div className="text-[10px] font-mono text-stone-400">#DASI_FILM</div>
+                    </div>
+
+                    {/* Story Photo */}
+                    <div className="relative z-10 my-auto space-y-3">
+                      <div className="aspect-square w-full rounded-xl overflow-hidden border-2 border-stone-700 shadow-lg relative">
+                        <img
+                          src={selectedImage || ''}
+                          alt="Story Photo"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[10px] font-mono text-amber-300 backdrop-blur-xs">
+                          {analysisResult.filmStock}
+                        </div>
+                      </div>
+
+                      {/* Optical Stats Badge */}
+                      <div className="p-3 rounded-xl bg-stone-900/90 border border-stone-700 text-xs space-y-2">
+                        <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                          <div>
+                            <span className="text-stone-400">SHUTTER:</span> <strong className="text-amber-400">{analysisResult.estimatedShutter}</strong>
+                          </div>
+                          <div>
+                            <span className="text-stone-400">APERTURE:</span> <strong className="text-amber-400">{analysisResult.estimatedAperture}</strong>
+                          </div>
+                          <div>
+                            <span className="text-stone-400">BODY:</span> <span className="text-stone-200">{analysisResult.estimatedCamera}</span>
+                          </div>
+                          <div>
+                            <span className="text-stone-400">VIBE:</span> <strong className="text-rose-400">{analysisResult.vibeScore} pts</strong>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-stone-300 leading-tight italic border-t border-stone-800 pt-1.5 font-sans">
+                          &ldquo;{analysisResult.moodSummary}&rdquo;
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Story Footer */}
+                    <div className="relative z-10 border-t border-stone-700/60 pt-3 flex items-center justify-between text-[10px] font-mono text-stone-400">
+                      <span>dasi-retro.kr</span>
+                      <span className="text-amber-400 font-bold">@reborn_dasi</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        handleShare();
+                        setIsStoryModalOpen(false);
+                      }}
+                      className="py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>스토리 공유하기</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.print();
+                        setIsStoryModalOpen(false);
+                      }}
+                      className="py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>이미지 저장</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

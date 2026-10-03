@@ -1125,6 +1125,41 @@ export default function MapContent({ defaultSpotId }: MapContentProps = {}) {
                   </div>
                 )}
 
+                {/* C-Level Synergies: AI Logbook Ticket & K-Heritage Tour */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <Link
+                    href="/film-logbook"
+                    className="p-3.5 rounded-2xl bg-gradient-to-br from-stone-900 to-amber-950 text-stone-100 border border-amber-600/30 hover:border-amber-400 transition-all flex items-center justify-between group shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-mono font-bold text-amber-400">AI OPTICAL EXIF</div>
+                        <div className="text-xs font-bold text-stone-100">이곳에서 찍은 사진 AI 티켓 복원</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-stone-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  </Link>
+
+                  <Link
+                    href="/experiences/inbound-tour"
+                    className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/80 hover:border-amber-400 text-stone-900 transition-all flex items-center justify-between group shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0">
+                        <Compass className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-mono font-bold text-terracotta">K-HERITAGE TOUR</div>
+                        <div className="text-xs font-bold text-vintage-900">서울 골든아워 포토 투어 참가</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-vintage-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  </Link>
+                </div>
+
                 {/* 하단 Action Bridge */}
                 <div className="pt-3 border-t border-vintage-100 flex flex-col sm:flex-row gap-2.5">
                   <Link

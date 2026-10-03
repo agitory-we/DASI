@@ -18,6 +18,16 @@ const THEMATIC_FALLBACKS: Record<string, string> = {
   lab: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80',
 };
 
+// 1. HTTP -> HTTPS 자동 업그레이드 및 폴백 정제
+function sanitizeUrl(url: string | null | undefined, fallback: string): string {
+  if (!url || typeof url !== 'string' || url.trim() === '') return fallback;
+  let clean = url.trim();
+  if (clean.startsWith('http://')) {
+    clean = clean.replace('http://', 'https://');
+  }
+  return clean;
+}
+
 export const SafeImage: React.FC<SafeImageProps> = ({
   src,
   fallbackSrc,
@@ -28,29 +38,19 @@ export const SafeImage: React.FC<SafeImageProps> = ({
 }) => {
   const chosenFallback = fallbackSrc || THEMATIC_FALLBACKS[category] || DEFAULT_FALLBACK;
 
-  // 1. HTTP -> HTTPS 자동 업그레이드
-  const sanitizeUrl = (url?: string | null): string => {
-    if (!url || typeof url !== 'string' || url.trim() === '') return chosenFallback;
-    let clean = url.trim();
-    if (clean.startsWith('http://')) {
-      clean = clean.replace('http://', 'https://');
-    }
-    return clean;
-  };
-
-  const [imgSrc, setImgSrc] = useState<string>(() => sanitizeUrl(src));
+  const [imgSrc, setImgSrc] = useState<string>(() => sanitizeUrl(src, chosenFallback));
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // src 변경 시 상태 동기화
   React.useEffect(() => {
-    setImgSrc(sanitizeUrl(src));
+    setImgSrc(sanitizeUrl(src, chosenFallback));
     setHasError(false);
     setIsLoading(true);
-  }, [src]);
+  }, [src, chosenFallback]);
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden ${props.fill ? 'w-full h-full' : ''} ${className}`}>
       {isLoading && (
         <div className="absolute inset-0 bg-vintage-100 dark:bg-stone-800 animate-pulse z-1 flex items-center justify-center">
           <span className="sr-only">이미지 로딩 중...</span>

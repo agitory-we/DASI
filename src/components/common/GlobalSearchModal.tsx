@@ -364,7 +364,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                   <div className="font-bold text-vintage-700 dark:text-stone-300 flex items-center justify-between tracking-wide">
                     <span className="flex items-center gap-1.5 uppercase text-[11px]">
                       <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                      24시 필름 자판기 &amp; 제휴 현상소 ({results.studios.length})
+                      24시 필름 자판기 & 제휴 현상소 ({results.studios.length})
                     </span>
                     <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-200/60">
                       공식 파트너십
@@ -435,12 +435,11 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
         </div>
 
         {/* Footer Guidance */}
-        <div className="px-5 py-3 border-t border-vintage-200 dark:border-stone-800 bg-vintage-50/50 dark:bg-stone-900/60 flex items-center justify-between text-[11px] text-vintage-400 dark:text-stone-500">
-          <span>한국관광공사 공공데이터 TourAPI 4.0 연동 중</span>
-          <div className="flex items-center gap-2">
-            <span>방향키/마우스 클릭 이동</span>
-            <span>·</span>
-            <span>ESC 닫기</span>
+        <div className="px-4 sm:px-5 py-2.5 sm:py-3 border-t border-vintage-200 dark:border-stone-800 bg-vintage-50/50 dark:bg-stone-900/60 flex items-center justify-between text-[11px] text-vintage-400 dark:text-stone-500">
+          <span className="truncate">한국관광공사 TourAPI 4.0 공공연동</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <span className="hidden sm:inline">방향키 이동 ·</span>
+            <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-vintage-200/60 dark:bg-stone-800 rounded text-vintage-600 dark:text-stone-400">ESC 닫기</kbd>
           </div>
         </div>
       </div>

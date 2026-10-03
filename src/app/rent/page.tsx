@@ -299,6 +299,43 @@ function RentContent() {
             <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
+
+        {/* C-Level Synergies: Trade-In Valuation & Rent-to-Own Passport */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <Link
+            href="/trade-in"
+            className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-emerald-50 to-stone-50 border border-emerald-200 hover:border-emerald-400 text-stone-900 flex items-center justify-between group transition-all shadow-xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Coins className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-mono font-bold text-emerald-700">TRADE-IN 120% CREDIT</div>
+                <div className="text-sm font-bold text-vintage-900">장롱 카메라 보상판매하고 렌탈료 0원 시작</div>
+                <div className="text-[11px] text-vintage-600">40년 명장 무상 오버홀 + DASI 120% 크레딧 즉시 환급</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+          </Link>
+
+          <Link
+            href="/passport"
+            className="p-4 rounded-3xl bg-gradient-to-br from-amber-500/10 via-amber-50 to-orange-50 border border-amber-200 hover:border-amber-400 text-stone-900 flex items-center justify-between group transition-all shadow-xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-600 text-stone-950 flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-mono font-bold text-amber-800">RENT-TO-OWN PASSPORT</div>
+                <div className="text-sm font-bold text-vintage-900">대여료가 쌓여 내 카메라가 되는 필름 여권</div>
+                <div className="text-[11px] text-vintage-600">월 19,900원 구독 시 렌탈료 100% 지분 적립 및 인수</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-amber-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+          </Link>
+        </div>
       </div>
 
       {/* FRIDAY LIMITED RENTAL DROP BANNER */}

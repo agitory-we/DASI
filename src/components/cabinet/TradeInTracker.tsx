@@ -161,6 +161,30 @@ export const TradeInTracker: React.FC = () => {
                 왕복 안심 배송 운송장: {c.trackingNumber}
               </div>
             </div>
+
+            {/* Fast Credit Redemption Action */}
+            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-vintage-800 font-medium">
+                  지급 예정 크레딧 <strong>{c.rewardAmount.toLocaleString()} P</strong>는 렌탈 및 정기구독 시 100% 현금처럼 자동 적용됩니다.
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href="/rent"
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs transition-colors shadow-2xs"
+                >
+                  카메라 렌탈하기 &gt;
+                </Link>
+                <Link
+                  href="/passport"
+                  className="px-3.5 py-1.5 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs transition-colors shadow-2xs"
+                >
+                  필름 구독 전환 &gt;
+                </Link>
+              </div>
+            </div>
           </div>
         ))}
       </div>

@@ -25,6 +25,7 @@ import {
 import { useDasi } from '@/context/DasiContext';
 import { useAuth } from '@/context/AuthContext';
 import { playShutterSound } from '@/utils/shutterAudio';
+import { FilmVendingLiveModal } from '@/components/fun/FilmVendingLiveModal';
 
 interface FilmProduct {
   id: string;
@@ -120,6 +121,7 @@ export default function FilmsPage() {
   const [address, setAddress] = useState('서울특별시 중구 을지로 100');
   const [usePoints, setUsePoints] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
+  const [isVendingModalOpen, setIsVendingModalOpen] = useState(false);
 
   const points = profile?.total_points || 0;
   const pointDiscount = usePoints ? Math.min(points, 5000) : 0;
@@ -161,6 +163,55 @@ export default function FilmsPage() {
           을지로/충무로 현장 픽업, 그리고 최대 22% 대량 벌크 할인 혜택을 제공합니다. 
           DASI 활동으로 모은 포인트를 최대 5,000P까지 현금처럼 결제에 적용할 수 있습니다.
         </p>
+      </div>
+
+      {/* C-Level Synergies: 24h Vending + Film Passport Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* 24h Vending Pickup Trigger */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-stone-900 to-amber-950 text-stone-100 border border-amber-600/30 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+              <span className="text-xs font-mono font-bold text-amber-400">24H LIVE DROP VENDING</span>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-stone-100">
+              지금 현장에서 1롤이 급하신가요?
+            </h3>
+            <p className="text-xs text-stone-300 leading-relaxed">
+              을지로 세운상가 24시간 스마트 자판기에서 실시간 재고를 확인하고 <strong>15분 픽업 홀드 예약</strong>을 진행하세요.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsVendingModalOpen(true)}
+            className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
+          >
+            <Clock className="w-4 h-4" />
+            <span>24시 자판기 실시간 재고 조회 & 15분 홀드 &gt;</span>
+          </button>
+        </div>
+
+        {/* Film Passport Subscription Cross-sell */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-bold text-amber-800">DASI FILM PASSPORT REGULAR SUB</span>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-vintage-900">
+              필름값 부담 끝! 월 19,900원에 2롤 정기구독
+            </h3>
+            <p className="text-xs text-vintage-700 leading-relaxed">
+              매월 엄선된 신선 35mm 필름 2롤 정기배송 + 시그니처 방습 틴케이스 + 을지로 무료 현상스캔권까지 모두 포함됩니다.
+            </p>
+          </div>
+          <Link
+            href="/passport"
+            className="w-full py-2.5 px-4 rounded-xl bg-vintage-900 hover:bg-terracotta text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+          >
+            <Film className="w-4 h-4" />
+            <span>필름 패스포트 25% 할인 구독 신청하기 &gt;</span>
+          </Link>
+        </div>
       </div>
 
       {/* Feature Highlights */}
@@ -580,6 +631,12 @@ export default function FilmsPage() {
           </div>
         </div>
       )}
+
+      {/* 24h Vending Live Drop Modal */}
+      <FilmVendingLiveModal
+        isOpen={isVendingModalOpen}
+        onClose={() => setIsVendingModalOpen(false)}
+      />
     </div>
   );
 }
